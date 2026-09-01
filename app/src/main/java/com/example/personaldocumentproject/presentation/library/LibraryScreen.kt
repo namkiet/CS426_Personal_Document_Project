@@ -22,14 +22,14 @@ import com.example.personaldocumentproject.domain.model.Document
 import com.example.personaldocumentproject.presentation.library.components.DocumentCard
 
 @Composable
-fun LibraryRoute(viewModel: LibraryViewModel, onCapture: () -> Unit, onSearch: () -> Unit) {
+fun LibraryRoute(viewModel: LibraryViewModel, onCapture: () -> Unit, onSearch: () -> Unit, onDocumentClick: (String) -> Unit) {
     val state by viewModel.uiState.collectAsState()
-    LibraryScreen(state, onCapture, onSearch)
+    LibraryScreen(state, onCapture, onSearch, onDocumentClick)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LibraryScreen(state: LibraryUiState, onCapture: () -> Unit, onSearch: () -> Unit) {
+fun LibraryScreen(state: LibraryUiState, onCapture: () -> Unit, onSearch: () -> Unit, onDocumentClick: (String) -> Unit) {
     Scaffold(topBar = { TopAppBar(title = { Text("Personal Document") }) }) { padding ->
         Column(
             Modifier.fillMaxSize().padding(padding).padding(16.dp),
@@ -39,7 +39,12 @@ fun LibraryScreen(state: LibraryUiState, onCapture: () -> Unit, onSearch: () -> 
             OutlinedButton(onClick = onSearch, modifier = Modifier.fillMaxWidth()) { Text("Search library") }
             if (state.documents.isEmpty()) Text("Your document library is empty.")
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                items(state.documents, key = Document::id) { DocumentCard(it) }
+                items(state.documents, key = Document::id) { document ->
+                    DocumentCard(
+                        document = document,
+                        onClick = { onDocumentClick(document.id) }
+                    )
+                }
             }
         }
     }

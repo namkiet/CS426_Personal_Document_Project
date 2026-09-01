@@ -25,13 +25,25 @@ import androidx.compose.ui.unit.dp
 import com.example.personaldocumentproject.presentation.search.components.SearchResultCard
 
 @Composable
-fun SearchRoute(viewModel: SearchViewModel, onBack: () -> Unit) {
+fun SearchRoute(viewModel: SearchViewModel, onBack: () -> Unit, onDocumentClick: (String) -> Unit) {
     val state by viewModel.uiState.collectAsState()
-    SearchScreen(state, viewModel::onQueryChanged, viewModel::performSearch, onBack)
+    SearchScreen(
+        state = state,
+        onQueryChanged = viewModel::onQueryChanged,
+        onSearch = viewModel::performSearch,
+        onBack = onBack,
+        onDocumentClick = onDocumentClick
+    )
 }
 
 @Composable
-fun SearchScreen(state: SearchUiState, onQueryChanged: (String) -> Unit, onSearch: () -> Unit, onBack: () -> Unit) {
+fun SearchScreen(
+    state: SearchUiState,
+    onQueryChanged: (String) -> Unit,
+    onSearch: () -> Unit,
+    onBack: () -> Unit,
+    onDocumentClick: (String) -> Unit
+) {
     Column(
         Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -52,7 +64,12 @@ fun SearchScreen(state: SearchUiState, onQueryChanged: (String) -> Unit, onSearc
             }
         }
         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.weight(1f)) {
-            items(state.results, key = { it.document.id }) { SearchResultCard(it) }
+            items(state.results, key = { it.document.id }) { result ->
+                SearchResultCard(
+                    result = result,
+                    onClick = { onDocumentClick(result.document.id) }
+                )
+            }
         }
         OutlinedButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) { Text("Back") }
     }

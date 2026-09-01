@@ -9,6 +9,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.personaldocumentproject.di.AppContainer
 import com.example.personaldocumentproject.presentation.capture.CaptureRoute
 import com.example.personaldocumentproject.presentation.capture.CaptureViewModel
+import com.example.personaldocumentproject.presentation.detail.DetailRoute
+import com.example.personaldocumentproject.presentation.detail.DetailViewModel
 import com.example.personaldocumentproject.presentation.library.LibraryRoute
 import com.example.personaldocumentproject.presentation.library.LibraryViewModel
 import com.example.personaldocumentproject.presentation.review.ReviewRoute
@@ -26,6 +28,7 @@ fun AppNavGraph(container: AppContainer) {
                 viewModel = viewModel,
                 onCapture = { route = Routes.Capture },
                 onSearch = { route = Routes.Search },
+                onDocumentClick = { route = Routes.Detail(it) }
             )
         }
         Routes.Capture -> {
@@ -50,7 +53,22 @@ fun AppNavGraph(container: AppContainer) {
         }
         Routes.Search -> {
             val viewModel: SearchViewModel = viewModel(factory = container.searchViewModelFactory)
-            SearchRoute(viewModel, onBack = { route = Routes.Library })
+            SearchRoute(
+                viewModel = viewModel,
+                onBack = { route = Routes.Library },
+                onDocumentClick = { route = Routes.Detail(it) }
+            )
+        }
+        is Routes.Detail -> {
+            val viewModel: DetailViewModel = viewModel(
+                key = "detail:${current.documentId}",
+                factory = container.detailViewModelFactory
+            )
+            DetailRoute(
+                documentId = current.documentId,
+                viewModel = viewModel,
+                onBack = { route = Routes.Library } // Always back to library, or could pass previous route if we tracked history
+            )
         }
     }
 }

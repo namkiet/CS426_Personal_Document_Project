@@ -14,6 +14,7 @@ import com.example.personaldocumentproject.domain.usecase.ObserveDocuments
 import com.example.personaldocumentproject.domain.usecase.SaveDocument
 import com.example.personaldocumentproject.domain.usecase.SearchDocuments
 import com.example.personaldocumentproject.presentation.capture.CaptureViewModel
+import com.example.personaldocumentproject.presentation.detail.DetailViewModel
 import com.example.personaldocumentproject.presentation.library.LibraryViewModel
 import com.example.personaldocumentproject.presentation.review.ReviewViewModel
 import com.example.personaldocumentproject.presentation.search.SearchViewModel
@@ -35,6 +36,7 @@ class AppContainer(private val context: Context) {
     val captureViewModelFactory = factory { CaptureViewModel() }
     val reviewViewModelFactory = factory { ReviewViewModel(analyzeDocument, saveDocument) }
     val searchViewModelFactory = factory { SearchViewModel(searchDocuments) }
+    val detailViewModelFactory = factory { DetailViewModel(getDocument) }
 
     private fun factory(create: () -> ViewModel): ViewModelProvider.Factory =
         object : ViewModelProvider.Factory {
