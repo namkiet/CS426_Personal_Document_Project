@@ -52,10 +52,15 @@ class GeminiLlmEnhancementService : LlmEnhancementService {
         """.trimIndent()
 
         return try {
+            android.util.Log.d("GeminiLLM", "Sending prompt to Gemini:\n$prompt")
             val response = generativeModel.generateContent(prompt)
-            response.text ?: ocrText
+            val enhancedText = response.text
+
+            android.util.Log.d("GeminiLLM", "Received response from Gemini:\n$enhancedText")
+
+            enhancedText ?: ocrText
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("GeminiLLM", "Failed to generate content: ${e.message}", e)
             // Fallback to original text if API fails (e.g. no internet or Firebase config missing)
             ocrText
         }
