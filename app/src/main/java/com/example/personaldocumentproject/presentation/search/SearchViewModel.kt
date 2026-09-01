@@ -16,16 +16,20 @@ class SearchViewModel(private val searchDocuments: SearchDocuments) : ViewModel(
 
     fun onQueryChanged(query: String) {
         mutableState.value = mutableState.value.copy(query = query)
+    }
+
+    fun performSearch() {
+        val query = mutableState.value.query
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             try {
                 searchDocuments(query).collectLatest { results ->
-                    mutableState.value = SearchUiState(query = query, results = results)
+                    mutableState.value = mutableState.value.copy(results = results)
                 }
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Exception) {
-                mutableState.value = SearchUiState(query = query, errorMessage = error.message)
+                mutableState.value = mutableState.value.copy(errorMessage = error.message)
             }
         }
     }

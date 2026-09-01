@@ -19,7 +19,8 @@ class DefaultDocumentRepository(
 
     override fun search(query: String, queryEmbedding: List<Float>): Flow<List<SearchResult>> {
         if (query.isBlank()) return observeAll().map { emptyList() }
-        val terms = query.lowercase().split(Regex("\\s+")).filter(String::isNotBlank)
+        val queryTerms = query.lowercase().split(Regex("\\s+")).filter(String::isNotBlank).toSet()
+
         return observeAll().map { documents ->
             documents.mapNotNull { document ->
                 val searchableText = buildString {
@@ -28,11 +29,30 @@ class DefaultDocumentRepository(
                     append(document.extractedText).append(' ')
                     append(document.tags.joinToString(" "))
                 }.lowercase()
-                val textScore = if (terms.isEmpty()) 1f else
-                    terms.count(searchableText::contains).toFloat() / terms.size
+
+                val documentTerms = searchableText.split(Regex("\\s+")).filter(String::isNotBlank).toSet()
+
+                // Calculate Jaccard similarity for text matching
+                val textScore = if (queryTerms.isEmpty() || documentTerms.isEmpty()) 0f else {
+                    val intersection = queryTerms.intersect(documentTerms).size
+                    val union = queryTerms.union(documentTerms).size
+                    intersection.toFloat() / union.toFloat()
+                }
+
+                // Keep the simple term matching as a boost for direct exact word matches
+                val exactMatchBoost = if (queryTerms.isEmpty()) 0f else
+                    queryTerms.count(searchableText::contains).toFloat() / queryTerms.size
+
+                // Calculate final text score by combining Jaccard similarity and exact substring matches
+                val finalTextScore = maxOf(textScore, exactMatchBoost)
+
                 val semanticScore = cosineSimilarity(queryEmbedding, document.embedding)
-                val score = maxOf(textScore, semanticScore)
-                if (score > 0f) SearchResult(document, score) else null
+
+                // Give semantic score more weight, but heavily favor if there's a strong text match
+                val score = maxOf(finalTextScore * 1.5f, semanticScore).coerceIn(0f, 1f)
+
+                // Adjust threshold depending on similarity
+                if (score > 0.1f || finalTextScore > 0f) SearchResult(document, score) else null
             }.sortedByDescending(SearchResult::score)
         }
     }
