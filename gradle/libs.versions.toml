@@ -13,6 +13,7 @@ mlkitImageLabeling = "17.0.9"
 coroutinesPlayServices = "1.8.1"
 firebaseBom = "33.2.0"
 firebaseVertexAi = "16.5.0"
+googleServices = "4.4.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -42,4 +43,5 @@ firebase-vertexai = { group = "com.google.firebase", name = "firebase-vertexai",
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 

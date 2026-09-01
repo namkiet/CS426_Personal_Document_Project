@@ -39,11 +39,11 @@ class ReviewViewModel(
         if (mutableState.value.isEnhancing || draft.extractedText.isBlank()) return
 
         viewModelScope.launch {
-            mutableState.value = mutableState.value.copy(isEnhancing = true)
+            mutableState.value = mutableState.value.copy(isEnhancing = true, errorMessage = null)
             mutableState.value = runCatching { enhanceDocumentData(draft, languageHint) }
                 .fold(
                     onSuccess = { mutableState.value.copy(isEnhancing = false, draft = it) },
-                    onFailure = { mutableState.value.copy(isEnhancing = false, errorMessage = it.message) },
+                    onFailure = { mutableState.value.copy(isEnhancing = false, errorMessage = "Failed to enhance data: ${it.message}") },
                 )
         }
     }

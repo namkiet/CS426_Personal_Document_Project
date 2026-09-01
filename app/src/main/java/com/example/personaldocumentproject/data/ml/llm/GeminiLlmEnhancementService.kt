@@ -7,11 +7,12 @@ import com.google.firebase.vertexai.vertexAI
 
 class GeminiLlmEnhancementService : LlmEnhancementService {
     // Note: requires setting up a Firebase project and google-services.json for production
+    // If Firebase isn't initialized, this will immediately fail and return null.
     private val model: GenerativeModel? by lazy {
         try {
             Firebase.vertexAI.generativeModel("gemini-1.5-flash")
         } catch (e: Throwable) {
-            e.printStackTrace()
+            android.util.Log.e("GeminiLLM", "Firebase Vertex AI initialization failed: ${e.message}")
             null
         }
     }
@@ -23,7 +24,10 @@ class GeminiLlmEnhancementService : LlmEnhancementService {
     ): String {
         if (ocrText.isBlank()) return ocrText
 
-        val generativeModel = model ?: return ocrText
+        val generativeModel = model ?: run {
+            android.util.Log.e("GeminiLLM", "Model is null, returning original OCR text")
+            return ocrText
+        }
 
         val languageInstruction = if (!languageHint.isNullOrBlank()) {
             "Please format the result in $languageHint language. If the OCR text appears to be another language, attempt to fix typos based on $languageHint context."
