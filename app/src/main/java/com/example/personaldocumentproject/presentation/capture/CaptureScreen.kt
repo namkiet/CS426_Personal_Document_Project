@@ -20,7 +20,10 @@ import com.example.personaldocumentproject.presentation.capture.components.Image
 fun CaptureRoute(viewModel: CaptureViewModel, onImageSelected: (String) -> Unit, onBack: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
     LaunchedEffect(state.selectedImageUri) {
-        state.selectedImageUri?.let(onImageSelected)
+        state.selectedImageUri?.let {
+            onImageSelected(it)
+            viewModel.onImageSelectionHandled()
+        }
     }
     CaptureScreen(onImageSelected = viewModel::selectImage, onBack = onBack)
 }
