@@ -17,6 +17,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -32,16 +38,25 @@ fun ReviewRoute(
     val state by viewModel.uiState.collectAsState()
     LaunchedEffect(imageUri) { viewModel.analyze(imageUri) }
     LaunchedEffect(state.isSaved) { if (state.isSaved) onSaved() }
-    ReviewScreen(state, viewModel::updateTitle, viewModel::save, onBack)
+    ReviewScreen(
+        state = state,
+        onTitleChanged = viewModel::updateTitle,
+        onEnhance = viewModel::enhanceData,
+        onSave = viewModel::save,
+        onBack = onBack
+    )
 }
 
 @Composable
 fun ReviewScreen(
     state: ReviewUiState,
     onTitleChanged: (String) -> Unit,
+    onEnhance: (String?) -> Unit,
     onSave: () -> Unit,
     onBack: () -> Unit,
 ) {
+    var languageHint by remember { mutableStateOf("") }
+
     Surface(modifier = Modifier.fillMaxSize(), color = Color.Black) {
         Column(
             Modifier
@@ -62,6 +77,32 @@ fun ReviewScreen(
 
                 Text("OCR Extracted Text", style = MaterialTheme.typography.titleMedium, color = Color.White)
                 Text(draft.extractedText.ifBlank { "No text was detected." }, color = Color.White)
+
+                if (state.isEnhancing) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                        CircularProgressIndicator()
+                        Text("Enhancing with AI...", color = Color.White)
+                    }
+                } else {
+                    OutlinedTextField(
+                        value = languageHint,
+                        onValueChange = { languageHint = it },
+                        label = { Text("Language Hint (Optional)", color = Color.Gray) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent
+                        )
+                    )
+                    OutlinedButton(
+                        onClick = { onEnhance(languageHint) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Enhance Data with AI", color = Color.White)
+                    }
+                }
 
                 Button(onClick = onSave, enabled = !state.isSaving, modifier = Modifier.fillMaxWidth()) {
                     Text(if (state.isSaving) "Saving…" else "Save document")

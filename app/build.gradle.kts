@@ -52,6 +52,9 @@ dependencies {
     implementation(libs.mlkit.image.labeling)
     implementation(libs.kotlinx.coroutines.play.services)
 
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.vertexai)
+
     testImplementation(libs.junit)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))

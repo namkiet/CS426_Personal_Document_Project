@@ -5,6 +5,8 @@ import com.example.personaldocumentproject.data.mapper.DocumentMapper
 import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
 import com.example.personaldocumentproject.domain.model.DocumentCategory
 import com.example.personaldocumentproject.domain.service.EmbeddingService
+import com.example.personaldocumentproject.domain.service.ImageLabelingService
+import com.example.personaldocumentproject.domain.service.ImageStorageService
 import com.example.personaldocumentproject.domain.service.OcrService
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -17,6 +19,9 @@ class DocumentWorkflowTest {
         database.documentDao,
         DocumentMapper(),
     )
+    private val dummyImageStorageService = object : ImageStorageService {
+        override suspend fun saveImageLocally(sourceUri: String): String = sourceUri
+    }
 
     @Test
     fun analyze_then_save_persists_document() = runBlocking {
@@ -27,8 +32,11 @@ class DocumentWorkflowTest {
             embeddingService = object : EmbeddingService {
                 override suspend fun embed(text: String) = listOf(1f, 0f)
             },
+            imageLabelingService = object : ImageLabelingService {
+                override suspend fun generateTags(imageUri: String) = listOf("lecture")
+            },
         )
-        val save = SaveDocument(repository, idGenerator = { "id" }, clock = { 42L })
+        val save = SaveDocument(repository, dummyImageStorageService, idGenerator = { "id" }, clock = { 42L })
 
         val document = save(analyze("content://lecture"))
 
@@ -39,9 +47,9 @@ class DocumentWorkflowTest {
 
     @Test
     fun documents_are_observed_newest_first() = runBlocking {
-        val save = SaveDocument(repository, idGenerator = { "old" }, clock = { 1L })
+        val save = SaveDocument(repository, dummyImageStorageService, idGenerator = { "old" }, clock = { 1L })
         save(com.example.personaldocumentproject.domain.model.DocumentDraft("content://old"))
-        SaveDocument(repository, idGenerator = { "new" }, clock = { 2L })(
+        SaveDocument(repository, dummyImageStorageService, idGenerator = { "new" }, clock = { 2L })(
             com.example.personaldocumentproject.domain.model.DocumentDraft("content://new"),
         )
 

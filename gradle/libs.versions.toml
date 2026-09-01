@@ -11,6 +11,8 @@ composeBom = "2026.08.00"
 mlkitTextRecognition = "16.0.1"
 mlkitImageLabeling = "17.0.9"
 coroutinesPlayServices = "1.8.1"
+firebaseBom = "33.2.0"
+firebaseVertexAi = "16.5.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -34,6 +36,8 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version = "2.6.0" 
 mlkit-text-recognition = { group = "com.google.mlkit", name = "text-recognition", version.ref = "mlkitTextRecognition" }
 mlkit-image-labeling = { group = "com.google.mlkit", name = "image-labeling", version.ref = "mlkitImageLabeling" }
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutinesPlayServices" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-vertexai = { group = "com.google.firebase", name = "firebase-vertexai", version.ref = "firebaseVertexAi" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

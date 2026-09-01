@@ -3,6 +3,7 @@ package com.example.personaldocumentproject.presentation.review
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.personaldocumentproject.domain.usecase.AnalyzeDocument
+import com.example.personaldocumentproject.domain.usecase.EnhanceDocumentData
 import com.example.personaldocumentproject.domain.usecase.SaveDocument
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -10,6 +11,7 @@ import kotlinx.coroutines.launch
 
 class ReviewViewModel(
     private val analyzeDocument: AnalyzeDocument,
+    private val enhanceDocumentData: EnhanceDocumentData,
     private val saveDocument: SaveDocument,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(ReviewUiState())
@@ -30,6 +32,20 @@ class ReviewViewModel(
     fun updateTitle(title: String) {
         val draft = mutableState.value.draft ?: return
         mutableState.value = mutableState.value.copy(draft = draft.copy(title = title))
+    }
+
+    fun enhanceData(languageHint: String?) {
+        val draft = mutableState.value.draft ?: return
+        if (mutableState.value.isEnhancing || draft.extractedText.isBlank()) return
+
+        viewModelScope.launch {
+            mutableState.value = mutableState.value.copy(isEnhancing = true)
+            mutableState.value = runCatching { enhanceDocumentData(draft, languageHint) }
+                .fold(
+                    onSuccess = { mutableState.value.copy(isEnhancing = false, draft = it) },
+                    onFailure = { mutableState.value.copy(isEnhancing = false, errorMessage = it.message) },
+                )
+        }
     }
 
     fun save() {

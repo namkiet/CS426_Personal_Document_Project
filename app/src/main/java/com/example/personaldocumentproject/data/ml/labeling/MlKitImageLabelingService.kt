@@ -10,11 +10,13 @@ import kotlinx.coroutines.tasks.await
 
 class MlKitImageLabelingService(private val context: Context) : ImageLabelingService {
 
-    private val labeler = ImageLabeling.getClient(
-        ImageLabelerOptions.Builder()
-            .setConfidenceThreshold(0.7f)
-            .build()
-    )
+    private val labeler by lazy {
+        ImageLabeling.getClient(
+            ImageLabelerOptions.Builder()
+                .setConfidenceThreshold(0.7f)
+                .build()
+        )
+    }
 
     override suspend fun generateTags(imageUri: String): List<String> {
         return try {
