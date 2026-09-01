@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.personaldocumentproject.data.local.AppDatabase
+import com.example.personaldocumentproject.data.local.storage.LocalImageStorageService
 import com.example.personaldocumentproject.data.mapper.DocumentMapper
 import com.example.personaldocumentproject.data.ml.embedding.LocalEmbeddingService
 import com.example.personaldocumentproject.data.ml.ocr.MlKitOcrService
@@ -25,11 +26,12 @@ class AppContainer(private val context: Context) {
     private val repository = DefaultDocumentRepository(database.documentDao, DocumentMapper())
     private val ocrService = MlKitOcrService(context)
     private val embeddingService = LocalEmbeddingService()
+    private val imageStorageService = LocalImageStorageService(context)
 
     val observeDocuments = ObserveDocuments(repository)
     val getDocument = GetDocument(repository)
     val analyzeDocument = AnalyzeDocument(ocrService, embeddingService)
-    val saveDocument = SaveDocument(repository)
+    val saveDocument = SaveDocument(repository, imageStorageService)
     val searchDocuments = SearchDocuments(repository, embeddingService)
 
     val libraryViewModelFactory = factory { LibraryViewModel(observeDocuments) }
