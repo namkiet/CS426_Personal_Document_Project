@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedButton
@@ -53,7 +54,15 @@ fun ReviewScreen(
             if (state.isAnalyzing) CircularProgressIndicator()
             state.draft?.let { draft ->
                 DraftTitleField(draft.title, onTitleChanged)
+
+                if (draft.tags.isNotEmpty()) {
+                    Text("Image Labels (Visual Content)", style = MaterialTheme.typography.titleMedium, color = Color.White)
+                    Text(draft.tags.joinToString(", "), style = MaterialTheme.typography.bodyMedium, color = Color.White)
+                }
+
+                Text("OCR Extracted Text", style = MaterialTheme.typography.titleMedium, color = Color.White)
                 Text(draft.extractedText.ifBlank { "No text was detected." }, color = Color.White)
+
                 Button(onClick = onSave, enabled = !state.isSaving, modifier = Modifier.fillMaxWidth()) {
                     Text(if (state.isSaving) "Saving…" else "Save document")
                 }
