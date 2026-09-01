@@ -17,7 +17,7 @@ private class InMemoryDocumentDao : DocumentDao {
     override suspend fun upsert(document: DocumentEntity) {
         documents.update { current ->
             (current.filterNot { it.id == document.id } + document)
-                .sortedByDescending(DocumentEntity::createdAtEpochMillis)
+                .sortedByDescending(DocumentEntity::createdAt)
         }
     }
 }

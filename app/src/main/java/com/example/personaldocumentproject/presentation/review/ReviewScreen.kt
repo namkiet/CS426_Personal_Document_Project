@@ -53,7 +53,7 @@ fun ReviewScreen(
             if (state.isAnalyzing) CircularProgressIndicator()
             state.draft?.let { draft ->
                 DraftTitleField(draft.title, onTitleChanged)
-                Text(draft.extractedText.ifBlank { "No text was detected." }, color = Color.White)
+                Text(draft.ocrText.ifBlank { "No text was detected." }, color = Color.White)
                 Button(onClick = onSave, enabled = !state.isSaving, modifier = Modifier.fillMaxWidth()) {
                     Text(if (state.isSaving) "Saving…" else "Save document")
                 }
