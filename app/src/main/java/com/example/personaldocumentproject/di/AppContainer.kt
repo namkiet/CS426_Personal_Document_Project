@@ -1,5 +1,6 @@
 package com.example.personaldocumentproject.di
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.personaldocumentproject.data.local.AppDatabase
@@ -18,10 +19,10 @@ import com.example.personaldocumentproject.presentation.review.ReviewViewModel
 import com.example.personaldocumentproject.presentation.search.SearchViewModel
 
 /** Composition root. Replace adapters here without leaking infrastructure into domain or UI. */
-class AppContainer {
+class AppContainer(private val context: Context) {
     private val database = AppDatabase()
     private val repository = DefaultDocumentRepository(database.documentDao, DocumentMapper())
-    private val ocrService = MlKitOcrService()
+    private val ocrService = MlKitOcrService(context)
     private val embeddingService = LocalEmbeddingService()
 
     val observeDocuments = ObserveDocuments(repository)

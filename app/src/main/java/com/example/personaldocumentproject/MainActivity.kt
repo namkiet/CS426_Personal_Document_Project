@@ -9,10 +9,10 @@ import com.example.personaldocumentproject.navigation.AppNavGraph
 import com.example.personaldocumentproject.ui.theme.PersonalDocumentProjectTheme
 
 class MainActivity : ComponentActivity() {
-    private val container by lazy { AppContainer() }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val container = (application as DocumentApplication).container
         setContent {
             PersonalDocumentProjectTheme {
                 AppNavGraph(container)
