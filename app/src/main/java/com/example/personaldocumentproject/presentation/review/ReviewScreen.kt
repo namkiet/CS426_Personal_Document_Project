@@ -1,0 +1,56 @@
+package com.example.personaldocumentproject.presentation.review
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.example.personaldocumentproject.presentation.review.components.DraftTitleField
+
+@Composable
+fun ReviewRoute(
+    imageUri: String,
+    viewModel: ReviewViewModel,
+    onSaved: () -> Unit,
+    onBack: () -> Unit,
+) {
+    val state by viewModel.uiState.collectAsState()
+    LaunchedEffect(imageUri) { viewModel.analyze(imageUri) }
+    LaunchedEffect(state.isSaved) { if (state.isSaved) onSaved() }
+    ReviewScreen(state, viewModel::updateTitle, viewModel::save, onBack)
+}
+
+@Composable
+fun ReviewScreen(
+    state: ReviewUiState,
+    onTitleChanged: (String) -> Unit,
+    onSave: () -> Unit,
+    onBack: () -> Unit,
+) {
+    Column(
+        Modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text("Review document")
+        if (state.isAnalyzing) CircularProgressIndicator()
+        state.draft?.let { draft ->
+            DraftTitleField(draft.title, onTitleChanged)
+            Text(draft.extractedText.ifBlank { "No text was detected." })
+            Button(onClick = onSave, enabled = !state.isSaving, modifier = Modifier.fillMaxWidth()) {
+                Text(if (state.isSaving) "Saving…" else "Save document")
+            }
+        }
+        state.errorMessage?.let { Text(it) }
+        OutlinedButton(onClick = onBack) { Text("Back") }
+    }
+}
