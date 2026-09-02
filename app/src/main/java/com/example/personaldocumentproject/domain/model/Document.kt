@@ -5,9 +5,10 @@ data class Document(
     val imageUri: String,
     val title: String,
     val description: String,
-    val extractedText: String,
+    val ocrText: String,
     val category: DocumentCategory,
     val tags: List<String>,
+    val detectedObjects: List<String>,
     val embedding: List<Float>,
-    val createdAtEpochMillis: Long,
+    val createdAt: Long,
 )

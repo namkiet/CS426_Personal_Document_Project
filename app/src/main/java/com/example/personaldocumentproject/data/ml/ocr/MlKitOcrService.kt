@@ -7,6 +7,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.tasks.await
+import androidx.core.net.toUri
 
 /** ML Kit integration point. Recognizes text from an image URI. */
 class MlKitOcrService(private val context: Context) : OcrService {
@@ -15,7 +16,7 @@ class MlKitOcrService(private val context: Context) : OcrService {
 
     override suspend fun recognizeText(imageUri: String): String {
         return try {
-            val uri = Uri.parse(imageUri)
+            val uri = imageUri.toUri()
             val image = InputImage.fromFilePath(context, uri)
 
             val result = recognizer.process(image).await()

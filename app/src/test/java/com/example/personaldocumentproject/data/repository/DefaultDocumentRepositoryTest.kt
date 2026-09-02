@@ -26,7 +26,8 @@ class DefaultDocumentRepositoryTest {
 
     private fun document(id: String, title: String, embedding: List<Float>) = Document(
         id = id, imageUri = "content://$id", title = title, description = "",
-        extractedText = "", category = DocumentCategory.OTHER, tags = emptyList(),
-        embedding = embedding, createdAtEpochMillis = 1,
+        ocrText = "", category = DocumentCategory.OTHER, tags = emptyList(),
+        detectedObjects = emptyList(),
+        embedding = embedding, createdAt = 1,
     )
 }

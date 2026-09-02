@@ -5,9 +5,10 @@ data class DocumentEntity(
     val imageUri: String,
     val title: String,
     val description: String,
-    val extractedText: String,
+    val ocrText: String,
     val category: String,
     val tags: String,
+    val detectedObjects: String,
     val embedding: String,
-    val createdAtEpochMillis: Long,
+    val createdAt: Long,
 )
