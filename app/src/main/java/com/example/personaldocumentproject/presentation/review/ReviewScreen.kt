@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -53,7 +54,9 @@ fun ReviewScreen(
             if (state.isAnalyzing) CircularProgressIndicator()
             state.draft?.let { draft ->
                 DraftTitleField(draft.title, onTitleChanged)
-                Text(draft.ocrText.ifBlank { "No text was detected." }, color = Color.White)
+                SelectionContainer {
+                    Text(draft.ocrText.ifBlank { "No text was detected." }, color = Color.White)
+                }
                 Button(onClick = onSave, enabled = !state.isSaving, modifier = Modifier.fillMaxWidth()) {
                     Text(if (state.isSaving) "Saving…" else "Save document")
                 }

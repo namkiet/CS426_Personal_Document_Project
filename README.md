@@ -15,9 +15,9 @@ People take many photos but later struggle to find them or remember where they a
 
 ## Current status
 
-The project contains a compile-ready clean architecture scaffold and an initial Compose library screen. A user can import an image, create a temporary document entry, and filter entries by text.
+The project contains a compile-ready clean architecture implementation with Compose screens for importing, reviewing, browsing, searching, and viewing documents. Imported images are copied to app-internal storage, analyzed on-device, and searchable by text and semantic similarity.
 
-The local and ML packages expose the intended Room, ML Kit OCR, and local embedding boundaries. Their current implementations remain lightweight in-memory/placeholder adapters. Room annotations and persistence, the ML Kit runtime, direct camera capture, and image rendering are the next infrastructure tasks.
+ML Kit provides on-device OCR and MediaPipe generates local text embeddings. Metadata generation is rule-based, object detection is currently a placeholder, and document metadata remains in memory until Room persistence is implemented. Direct camera capture is not yet available.
 
 ## Architecture
 
@@ -33,7 +33,7 @@ Domain (models + use cases + repository/service contracts)
 Data (local storage + extraction + repository implementations)
 ```
 
-`AppContainer` is the composition root. It wires concrete data adapters to domain use cases without introducing a dependency-injection framework during the scaffolding stage.
+`AppContainer` is the composition root. It wires concrete data adapters to domain use cases without a dependency-injection framework.
 
 ## Project structure
 
@@ -56,11 +56,15 @@ app/src/main/java/com/example/personaldocumentproject/
 |   |   |-- ReviewScreen.kt
 |   |   |-- ReviewViewModel.kt
 |   |   `-- ReviewUiState.kt
-|   `-- search/                        # Text/semantic retrieval
-|       |-- components/
-|       |-- SearchScreen.kt
-|       |-- SearchViewModel.kt
-|       `-- SearchUiState.kt
+|   |-- search/                        # Text/semantic retrieval
+|   |   |-- components/
+|   |   |-- SearchScreen.kt
+|   |   |-- SearchViewModel.kt
+|   |   `-- SearchUiState.kt
+|   `-- detail/                        # Saved document details
+|       |-- DetailScreen.kt
+|       |-- DetailViewModel.kt
+|       `-- DetailUiState.kt
 |-- domain/
 |   |-- model/                         # Document, draft, category, result
 |   |-- repository/                    # DocumentRepository contract
@@ -68,13 +72,16 @@ app/src/main/java/com/example/personaldocumentproject/
 |   `-- usecase/                       # Analyze, save, observe, get, search
 |-- data/
 |   |-- local/
+|   |   |-- storage/                   # App-internal image storage
 |   |   |-- AppDatabase.kt
 |   |   |-- DocumentDao.kt
 |   |   |-- DocumentEntity.kt
 |   |   `-- converters/
 |   |-- ml/
 |   |   |-- ocr/                       # ML Kit OCR adapter
-|   |   `-- embedding/                 # Local embedding adapter
+|   |   |-- embedding/                 # MediaPipe text embeddings
+|   |   |-- metadata/                  # Rule-based metadata generation
+|   |   `-- objectdetection/           # Object detection placeholder
 |   |-- mapper/                        # Entity/domain conversion
 |   `-- repository/
 |       `-- DefaultDocumentRepository.kt
