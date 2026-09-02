@@ -10,6 +10,7 @@ kotlin = "2.4.10"
 composeBom = "2026.08.00"
 mlkitTextRecognition = "16.0.1"
 coroutinesPlayServices = "1.8.1"
+animation = "1.12.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -32,6 +33,7 @@ androidx-compose-material-icons-core = { group = "androidx.compose.material", na
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version = "2.6.0" }
 mlkit-text-recognition = { group = "com.google.mlkit", name = "text-recognition", version.ref = "mlkitTextRecognition" }
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutinesPlayServices" }
+androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
