@@ -6,12 +6,15 @@
         android:name=".DocumentApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
+        android:extractNativeLibs="true"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:pageSizeCompat="enabled"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.PersonalDocumentProject">
+        android:theme="@style/Theme.PersonalDocumentProject"
+        tools:targetApi="36">
         <activity
             android:name=".MainActivity"
             android:exported="true"

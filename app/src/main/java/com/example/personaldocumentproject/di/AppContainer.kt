@@ -26,7 +26,7 @@ class AppContainer(private val context: Context) {
     private val database = AppDatabase()
     private val repository = DefaultDocumentRepository(database.documentDao, DocumentMapper())
     private val ocrService = MlKitOcrService(context)
-    private val embeddingService = LocalEmbeddingService()
+    private val embeddingService = LocalEmbeddingService(context)
     private val imageStorageService = LocalImageStorageService(context)
     private val imageLabelingService = MlKitImageLabelingService(context)
 

@@ -18,6 +18,14 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            // MediaPipe Text tasks ship pre-compiled native libraries for ARM architectures (arm64-v8a, armeabi-v7a).
+            // Do not include x86_64 here as MediaPipe lacks x86_64 native binaries; x86_64 emulators will use ARM binary translation.
+            abiFilters.clear()
+            abiFilters.add("arm64-v8a")
+            abiFilters.add("armeabi-v7a")
+        }
     }
 
     buildTypes {
@@ -33,6 +41,11 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
     }
 }
 
@@ -52,6 +65,7 @@ dependencies {
     implementation(libs.mlkit.text.recognition)
     implementation(libs.mlkit.image.labeling)
     implementation(libs.mlkit.document.scanner)
+    implementation(libs.mediapipe.tasks.text)
     implementation(libs.kotlinx.coroutines.play.services)
 
     implementation(platform(libs.firebase.bom))
