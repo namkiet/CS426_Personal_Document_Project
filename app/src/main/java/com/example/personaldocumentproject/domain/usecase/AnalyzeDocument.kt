@@ -3,18 +3,12 @@ package com.example.personaldocumentproject.domain.usecase
 import com.example.personaldocumentproject.domain.model.DocumentDraft
 import com.example.personaldocumentproject.domain.service.OcrService
 import com.example.personaldocumentproject.domain.service.ObjectDetectionService
-import com.example.personaldocumentproject.domain.service.TitleGenerationService
-import com.example.personaldocumentproject.domain.service.DescriptionGenerationService
-import com.example.personaldocumentproject.domain.service.CategoryClassificationService
-import com.example.personaldocumentproject.domain.service.TagGenerationService
+import com.example.personaldocumentproject.domain.service.MetadataService
 
 class AnalyzeDocument(
     private val ocrService: OcrService,
     private val objectDetectionService: ObjectDetectionService,
-    private val titleGenerationService: TitleGenerationService,
-    private val descriptionGenerationService: DescriptionGenerationService,
-    private val categoryClassificationService: CategoryClassificationService,
-    private val tagGenerationService: TagGenerationService,
+    private val metadataService: MetadataService,
 ) {
     suspend operator fun invoke(imageUri: String): DocumentDraft {
         require(imageUri.isNotBlank()) { "An image URI is required" }
@@ -26,10 +20,10 @@ class AnalyzeDocument(
         val detectedObjects = objectDetectionService.detectObjects(imageUri)
 
         // 03. Generate editable metadata from the extracted image content.
-        val title = titleGenerationService.generateTitle(text, detectedObjects)
-        val description = descriptionGenerationService.generateDescription(text, detectedObjects)
-        val category = categoryClassificationService.classifyCategory(text, detectedObjects)
-        val tags = tagGenerationService.generateTags(text, detectedObjects)
+        val title = metadataService.generateTitle(text, detectedObjects)
+        val description = metadataService.generateDescription(text, detectedObjects)
+        val category = metadataService.classifyCategory(text, detectedObjects)
+        val tags = metadataService.generateTags(text, detectedObjects)
 
         // 04. Create a document draft from the analysis results.
         val draft = DocumentDraft(

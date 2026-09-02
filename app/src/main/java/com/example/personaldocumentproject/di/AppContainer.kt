@@ -9,10 +9,7 @@ import com.example.personaldocumentproject.data.mapper.DocumentMapper
 import com.example.personaldocumentproject.data.ml.embedding.SimpleEmbeddingService
 import com.example.personaldocumentproject.data.ml.ocr.MlKitOcrService
 import com.example.personaldocumentproject.data.ml.objectdetection.LocalObjectDetectionService
-import com.example.personaldocumentproject.data.ml.metadata.SimpleCategoryClassificationService
-import com.example.personaldocumentproject.data.ml.metadata.SimpleDescriptionGenerationService
-import com.example.personaldocumentproject.data.ml.metadata.SimpleTagGenerationService
-import com.example.personaldocumentproject.data.ml.metadata.SimpleTitleGenerationService
+import com.example.personaldocumentproject.data.ml.metadata.SimpleMetadataService
 import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
 import com.example.personaldocumentproject.domain.usecase.AnalyzeDocument
 import com.example.personaldocumentproject.domain.usecase.GetDocument
@@ -31,10 +28,7 @@ class AppContainer(private val context: Context) {
     private val repository = DefaultDocumentRepository(database.documentDao, DocumentMapper())
     private val ocrService = MlKitOcrService(context)
     private val objectDetectionService = LocalObjectDetectionService()
-    private val titleGenerationService = SimpleTitleGenerationService()
-    private val descriptionGenerationService = SimpleDescriptionGenerationService()
-    private val categoryClassificationService = SimpleCategoryClassificationService()
-    private val tagGenerationService = SimpleTagGenerationService()
+    private val metadataService = SimpleMetadataService()
     private val embeddingService = SimpleEmbeddingService()
     private val imageStorageService = LocalImageStorageService(context)
 
@@ -43,10 +37,7 @@ class AppContainer(private val context: Context) {
     val analyzeDocument = AnalyzeDocument(
         ocrService,
         objectDetectionService,
-        titleGenerationService,
-        descriptionGenerationService,
-        categoryClassificationService,
-        tagGenerationService,
+        metadataService,
     )
     val saveDocument = SaveDocument(repository, imageStorageService, embeddingService)
     val searchDocuments = SearchDocuments(repository, embeddingService)
