@@ -16,6 +16,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import android.app.Activity
+import androidx.activity.result.IntentSenderRequest
+import androidx.compose.ui.platform.LocalContext
+import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
+import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.RESULT_FORMAT_JPEG
+import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.SCANNER_MODE_FULL
+import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
+import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import com.example.personaldocumentproject.presentation.capture.components.ImageSourceButton
 
 @Composable
@@ -32,16 +40,48 @@ fun CaptureRoute(viewModel: CaptureViewModel, onImageSelected: (String) -> Unit,
 
 @Composable
 fun CaptureScreen(onImageSelected: (String) -> Unit, onBack: () -> Unit) {
+    val context = LocalContext.current as Activity
+
+    val scannerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val scanResult = GmsDocumentScanningResult.fromActivityResultIntent(result.data)
+            scanResult?.pages?.firstOrNull()?.let { page ->
+                onImageSelected(page.imageUri.toString())
+            }
+        }
+    }
+
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.toString()?.let(onImageSelected)
     }
+
+    fun launchScanner() {
+        val options = GmsDocumentScannerOptions.Builder()
+            .setGalleryImportAllowed(true)
+            .setPageLimit(1)
+            .setResultFormats(RESULT_FORMAT_JPEG)
+            .setScannerMode(SCANNER_MODE_FULL)
+            .build()
+
+        GmsDocumentScanning.getClient(options).getStartScanIntent(context)
+            .addOnSuccessListener { intentSender ->
+                scannerLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
+            }
+            .addOnFailureListener {
+                // Fallback to basic picker if scanner fails to initialize
+                picker.launch("image/*")
+            }
+    }
+
     Surface(modifier = Modifier.fillMaxSize(), color = Color.Black) {
         Column(
             Modifier.fillMaxSize().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text("Capture or import a document", color = Color.White)
-            ImageSourceButton { picker.launch("image/*") }
+            ImageSourceButton { launchScanner() }
             OutlinedButton(onClick = onBack) { Text("Back", color = Color.White) }
         }
     }

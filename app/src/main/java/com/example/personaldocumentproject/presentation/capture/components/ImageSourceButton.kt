@@ -8,5 +8,5 @@ import androidx.compose.ui.Modifier
 
 @Composable
 fun ImageSourceButton(onClick: () -> Unit) {
-    Button(onClick = onClick, modifier = Modifier.fillMaxWidth()) { Text("Choose a photo") }
+    Button(onClick = onClick, modifier = Modifier.fillMaxWidth()) { Text("Scan Document") }
 }

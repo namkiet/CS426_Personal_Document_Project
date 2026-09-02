@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.mlkit.text.recognition)
     implementation(libs.mlkit.image.labeling)
+    implementation(libs.mlkit.document.scanner)
     implementation(libs.kotlinx.coroutines.play.services)
 
     implementation(platform(libs.firebase.bom))
