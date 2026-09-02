@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.personaldocumentproject.data.local.AppDatabase
 import com.example.personaldocumentproject.data.local.storage.LocalImageStorageService
 import com.example.personaldocumentproject.data.mapper.DocumentMapper
-import com.example.personaldocumentproject.data.ml.embedding.SimpleEmbeddingService
+import com.example.personaldocumentproject.data.ml.embedding.MediaPipeEmbeddingService
 import com.example.personaldocumentproject.data.ml.ocr.MlKitOcrService
 import com.example.personaldocumentproject.data.ml.objectdetection.LocalObjectDetectionService
 import com.example.personaldocumentproject.data.ml.metadata.SimpleMetadataService
@@ -29,7 +29,7 @@ class AppContainer(private val context: Context) {
     private val ocrService = MlKitOcrService(context)
     private val objectDetectionService = LocalObjectDetectionService()
     private val metadataService = SimpleMetadataService()
-    private val embeddingService = SimpleEmbeddingService()
+    private val embeddingService = MediaPipeEmbeddingService(context)
     private val imageStorageService = LocalImageStorageService(context)
 
     val observeDocuments = ObserveDocuments(repository)
