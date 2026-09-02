@@ -13,6 +13,8 @@ import com.example.personaldocumentproject.presentation.detail.DetailRoute
 import com.example.personaldocumentproject.presentation.detail.DetailViewModel
 import com.example.personaldocumentproject.presentation.library.LibraryRoute
 import com.example.personaldocumentproject.presentation.library.LibraryViewModel
+import com.example.personaldocumentproject.presentation.modelmanager.ModelManagerRoute
+import com.example.personaldocumentproject.presentation.modelmanager.ModelManagerViewModel
 import com.example.personaldocumentproject.presentation.review.ReviewRoute
 import com.example.personaldocumentproject.presentation.review.ReviewViewModel
 import com.example.personaldocumentproject.presentation.search.SearchRoute
@@ -28,7 +30,8 @@ fun AppNavGraph(container: AppContainer) {
                 viewModel = viewModel,
                 onCapture = { route = Routes.Capture },
                 onSearch = { route = Routes.Search },
-                onDocumentClick = { route = Routes.Detail(it) }
+                onDocumentClick = { route = Routes.Detail(it) },
+                onManageModels = { route = Routes.ModelManager },
             )
         }
         Routes.Capture -> {
@@ -56,18 +59,27 @@ fun AppNavGraph(container: AppContainer) {
             SearchRoute(
                 viewModel = viewModel,
                 onBack = { route = Routes.Library },
-                onDocumentClick = { route = Routes.Detail(it) }
+                onDocumentClick = { route = Routes.Detail(it) },
             )
         }
         is Routes.Detail -> {
             val viewModel: DetailViewModel = viewModel(
                 key = "detail:${current.documentId}",
-                factory = container.detailViewModelFactory
+                factory = container.detailViewModelFactory,
             )
             DetailRoute(
                 documentId = current.documentId,
                 viewModel = viewModel,
-                onBack = { route = Routes.Library } // Always back to library, or could pass previous route if we tracked history
+                onBack = { route = Routes.Library },
+            )
+        }
+        Routes.ModelManager -> {
+            val viewModel: ModelManagerViewModel = viewModel(
+                factory = container.modelManagerViewModelFactory,
+            )
+            ModelManagerRoute(
+                viewModel = viewModel,
+                onBack = { route = Routes.Library },
             )
         }
     }
