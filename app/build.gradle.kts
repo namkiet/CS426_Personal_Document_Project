@@ -18,12 +18,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        ndk {
-            abiFilters.clear()
-            abiFilters.add("arm64-v8a")
-            abiFilters.add("armeabi-v7a")
-        }
     }
 
     buildTypes {
@@ -39,9 +33,6 @@ android {
     }
     buildFeatures {
         compose = true
-    }
-    androidResources {
-        noCompress += "tflite"
     }
     packaging {
         jniLibs {
