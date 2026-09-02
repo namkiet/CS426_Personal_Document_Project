@@ -10,7 +10,9 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -54,8 +56,21 @@ fun ReviewScreen(
             if (state.isAnalyzing) CircularProgressIndicator()
             state.draft?.let { draft ->
                 DraftTitleField(draft.title, onTitleChanged)
-                SelectionContainer {
-                    Text(draft.ocrText.ifBlank { "No text was detected." }, color = Color.White)
+                OutlinedCard(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Description", style = MaterialTheme.typography.titleMedium)
+                        SelectionContainer {
+                            Text(draft.description.ifBlank { "No description generated." })
+                        }
+                    }
+                }
+                OutlinedCard(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Extracted text", style = MaterialTheme.typography.titleMedium)
+                        SelectionContainer {
+                            Text(draft.ocrText.ifBlank { "No text was detected." })
+                        }
+                    }
                 }
                 Button(onClick = onSave, enabled = !state.isSaving, modifier = Modifier.fillMaxWidth()) {
                     Text(if (state.isSaving) "Saving…" else "Save document")

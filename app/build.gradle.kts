@@ -33,6 +33,9 @@ android {
     buildFeatures {
         compose = true
     }
+    androidResources {
+        noCompress += "litertlm"
+    }
 }
 
 dependencies {

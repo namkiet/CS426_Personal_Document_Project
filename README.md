@@ -17,7 +17,7 @@ People take many photos but later struggle to find them or remember where they a
 
 The project contains a compile-ready clean architecture implementation with Compose screens for importing, reviewing, browsing, searching, and viewing documents. Imported images are copied to app-internal storage, analyzed on-device, and searchable by text and semantic similarity.
 
-ML Kit provides on-device OCR and MediaPipe generates local text embeddings. Metadata generation is rule-based, object detection is currently a placeholder, and document metadata remains in memory until Room persistence is implemented. Direct camera capture is not yet available.
+ML Kit provides on-device OCR, while MediaPipe generates local text embeddings and TLDR descriptions. Title, category, and tag generation are rule-based, object detection is currently a placeholder, and document metadata remains in memory until Room persistence is implemented. Direct camera capture is not yet available.
 
 ## Architecture
 
@@ -80,7 +80,7 @@ app/src/main/java/com/example/personaldocumentproject/
 |   |-- ml/
 |   |   |-- ocr/                       # ML Kit OCR adapter
 |   |   |-- embedding/                 # MediaPipe text embeddings
-|   |   |-- metadata/                  # Rule-based metadata generation
+|   |   |-- metadata/                  # Local metadata and TLDR generation
 |   |   `-- objectdetection/           # Object detection placeholder
 |   |-- mapper/                        # Entity/domain conversion
 |   `-- repository/
@@ -105,8 +105,20 @@ app/src/main/java/com/example/personaldocumentproject/
 
 Use Android Studio's bundled JDK or set `JAVA_HOME`, then run:
 
+```bash
+./gradlew testDebugUnitTest lintDebug assembleDebug
+```
+
+On Windows:
+
 ```powershell
 .\gradlew.bat testDebugUnitTest lintDebug assembleDebug
+```
+
+With an Android device or emulator connected, run the on-device ML tests:
+
+```bash
+./gradlew connectedDebugAndroidTest
 ```
 
 ## Goals
