@@ -26,8 +26,8 @@ import com.example.personaldocumentproject.presentation.search.SearchViewModel
 
 /** Composition root. Replace adapters here without leaking infrastructure into domain or UI. */
 class AppContainer(private val context: Context) {
-    private val database = AppDatabase()
-    private val repository = DefaultDocumentRepository(database.documentDao, DocumentMapper())
+    private val database = AppDatabase.getInstance(context)
+    private val repository = DefaultDocumentRepository(database.documentDao(), DocumentMapper())
     private val ocrService = MlKitOcrService(context)
     private val objectDetectionService = MlKitImageLabelingService(context)
     private val metadataService = SimpleMetadataService()
