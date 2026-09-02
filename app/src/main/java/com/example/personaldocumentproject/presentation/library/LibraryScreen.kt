@@ -32,6 +32,7 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -42,18 +43,35 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.personaldocumentproject.domain.model.Document
+import com.example.personaldocumentproject.presentation.capture.CaptureScreen2
+import com.example.personaldocumentproject.presentation.capture.CaptureUiState
+import com.example.personaldocumentproject.presentation.capture.CaptureViewModel
 import com.example.personaldocumentproject.presentation.library.components.DocumentCard
 import com.example.personaldocumentproject.presentation.library.components.CaptureButton
+import com.example.personaldocumentproject.presentation.library.components.FakeSearchBar
+import com.example.personaldocumentproject.presentation.search.SearchScreen
+import com.example.personaldocumentproject.presentation.search.SearchUiState
+import com.example.personaldocumentproject.presentation.search.SearchViewModel
 
 @Composable
-fun LibraryRoute(viewModel: LibraryViewModel, onCapture: () -> Unit, onSearch: () -> Unit, onDocumentClick: (String) -> Unit) {
-    val state by viewModel.uiState.collectAsState()
-    LibraryScreen(state, onCapture, onSearch, onDocumentClick)
+fun LibraryRoute(viewModelLibrary: LibraryViewModel,viewModelCapture: CaptureViewModel,
+                 onCapture: () -> Unit, onSearch: () -> Unit, onDocumentClick: (String) -> Unit,
+                 onImageSelected: (String) -> Unit, onBack: () -> Unit) {
+    val stateCapture by viewModelCapture.uiState.collectAsState()
+    val stateLibrary by viewModelLibrary.uiState.collectAsState()
+    LibraryScreen(stateLibrary, stateCapture, onCapture, onSearch, onDocumentClick)
+    LaunchedEffect(stateCapture.selectedImageUri) {
+        stateCapture.selectedImageUri?.let {
+            onImageSelected(it)
+            viewModelCapture.onImageSelectionHandled()
+        }
+    }
+    CaptureScreen2(onImageSelected = viewModelCapture::selectImage, onBack = onBack)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LibraryScreen(state: LibraryUiState, onCapture: () -> Unit, onSearch: () -> Unit, onDocumentClick: (String) -> Unit) {
+fun LibraryScreen(stateLibrary: LibraryUiState, stateCapture: CaptureUiState, onCapture: () -> Unit, onSearch: () -> Unit, onDocumentClick: (String) -> Unit) {
     Scaffold(
         topBar = { TopAppBar(
             title =  {Text(
@@ -66,8 +84,10 @@ fun LibraryScreen(state: LibraryUiState, onCapture: () -> Unit, onSearch: () -> 
             Modifier.fillMaxSize().padding(padding),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            FakeSearchBar { onSearch() }
 
-            OutlinedButton(onClick = onSearch, modifier = Modifier.fillMaxWidth()) { Text("Search library") }
+
+            //OutlinedButton(onClick = onSearch, modifier = Modifier.fillMaxWidth()) { Text("Search library") }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -104,7 +124,7 @@ fun LibraryScreen(state: LibraryUiState, onCapture: () -> Unit, onSearch: () -> 
             Spacer(modifier = Modifier.height(12.dp))
 
             // Grid Items for Main Library
-            if (state.documents.isEmpty()) Text("Your document library is empty.")
+            if (stateLibrary.documents.isEmpty()) Text("Your document library is empty.")
             LazyVerticalGrid(
                 columns = GridCells.Fixed(4),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -112,7 +132,7 @@ fun LibraryScreen(state: LibraryUiState, onCapture: () -> Unit, onSearch: () -> 
                 contentPadding = PaddingValues(bottom = 80.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                items(items = state.documents, key = Document::id) { document ->
+                items(items = stateLibrary.documents, key = Document::id) { document ->
                     DocumentCard(
                         document = document,
                         onClick = { onDocumentClick(document.id) }
@@ -121,11 +141,6 @@ fun LibraryScreen(state: LibraryUiState, onCapture: () -> Unit, onSearch: () -> 
             }
 
         }
-
-        CaptureButton(
-            onClick = onCapture
-        )
-
     }
 
 

@@ -33,6 +33,13 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+private val PlantColorScheme = lightColorScheme(
+    primary = DarkGreen,
+    secondary = LightYellow,
+    tertiary = GreyYellow
+)
+
+
 @Composable
 fun PersonalDocumentProjectTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -51,7 +58,8 @@ fun PersonalDocumentProjectTheme(
     }
 
     MaterialTheme(
-        colorScheme = colorScheme,
+        //colorScheme = colorScheme,
+        colorScheme = PlantColorScheme,
         typography = Typography,
         content = content
     )

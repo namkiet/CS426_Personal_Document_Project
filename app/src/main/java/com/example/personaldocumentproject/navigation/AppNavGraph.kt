@@ -7,7 +7,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.personaldocumentproject.di.AppContainer
-import com.example.personaldocumentproject.presentation.capture.CaptureRoute
 import com.example.personaldocumentproject.presentation.capture.CaptureViewModel
 import com.example.personaldocumentproject.presentation.detail.DetailRoute
 import com.example.personaldocumentproject.presentation.detail.DetailViewModel
@@ -23,22 +22,28 @@ fun AppNavGraph(container: AppContainer) {
     var route: Routes by remember { mutableStateOf(Routes.Library) }
     when (val current = route) {
         Routes.Library -> {
-            val viewModel: LibraryViewModel = viewModel(factory = container.libraryViewModelFactory)
+            val viewModelLibrary: LibraryViewModel = viewModel(factory = container.libraryViewModelFactory)
+            val viewModelCapture: CaptureViewModel = viewModel(factory = container.captureViewModelFactory)
+
             LibraryRoute(
-                viewModel = viewModel,
-                onCapture = { route = Routes.Capture },
+                viewModelLibrary = viewModelLibrary,
+                viewModelCapture = viewModelCapture,
+                onCapture = { /*route = Routes.Capture */},
                 onSearch = { route = Routes.Search },
-                onDocumentClick = { route = Routes.Detail(it) }
+                onDocumentClick = { route = Routes.Detail(it) },
+                onImageSelected = { route = Routes.Review(it)},
+                onBack = {}
             )
         }
-        Routes.Capture -> {
-            val viewModel: CaptureViewModel = viewModel(factory = container.captureViewModelFactory)
-            CaptureRoute(
-                viewModel = viewModel,
-                onImageSelected = { route = Routes.Review(it) },
-                onBack = { route = Routes.Library },
-            )
-        }
+        Routes.Capture -> {}
+//        Routes.Capture -> {
+//            val viewModel: CaptureViewModel = viewModel(factory = container.captureViewModelFactory)
+//            CaptureRoute(
+//                viewModel = viewModel,
+//                onImageSelected = { route = Routes.Review(it) },
+//                onBack = { route = Routes.Library },
+//            )
+//        }
         is Routes.Review -> {
             val viewModel: ReviewViewModel = viewModel(
                 key = "review:${current.imageUri}",

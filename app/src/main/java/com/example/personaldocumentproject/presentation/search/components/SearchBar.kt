@@ -60,7 +60,7 @@ fun SearchBar(
                     decorationBox = { innerTextField ->
                         if (state.query.isEmpty()) {
                             Text(
-                                text = "Search",
+                                text = " Search",
                                 color = Color.Gray,
                                 fontSize = 18.sp,
                                 fontFamily = FontFamily.Serif

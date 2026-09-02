@@ -17,34 +17,52 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.personaldocumentproject.presentation.capture.components.ImageSourceButton
+import com.example.personaldocumentproject.presentation.library.components.CaptureButton
+
+//@Composable
+//fun CaptureRoute(viewModel: CaptureViewModel, onImageSelected: (String) -> Unit, onBack: () -> Unit) {
+//    val state by viewModel.uiState.collectAsState()
+//    LaunchedEffect(state.selectedImageUri) {
+//        state.selectedImageUri?.let {
+//            onImageSelected(it)
+//            viewModel.onImageSelectionHandled()
+//        }
+//    }
+//    CaptureScreen(onImageSelected = viewModel::selectImage, onBack = onBack)
+//}
+//
+//
+////change this to capture button + animation
+//@Composable
+//fun CaptureScreen(onImageSelected: (String) -> Unit, onBack: () -> Unit) {
+//    val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+//        uri?.toString()?.let(onImageSelected)
+//    }
+//    Surface(modifier = Modifier.fillMaxHeight(0.3f), color = Color.Black) {
+//        Column(
+//            Modifier.fillMaxSize().padding(16.dp),
+//            verticalArrangement = Arrangement.spacedBy(12.dp),
+//        ) {
+//            Text("Capture or import a document", color = Color.White)
+//            ImageSourceButton { picker.launch("image/*") }
+//            OutlinedButton(onClick = onBack) { Text("Back", color = Color.White) }
+//        }
+//    }
+//}
+
 
 @Composable
-fun CaptureRoute(viewModel: CaptureViewModel, onImageSelected: (String) -> Unit, onBack: () -> Unit) {
-    val state by viewModel.uiState.collectAsState()
-    LaunchedEffect(state.selectedImageUri) {
-        state.selectedImageUri?.let {
-            onImageSelected(it)
-            viewModel.onImageSelectionHandled()
-        }
-    }
-    CaptureScreen(onImageSelected = viewModel::selectImage, onBack = onBack)
-}
-
-@Composable
-fun CaptureScreen(onImageSelected: (String) -> Unit, onBack: () -> Unit) {
+fun CaptureScreen2(onImageSelected: (String) -> Unit, onBack: () -> Unit) {
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.toString()?.let(onImageSelected)
     }
-    Surface(modifier = Modifier.fillMaxHeight(0.3f), color = Color.Black) {
-        Column(
-            Modifier.fillMaxSize().padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text("Capture or import a document", color = Color.White)
-            ImageSourceButton { picker.launch("image/*") }
-            OutlinedButton(onClick = onBack) { Text("Back", color = Color.White) }
-        }
-    }
+
+    CaptureButton(
+        onLeftHalfClick = {},
+        onRightHalfClick = { picker.launch("image/*") },
+        onClick = {}
+    )
+
+
 }
