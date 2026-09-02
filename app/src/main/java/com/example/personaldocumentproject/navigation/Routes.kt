@@ -6,4 +6,6 @@ sealed interface Routes {
     data class Review(val imageUri: String) : Routes
     data object Search : Routes
     data class Detail(val documentId: String) : Routes
+    data object Account: Routes
+    data object Setting : Routes
 }

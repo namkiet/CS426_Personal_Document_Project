@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.personaldocumentproject.di.AppContainer
+import com.example.personaldocumentproject.presentation.capture.CaptureRoute
 import com.example.personaldocumentproject.presentation.capture.CaptureViewModel
 import com.example.personaldocumentproject.presentation.detail.DetailRoute
 import com.example.personaldocumentproject.presentation.detail.DetailViewModel
@@ -27,11 +28,14 @@ fun AppNavGraph(container: AppContainer) {
 
             LibraryRoute(
                 viewModelLibrary = viewModelLibrary,
-                viewModelCapture = viewModelCapture,
-                onCapture = { /*route = Routes.Capture */},
                 onSearch = { route = Routes.Search },
                 onDocumentClick = { route = Routes.Detail(it) },
-                onImageSelected = { route = Routes.Review(it)},
+                onAccountClick = { route = Routes.Account},
+                onSettingClick = { route = Routes.Setting},
+            )
+            CaptureRoute(
+                viewModel = viewModelCapture,
+                onImageSelected = {route = Routes.Review(it)},
                 onBack = {}
             )
         }
@@ -57,11 +61,17 @@ fun AppNavGraph(container: AppContainer) {
             )
         }
         Routes.Search -> {
-            val viewModel: SearchViewModel = viewModel(factory = container.searchViewModelFactory)
+            val viewModelSearch: SearchViewModel = viewModel(factory = container.searchViewModelFactory)
+            val viewModelCapture: CaptureViewModel = viewModel(factory = container.captureViewModelFactory)
             SearchRoute(
-                viewModel = viewModel,
+                viewModelSearch = viewModelSearch,
                 onBack = { route = Routes.Library },
                 onDocumentClick = { route = Routes.Detail(it) }
+            )
+            CaptureRoute(
+                viewModel = viewModelCapture,
+                onImageSelected = {route = Routes.Review(it)},
+                onBack = {}
             )
         }
         is Routes.Detail -> {
@@ -75,5 +85,9 @@ fun AppNavGraph(container: AppContainer) {
                 onBack = { route = Routes.Library } // Always back to library, or could pass previous route if we tracked history
             )
         }
+
+        Routes.Account -> {}
+
+        Routes.Setting -> {}
     }
 }

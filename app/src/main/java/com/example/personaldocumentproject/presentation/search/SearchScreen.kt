@@ -9,7 +9,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -17,6 +21,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -25,18 +30,21 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.personaldocumentproject.presentation.capture.CaptureScreen2
+import com.example.personaldocumentproject.presentation.capture.CaptureViewModel
 import com.example.personaldocumentproject.presentation.library.components.FakeSearchBar
 import com.example.personaldocumentproject.presentation.search.components.SearchBar
 import com.example.personaldocumentproject.presentation.search.components.SearchResultCard
 
 @Composable
-fun SearchRoute(viewModel: SearchViewModel, onBack: () -> Unit, onDocumentClick: (String) -> Unit) {
-    val state by viewModel.uiState.collectAsState()
+fun SearchRoute(viewModelSearch: SearchViewModel,
+                onBack: () -> Unit, onDocumentClick: (String) -> Unit) {
+    val stateSearch by viewModelSearch.uiState.collectAsState()
     SearchScreen(
-        state = state,
-        onQueryChanged = viewModel::onQueryChanged,
-        onSearch = viewModel::performSearch,
-        onClearQuery = viewModel::onClearQuery,
+        state = stateSearch,
+        onQueryChanged = viewModelSearch::onQueryChanged,
+        onSearch = viewModelSearch::performSearch,
+        onClearQuery = viewModelSearch::onClearQuery,
         onBack = onBack,
         onDocumentClick = onDocumentClick
     )
@@ -57,7 +65,17 @@ fun SearchScreen(
             title =  {Text(
                 text = "Search",
                 style = MaterialTheme.typography.bodyLarge,
-            )}
+            )},
+            navigationIcon = {
+                IconButton(
+                    onClick = onBack
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Navigate back"
+                    )
+                }
+            }
         )}
     ) { padding ->
         Column(
@@ -95,7 +113,7 @@ fun SearchScreen(
                 }
             }
 
-                //..
+            //..
             //search history text + back button
         }
     }

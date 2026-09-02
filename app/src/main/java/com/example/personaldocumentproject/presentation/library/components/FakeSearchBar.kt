@@ -68,7 +68,9 @@ fun FakeSearchBar(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            Surface(
+            Button(
+                enabled = true,
+                onClick = {onClick()},
                 modifier = Modifier.height(48.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {

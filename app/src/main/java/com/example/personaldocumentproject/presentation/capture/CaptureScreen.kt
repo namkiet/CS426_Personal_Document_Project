@@ -20,17 +20,17 @@ import androidx.compose.ui.unit.dp
 import com.example.personaldocumentproject.presentation.capture.components.ImageSourceButton
 import com.example.personaldocumentproject.presentation.library.components.CaptureButton
 
-//@Composable
-//fun CaptureRoute(viewModel: CaptureViewModel, onImageSelected: (String) -> Unit, onBack: () -> Unit) {
-//    val state by viewModel.uiState.collectAsState()
-//    LaunchedEffect(state.selectedImageUri) {
-//        state.selectedImageUri?.let {
-//            onImageSelected(it)
-//            viewModel.onImageSelectionHandled()
-//        }
-//    }
-//    CaptureScreen(onImageSelected = viewModel::selectImage, onBack = onBack)
-//}
+@Composable
+fun CaptureRoute(viewModel: CaptureViewModel, onImageSelected: (String) -> Unit, onBack: () -> Unit) {
+    val state by viewModel.uiState.collectAsState()
+    LaunchedEffect(state.selectedImageUri) {
+        state.selectedImageUri?.let {
+            onImageSelected(it)
+            viewModel.onImageSelectionHandled()
+        }
+    }
+    CaptureScreen2(onImageSelected = viewModel::selectImage, onBack = onBack)
+}
 //
 //
 ////change this to capture button + animation
@@ -63,6 +63,4 @@ fun CaptureScreen2(onImageSelected: (String) -> Unit, onBack: () -> Unit) {
         onRightHalfClick = { picker.launch("image/*") },
         onClick = {}
     )
-
-
 }

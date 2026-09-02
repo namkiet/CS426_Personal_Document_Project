@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -38,6 +39,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -52,32 +54,40 @@ import com.example.personaldocumentproject.presentation.library.components.FakeS
 import com.example.personaldocumentproject.presentation.search.SearchScreen
 import com.example.personaldocumentproject.presentation.search.SearchUiState
 import com.example.personaldocumentproject.presentation.search.SearchViewModel
+import com.example.personaldocumentproject.ui.imageVector.*
 
 @Composable
-fun LibraryRoute(viewModelLibrary: LibraryViewModel,viewModelCapture: CaptureViewModel,
-                 onCapture: () -> Unit, onSearch: () -> Unit, onDocumentClick: (String) -> Unit,
-                 onImageSelected: (String) -> Unit, onBack: () -> Unit) {
-    val stateCapture by viewModelCapture.uiState.collectAsState()
+fun LibraryRoute(viewModelLibrary: LibraryViewModel,
+                 onSearch: () -> Unit, onDocumentClick: (String) -> Unit,
+                 onAccountClick: () -> Unit, onSettingClick: () -> Unit) {
     val stateLibrary by viewModelLibrary.uiState.collectAsState()
-    LibraryScreen(stateLibrary, stateCapture, onCapture, onSearch, onDocumentClick)
-    LaunchedEffect(stateCapture.selectedImageUri) {
-        stateCapture.selectedImageUri?.let {
-            onImageSelected(it)
-            viewModelCapture.onImageSelectionHandled()
-        }
-    }
-    CaptureScreen2(onImageSelected = viewModelCapture::selectImage, onBack = onBack)
+    LibraryScreen(stateLibrary, onSearch, onDocumentClick, onAccountClick, onSettingClick )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LibraryScreen(stateLibrary: LibraryUiState, stateCapture: CaptureUiState, onCapture: () -> Unit, onSearch: () -> Unit, onDocumentClick: (String) -> Unit) {
+fun LibraryScreen(stateLibrary: LibraryUiState, onSearch: () -> Unit, onDocumentClick: (String) -> Unit,
+                  onAccountClick: () -> Unit, onSettingClick: () -> Unit) {
     Scaffold(
         topBar = { TopAppBar(
             title =  {Text(
                 text = "Library",
                 style = MaterialTheme.typography.bodyLarge,
-            )}
+            )},
+            actions = {
+                IconButton(onClick = onAccountClick) {
+                    Icon(
+                        imageVector = FluentuiSystemIconsPerson,
+                        contentDescription = "account profile"
+                    )
+                }
+                IconButton(onClick = onSettingClick) {
+                    Icon(
+                        imageVector = FluentuiSystemIconsSettings,
+                        contentDescription = "setting"
+                    )
+                }
+            }
         )}
     ) { padding ->
         Column(
@@ -126,7 +136,7 @@ fun LibraryScreen(stateLibrary: LibraryUiState, stateCapture: CaptureUiState, on
             // Grid Items for Main Library
             if (stateLibrary.documents.isEmpty()) Text("Your document library is empty.")
             LazyVerticalGrid(
-                columns = GridCells.Fixed(4),
+                columns = GridCells.Fixed(3),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(bottom = 80.dp),
