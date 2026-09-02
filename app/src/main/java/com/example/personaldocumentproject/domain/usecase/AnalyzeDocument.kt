@@ -5,6 +5,8 @@ import com.example.personaldocumentproject.domain.service.OcrService
 import com.example.personaldocumentproject.domain.service.ObjectDetectionService
 import com.example.personaldocumentproject.domain.service.MetadataService
 
+import kotlinx.coroutines.coroutineScope
+
 class AnalyzeDocument(
     private val ocrService: OcrService,
     private val objectDetectionService: ObjectDetectionService,
@@ -37,6 +39,6 @@ class AnalyzeDocument(
         )
 
         // 05. Return the analyzed draft to the caller for review.
-        return draft
+        draft
     }
 }

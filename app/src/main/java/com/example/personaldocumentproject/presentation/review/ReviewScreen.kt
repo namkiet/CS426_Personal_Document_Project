@@ -66,7 +66,7 @@ fun ReviewScreen(
                 }
 
                 Text("OCR Extracted Text", style = MaterialTheme.typography.titleMedium, color = Color.White)
-                Text(draft.extractedText.ifBlank { "No text was detected." }, color = Color.White)
+                Text(draft.ocrText.ifBlank { "No text was detected." }, color = Color.White)
 
                 Button(onClick = onSave, enabled = !state.isSaving, modifier = Modifier.fillMaxWidth()) {
                     Text(if (state.isSaving) "Saving…" else "Save document")

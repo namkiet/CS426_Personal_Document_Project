@@ -80,6 +80,6 @@ class SimpleEmbeddingService : EmbeddingService {
             }
         }
 
-        vector.toList()
+        return vector.toList()
     }
 }

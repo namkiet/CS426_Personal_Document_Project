@@ -2,13 +2,13 @@ package com.example.personaldocumentproject.data.ml.labeling
 
 import android.content.Context
 import android.net.Uri
-import com.example.personaldocumentproject.domain.service.ImageLabelingService
+import com.example.personaldocumentproject.domain.service.ObjectDetectionService
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.ImageLabeling
 import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
 import kotlinx.coroutines.tasks.await
 
-class MlKitImageLabelingService(private val context: Context) : ImageLabelingService {
+class MlKitImageLabelingService(private val context: Context) : ObjectDetectionService {
 
     private val labeler by lazy {
         ImageLabeling.getClient(
@@ -18,7 +18,7 @@ class MlKitImageLabelingService(private val context: Context) : ImageLabelingSer
         )
     }
 
-    override suspend fun generateTags(imageUri: String): List<String> {
+    override suspend fun detectObjects(imageUri: String): List<String> {
         return try {
             val uri = Uri.parse(imageUri)
             val image = InputImage.fromFilePath(context, uri)
