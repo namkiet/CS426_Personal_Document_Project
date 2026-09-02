@@ -80,7 +80,7 @@ fun CaptureScreen(onImageSelected: (String) -> Unit, onBack: () -> Unit) {
         }
 
         val options = GmsDocumentScannerOptions.Builder()
-            .setGalleryImportAllowed(false)
+            .setGalleryImportAllowed(true)
             .setPageLimit(1)
             .setResultFormats(RESULT_FORMAT_JPEG, RESULT_FORMAT_PDF)
             .setScannerMode(SCANNER_MODE_FULL)
