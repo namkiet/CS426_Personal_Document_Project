@@ -8,11 +8,9 @@ import com.example.personaldocumentproject.data.local.storage.LocalImageStorageS
 import com.example.personaldocumentproject.data.mapper.DocumentMapper
 import com.example.personaldocumentproject.data.ml.embedding.LocalEmbeddingService
 import com.example.personaldocumentproject.data.ml.labeling.MlKitImageLabelingService
-import com.example.personaldocumentproject.data.ml.llm.GeminiLlmEnhancementService
 import com.example.personaldocumentproject.data.ml.ocr.MlKitOcrService
 import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
 import com.example.personaldocumentproject.domain.usecase.AnalyzeDocument
-import com.example.personaldocumentproject.domain.usecase.EnhanceDocumentData
 import com.example.personaldocumentproject.domain.usecase.GetDocument
 import com.example.personaldocumentproject.domain.usecase.ObserveDocuments
 import com.example.personaldocumentproject.domain.usecase.SaveDocument
@@ -31,18 +29,16 @@ class AppContainer(private val context: Context) {
     private val embeddingService = LocalEmbeddingService()
     private val imageStorageService = LocalImageStorageService(context)
     private val imageLabelingService = MlKitImageLabelingService(context)
-    private val llmEnhancementService = GeminiLlmEnhancementService()
 
     val observeDocuments = ObserveDocuments(repository)
     val getDocument = GetDocument(repository)
     val analyzeDocument = AnalyzeDocument(ocrService, embeddingService, imageLabelingService)
-    val enhanceDocumentData = EnhanceDocumentData(llmEnhancementService, embeddingService)
     val saveDocument = SaveDocument(repository, imageStorageService)
     val searchDocuments = SearchDocuments(repository, embeddingService)
 
     val libraryViewModelFactory = factory { LibraryViewModel(observeDocuments) }
     val captureViewModelFactory = factory { CaptureViewModel() }
-    val reviewViewModelFactory = factory { ReviewViewModel(analyzeDocument, enhanceDocumentData, saveDocument) }
+    val reviewViewModelFactory = factory { ReviewViewModel(analyzeDocument, saveDocument) }
     val searchViewModelFactory = factory { SearchViewModel(searchDocuments) }
     val detailViewModelFactory = factory { DetailViewModel(getDocument) }
 
