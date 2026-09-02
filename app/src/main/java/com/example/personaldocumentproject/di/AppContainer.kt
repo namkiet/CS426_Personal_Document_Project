@@ -8,7 +8,10 @@ import com.example.personaldocumentproject.data.local.storage.LocalImageStorageS
 import com.example.personaldocumentproject.data.mapper.DocumentMapper
 import com.example.personaldocumentproject.data.ml.embedding.LocalEmbeddingService
 import com.example.personaldocumentproject.data.ml.labeling.MlKitImageLabelingService
+import com.example.personaldocumentproject.data.ml.embedding.SimpleEmbeddingService
 import com.example.personaldocumentproject.data.ml.ocr.MlKitOcrService
+import com.example.personaldocumentproject.data.ml.objectdetection.LocalObjectDetectionService
+import com.example.personaldocumentproject.data.ml.metadata.SimpleMetadataService
 import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
 import com.example.personaldocumentproject.domain.usecase.AnalyzeDocument
 import com.example.personaldocumentproject.domain.usecase.GetDocument
@@ -26,14 +29,20 @@ class AppContainer(private val context: Context) {
     private val database = AppDatabase()
     private val repository = DefaultDocumentRepository(database.documentDao, DocumentMapper())
     private val ocrService = MlKitOcrService(context)
-    private val embeddingService = LocalEmbeddingService(context)
+    private val objectDetectionService = LocalObjectDetectionService()
+    private val metadataService = SimpleMetadataService()
+    private val embeddingService = SimpleEmbeddingService()
     private val imageStorageService = LocalImageStorageService(context)
     private val imageLabelingService = MlKitImageLabelingService(context)
 
     val observeDocuments = ObserveDocuments(repository)
     val getDocument = GetDocument(repository)
-    val analyzeDocument = AnalyzeDocument(ocrService, embeddingService, imageLabelingService)
-    val saveDocument = SaveDocument(repository, imageStorageService)
+    val analyzeDocument = AnalyzeDocument(
+        ocrService,
+        objectDetectionService,
+        metadataService,
+    )
+    val saveDocument = SaveDocument(repository, imageStorageService, embeddingService)
     val searchDocuments = SearchDocuments(repository, embeddingService)
 
     val libraryViewModelFactory = factory { LibraryViewModel(observeDocuments) }

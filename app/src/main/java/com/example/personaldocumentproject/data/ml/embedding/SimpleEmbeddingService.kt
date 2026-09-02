@@ -39,6 +39,32 @@ class LocalEmbeddingService(
                     vector[gramBucket] += 1.0f
                 }
             }
+                }
+
+        // L2 normalization
+        var sumSquares = 0.0f
+        for (v in vector) {
+            sumSquares += v * v
+        }
+
+        val magnitude = sqrt(sumSquares)
+        if (magnitude > 0.0f) {
+            for (i in vector.indices) {
+                vector[i] /= magnitude
+            }
+        }
+
+        vector.toList()
+    }
+}
+        
+/** Local model integration point. The scaffold uses a deterministic lightweight vector. */
+class SimpleEmbeddingService : EmbeddingService {
+    override suspend fun embed(text: String): List<Float> {
+        if (text.isBlank()) return emptyList()
+        val vector = FloatArray(16)
+        text.lowercase().forEach { character ->
+            vector[character.code % vector.size] += 1f
         }
 
         // L2 normalization

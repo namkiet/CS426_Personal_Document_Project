@@ -77,8 +77,8 @@ fun DetailScreen(
                     Text(document.tags.joinToString(", "), style = MaterialTheme.typography.bodyMedium, color = Color.White)
                 }
 
-                Text("OCR Extracted Text", style = MaterialTheme.typography.titleMedium, color = Color.White)
-                Text(document.extractedText.ifBlank { "No text detected." }, style = MaterialTheme.typography.bodyMedium, color = Color.White)
+                Text("Extracted Text", style = MaterialTheme.typography.titleMedium, color = Color.White)
+                Text(document.ocrText.ifBlank { "No text detected." }, style = MaterialTheme.typography.bodyMedium, color = Color.White)
             }
 
             OutlinedButton(onClick = onBack) {

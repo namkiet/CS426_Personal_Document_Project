@@ -26,8 +26,9 @@ class DefaultDocumentRepository(
                 val searchableText = buildString {
                     append(document.title).append(' ')
                     append(document.description).append(' ')
-                    append(document.extractedText).append(' ')
+                    append(document.ocrText).append(' ')
                     append(document.tags.joinToString(" "))
+                    append(' ').append(document.detectedObjects.joinToString(" "))
                 }.lowercase()
 
                 val documentTerms = searchableText.split(Regex("\\s+")).filter(String::isNotBlank).toSet()

@@ -1,36 +1,42 @@
 package com.example.personaldocumentproject.domain.usecase
 
 import com.example.personaldocumentproject.domain.model.DocumentDraft
-import com.example.personaldocumentproject.domain.service.EmbeddingService
-import com.example.personaldocumentproject.domain.service.ImageLabelingService
 import com.example.personaldocumentproject.domain.service.OcrService
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
+import com.example.personaldocumentproject.domain.service.ObjectDetectionService
+import com.example.personaldocumentproject.domain.service.MetadataService
 
 class AnalyzeDocument(
     private val ocrService: OcrService,
-    private val embeddingService: EmbeddingService,
-    private val imageLabelingService: ImageLabelingService,
+    private val objectDetectionService: ObjectDetectionService,
+    private val metadataService: MetadataService,
 ) {
     suspend operator fun invoke(imageUri: String): DocumentDraft = coroutineScope {
         require(imageUri.isNotBlank()) { "An image URI is required" }
 
-        // Run OCR and Labeling concurrently
-        val textDeferred = async { ocrService.recognizeText(imageUri) }
-        val tagsDeferred = async { imageLabelingService.generateTags(imageUri) }
+        // 01. Extract text from the selected image using OCR.
+        val text = ocrService.recognizeText(imageUri)
 
-        val text = textDeferred.await()
-        val tags = tagsDeferred.await()
+        // 02. Detect and label objects found in the selected image.
+        val detectedObjects = objectDetectionService.detectObjects(imageUri)
 
-        val allSearchableText = "$text ${tags.joinToString(" ")}"
+        // 03. Generate editable metadata from the extracted image content.
+        val title = metadataService.generateTitle(text, detectedObjects)
+        val description = metadataService.generateDescription(text, detectedObjects)
+        val category = metadataService.classifyCategory(text, detectedObjects)
+        val tags = metadataService.generateTags(text, detectedObjects)
 
-        DocumentDraft(
+        // 04. Create a document draft from the analysis results.
+        val draft = DocumentDraft(
             imageUri = imageUri,
-            title = text.lineSequence().firstOrNull { it.isNotBlank() }?.take(80) ?: "New document",
-            description = if (text.isBlank()) "No text detected" else "Text extracted from the image",
-            extractedText = text,
+            title = title,
+            description = description,
+            ocrText = text,
+            category = category,
             tags = tags,
-            embedding = embeddingService.embed(allSearchableText),
+            detectedObjects = detectedObjects,
         )
+
+        // 05. Return the analyzed draft to the caller for review.
+        return draft
     }
 }
