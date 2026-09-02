@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.mlkit.image.labeling)
     implementation(libs.mlkit.document.scanner)
     implementation(libs.kotlinx.coroutines.play.services)
+    implementation(libs.mediapipe.tasks.text)
 
     implementation(platform(libs.firebase.bom))
 

@@ -9,6 +9,7 @@ import com.example.personaldocumentproject.data.mapper.DocumentMapper
 import com.example.personaldocumentproject.data.ml.embedding.LocalEmbeddingService
 import com.example.personaldocumentproject.data.ml.labeling.MlKitImageLabelingService
 import com.example.personaldocumentproject.data.ml.embedding.SimpleEmbeddingService
+import com.example.personaldocumentproject.data.ml.embedding.MediaPipeEmbeddingService
 import com.example.personaldocumentproject.data.ml.ocr.MlKitOcrService
 import com.example.personaldocumentproject.data.ml.metadata.SimpleMetadataService
 import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
@@ -30,7 +31,7 @@ class AppContainer(private val context: Context) {
     private val ocrService = MlKitOcrService(context)
     private val objectDetectionService = MlKitImageLabelingService(context)
     private val metadataService = SimpleMetadataService()
-    private val embeddingService = SimpleEmbeddingService()
+    private val embeddingService = MediaPipeEmbeddingService(context)
     private val imageStorageService = LocalImageStorageService(context)
 
     val observeDocuments = ObserveDocuments(repository)
