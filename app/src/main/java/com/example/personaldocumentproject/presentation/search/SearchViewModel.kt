@@ -22,6 +22,16 @@ class SearchViewModel(private val searchDocuments: SearchDocuments) : ViewModel(
 
     fun performSearch() = performSearch(0)
 
+    fun onDateFilterChanged(filter: DateFilter) {
+        mutableState.value = mutableState.value.copy(dateFilter = filter)
+        performSearch()
+    }
+
+    fun onCategoryFilterChanged(filter: CategoryFilter) {
+        mutableState.value = mutableState.value.copy(categoryFilter = filter)
+        performSearch()
+    }
+
     private fun performSearch(delayMillis: Long) {
         val query = mutableState.value.query
         searchJob?.cancel()
@@ -29,7 +39,16 @@ class SearchViewModel(private val searchDocuments: SearchDocuments) : ViewModel(
             try {
                 delay(delayMillis)
                 searchDocuments(query).collectLatest { results ->
-                    mutableState.value = mutableState.value.copy(results = results)
+                    val cutoff = mutableState.value.dateFilter.ageMillis?.let {
+                        System.currentTimeMillis() - it
+                    }
+                    val category = mutableState.value.categoryFilter.category
+                    mutableState.value = mutableState.value.copy(
+                        results = results.filter {
+                            (cutoff == null || it.document.createdAt >= cutoff) &&
+                                (category == null || it.document.category == category)
+                        },
+                    )
                 }
             } catch (error: CancellationException) {
                 throw error

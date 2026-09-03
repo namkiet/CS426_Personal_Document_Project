@@ -56,7 +56,7 @@ class DocumentUseCasesTest {
     }
 
     @Test
-    fun analyzeDocument_usesEnglishTranslationOnlyForDescription() = runBlocking {
+    fun analyzeDocument_usesEnglishTranslationForAllMetadata() = runBlocking {
         val titleGenerationService = object : TitleGenerationService {
             override suspend fun generateTitle(ocrText: String, detectedObjects: List<String>) = ocrText
         }
@@ -65,7 +65,7 @@ class DocumentUseCasesTest {
         }
         val categoryClassificationService = object : CategoryClassificationService {
             override suspend fun classifyCategory(ocrText: String, detectedObjects: List<String>) =
-                if (ocrText.startsWith("Bài giảng")) DocumentCategory.STUDY else DocumentCategory.OTHER
+                if (ocrText.startsWith("University")) DocumentCategory.STUDY else DocumentCategory.OTHER
         }
         val tagGenerationService = object : TagGenerationService {
             override suspend fun generateTags(ocrText: String, detectedObjects: List<String>) = listOf(ocrText)
@@ -85,10 +85,10 @@ class DocumentUseCasesTest {
         val draft = analyzeDocument("content://vietnamese-lecture")
 
         assertEquals("Bài giảng đại học\nLập chỉ mục cơ sở dữ liệu", draft.ocrText)
-        assertEquals("Bài giảng đại học\nLập chỉ mục cơ sở dữ liệu", draft.title)
+        assertEquals("University lecture\nDatabase indexing", draft.title)
         assertEquals("University lecture\nDatabase indexing", draft.description)
         assertEquals(DocumentCategory.STUDY, draft.category)
-        assertEquals(listOf("Bài giảng đại học\nLập chỉ mục cơ sở dữ liệu"), draft.tags)
+        assertEquals(listOf("University lecture\nDatabase indexing"), draft.tags)
     }
 
     @Test

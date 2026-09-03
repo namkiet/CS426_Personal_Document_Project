@@ -29,22 +29,24 @@ class AnalyzeDocument(
         val recognizedText = recognizedTextDeferred.await()
         val detectedObjects = detectedObjectsDeferred.await()
 
-        // 02. Generate independent metadata in parallel. Translation feeds only description.
+        // 02. Translate once, then generate all metadata from the translated text.
+        val translatedText = textTranslationService.translateToEnglish(recognizedText)
+
+        // 03. Generate independent metadata in parallel.
         val titleDeferred = async {
-            titleGenerationService.generateTitle(recognizedText, detectedObjects)
+            titleGenerationService.generateTitle(translatedText, detectedObjects)
         }
         val categoryDeferred = async {
-            categoryClassificationService.classifyCategory(recognizedText, detectedObjects)
+            categoryClassificationService.classifyCategory(translatedText, detectedObjects)
         }
         val tagsDeferred = async {
-            tagGenerationService.generateTags(recognizedText, detectedObjects)
+            tagGenerationService.generateTags(translatedText, detectedObjects)
         }
         val descriptionDeferred = async {
-            val translatedText = textTranslationService.translateToEnglish(recognizedText)
             descriptionGenerationService.generateDescription(translatedText, detectedObjects)
         }
 
-        // 03. Create a document draft from the analysis results.
+        // 04. Create a document draft from the analysis results.
         DocumentDraft(
             imageUri = imageUri,
             title = titleDeferred.await(),

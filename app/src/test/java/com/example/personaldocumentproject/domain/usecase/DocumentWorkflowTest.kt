@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class DocumentWorkflowTest {
@@ -59,7 +60,7 @@ class DocumentWorkflowTest {
 
         val document = save(analyze("content://lecture"))
 
-        assertEquals("Database indexing", document.title)
+        assertTrue(document.title.startsWith("New document - "))
         assertEquals(DocumentCategory.OTHER, document.category)
         assertNotNull(repository.get("id"))
         assertEquals(document, repository.get("id"))

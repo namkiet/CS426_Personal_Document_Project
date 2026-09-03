@@ -8,11 +8,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -32,6 +35,8 @@ fun SearchRoute(viewModel: SearchViewModel, onBack: () -> Unit, onDocumentClick:
     SearchScreen(
         state = state,
         onQueryChanged = viewModel::onQueryChanged,
+        onDateFilterChanged = viewModel::onDateFilterChanged,
+        onCategoryFilterChanged = viewModel::onCategoryFilterChanged,
         onSearch = viewModel::performSearch,
         onBack = onBack,
         onDocumentClick = onDocumentClick
@@ -42,6 +47,8 @@ fun SearchRoute(viewModel: SearchViewModel, onBack: () -> Unit, onDocumentClick:
 fun SearchScreen(
     state: SearchUiState,
     onQueryChanged: (String) -> Unit,
+    onDateFilterChanged: (DateFilter) -> Unit,
+    onCategoryFilterChanged: (CategoryFilter) -> Unit,
     onSearch: () -> Unit,
     onBack: () -> Unit,
     onDocumentClick: (String) -> Unit
@@ -64,6 +71,27 @@ fun SearchScreen(
                     modifier = Modifier.padding(top = 8.dp)
                 ) {
                     Icon(Icons.Default.Search, contentDescription = "Search")
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                DateFilter.entries.forEach { filter ->
+                    FilterChip(
+                        selected = state.dateFilter == filter,
+                        onClick = { onDateFilterChanged(filter) },
+                        label = { Text(filter.label) },
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                CategoryFilter.entries.forEach { filter ->
+                    FilterChip(
+                        selected = state.categoryFilter == filter,
+                        onClick = { onCategoryFilterChanged(filter) },
+                        label = { Text(filter.label) },
+                    )
                 }
             }
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.weight(1f)) {
