@@ -1,5 +1,6 @@
 package com.example.personaldocumentproject.presentation.review
 
+import android.content.pm.ApplicationInfo
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -34,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.personaldocumentproject.presentation.review.components.DraftTitleField
 
@@ -64,6 +66,8 @@ fun ReviewScreen(
     onSave: () -> Unit,
     onBack: () -> Unit,
 ) {
+    val isDebuggable = LocalContext.current.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+
     Surface(modifier = Modifier.fillMaxSize(), color = Color.Black) {
         Column(
             Modifier
@@ -101,11 +105,17 @@ fun ReviewScreen(
                     )
                 }
 
-                OutlinedCard(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Extracted text", style = MaterialTheme.typography.titleMedium)
-                        SelectionContainer {
-                            Text(draft.ocrText.ifBlank { "No text was detected." })
+                if (isDebuggable) {
+                    OutlinedCard(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(
+                                "DEBUG ONLY • INTERNAL OCR",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.labelMedium,
+                            )
+                            SelectionContainer {
+                                Text(draft.ocrText.ifBlank { "No text was detected." })
+                            }
                         }
                     }
                 }

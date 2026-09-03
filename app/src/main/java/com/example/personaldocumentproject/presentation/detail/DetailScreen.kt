@@ -1,5 +1,6 @@
 package com.example.personaldocumentproject.presentation.detail
 
+import android.content.pm.ApplicationInfo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 
@@ -41,6 +44,8 @@ fun DetailScreen(
     state: DetailUiState,
     onBack: () -> Unit
 ) {
+    val isDebuggable = LocalContext.current.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+
     Surface(modifier = Modifier.fillMaxSize(), color = Color.Black) {
         Column(
             Modifier
@@ -77,8 +82,22 @@ fun DetailScreen(
                     Text(document.tags.joinToString(", "), style = MaterialTheme.typography.bodyMedium, color = Color.White)
                 }
 
-                Text("Extracted Text", style = MaterialTheme.typography.titleMedium, color = Color.White)
-                Text(document.ocrText.ifBlank { "No text detected." }, style = MaterialTheme.typography.bodyMedium, color = Color.White)
+                if (isDebuggable) {
+                    OutlinedCard(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(
+                                "DEBUG ONLY • INTERNAL OCR",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                            Text(
+                                document.ocrText.ifBlank { "No text detected." },
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White,
+                            )
+                        }
+                    }
+                }
             }
 
             OutlinedButton(onClick = onBack) {
