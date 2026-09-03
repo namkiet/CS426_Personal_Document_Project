@@ -30,21 +30,21 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.personaldocumentproject.presentation.capture.CaptureScreen2
-import com.example.personaldocumentproject.presentation.capture.CaptureViewModel
-import com.example.personaldocumentproject.presentation.library.components.FakeSearchBar
+import com.example.personaldocumentproject.domain.model.UserSetting
+import com.example.personaldocumentproject.presentation.components.DocumentGrid
 import com.example.personaldocumentproject.presentation.search.components.SearchBar
-import com.example.personaldocumentproject.presentation.search.components.SearchResultCard
+import com.example.personaldocumentproject.presentation.search.components.searchResultConverter
 import com.example.personaldocumentproject.ui.imageVector.FluentuiSystemIconsPerson
 import com.example.personaldocumentproject.ui.imageVector.FluentuiSystemIconsSettings
 
 @Composable
-fun SearchRoute(viewModelSearch: SearchViewModel,
+fun SearchRoute(viewModelSearch: SearchViewModel, userSetting: UserSetting,
                 onBack: () -> Unit, onDocumentClick: (String) -> Unit,
                 onAccountClick: () -> Unit,onSettingClick: () -> Unit) {
     val stateSearch by viewModelSearch.uiState.collectAsState()
     SearchScreen(
         state = stateSearch,
+        userSetting = userSetting,
         onQueryChanged = viewModelSearch::onQueryChanged,
         onSearch = viewModelSearch::performSearch,
         onClearQuery = viewModelSearch::onClearQuery,
@@ -59,6 +59,7 @@ fun SearchRoute(viewModelSearch: SearchViewModel,
 @Composable
 fun SearchScreen(
     state: SearchUiState,
+    userSetting: UserSetting,
     onQueryChanged: (String) -> Unit,
     onSearch: () -> Unit,
     onBack: () -> Unit,
@@ -122,17 +123,11 @@ fun SearchScreen(
 
             //Spacer(modifier = Modifier.height(12.dp))
 
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.weight(1f).padding(horizontal = 12.dp)
-            ) {
-                items(state.results, key = { it.document.id }) { result ->
-                    SearchResultCard(
-                        result = result,
-                        onClick = { onDocumentClick(result.document.id) }
-                    )
-                }
-            }
+            DocumentGrid(
+                documents = searchResultConverter(state.results),
+                userSetting = userSetting,
+                onDocumentClick = onDocumentClick
+            )
 
             //..
             //search history text + back button

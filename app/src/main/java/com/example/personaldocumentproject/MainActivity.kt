@@ -21,12 +21,12 @@ class MainActivity : ComponentActivity() {
                 factory = container.mainViewModelFactory
             )
 
-            val isDarkMode by mainViewModel.isDarkMode.collectAsStateWithLifecycle()
+            val userSetting by mainViewModel.userSetting.collectAsStateWithLifecycle()
 
             PersonalDocumentProjectTheme (
-                darkTheme = isDarkMode
+                darkTheme = userSetting.isDarkMode
             ){
-                AppNavGraph(container)
+                AppNavGraph(container, userSetting)
             }
         }
     }

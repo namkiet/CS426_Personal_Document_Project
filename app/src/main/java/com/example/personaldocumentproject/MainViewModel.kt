@@ -3,6 +3,7 @@ package com.example.personaldocumentproject
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.personaldocumentproject.domain.model.UserSetting
 import com.example.personaldocumentproject.domain.repository.SettingRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -14,11 +15,10 @@ class MainViewModel(
 ) : ViewModel() {
 
     // Map domain settings directly to a dark theme boolean state
-    val isDarkMode: StateFlow<Boolean> = settingsRepository.settingFlow
-        .map { it.isDarkMode }
+    val userSetting: StateFlow<UserSetting> = settingsRepository.settingFlow
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = false
+            initialValue = UserSetting()
         )
 }

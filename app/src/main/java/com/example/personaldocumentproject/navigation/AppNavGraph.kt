@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.personaldocumentproject.di.AppContainer
+import com.example.personaldocumentproject.domain.model.UserSetting
 import com.example.personaldocumentproject.presentation.capture.CaptureRoute
 import com.example.personaldocumentproject.presentation.capture.CaptureViewModel
 import com.example.personaldocumentproject.presentation.detail.DetailRoute
@@ -21,7 +22,7 @@ import com.example.personaldocumentproject.presentation.setting.SettingRoute
 import com.example.personaldocumentproject.presentation.setting.SettingViewModel
 
 @Composable
-fun AppNavGraph(container: AppContainer) {
+fun AppNavGraph(container: AppContainer, userSetting: UserSetting) {
     var route: Routes by remember { mutableStateOf(Routes.Library) }
     when (val current = route) {
         Routes.Library -> {
@@ -30,6 +31,7 @@ fun AppNavGraph(container: AppContainer) {
 
             LibraryRoute(
                 viewModelLibrary = viewModelLibrary,
+                userSetting = userSetting,
                 onSearch = { route = Routes.Search },
                 onDocumentClick = { route = Routes.Detail(it) },
                 onAccountClick = { route = Routes.Account},
@@ -67,6 +69,7 @@ fun AppNavGraph(container: AppContainer) {
             val viewModelCapture: CaptureViewModel = viewModel(factory = container.captureViewModelFactory)
             SearchRoute(
                 viewModelSearch = viewModelSearch,
+                userSetting = userSetting,
                 onBack = { route = Routes.Library },
                 onDocumentClick = { route = Routes.Detail(it) },
                 onSettingClick = { route = Routes.Setting },

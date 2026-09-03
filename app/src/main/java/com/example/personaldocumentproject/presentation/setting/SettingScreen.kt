@@ -231,7 +231,7 @@ fun SettingsScreen(
                 AnimatedVisibility(true) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(0.9f * (0.5f + state.widthValue * 0.5f))
+                            .size(width = (30 + (state.widthValue * 120)).dp, (30 + (state.heightValue * 120)).dp)
                             .height(180.dp * (0.5f + state.heightValue * 0.5f))
                             .clip(RoundedCornerShape(24.dp))
                             .background(accentColor)
@@ -242,8 +242,7 @@ fun SettingsScreen(
                                     painter = painterResource(id = R.drawable.chihuahuaandroidtest),
                                     contentDescription = "Document Image",
                                     modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(300.dp),
+                                        .fillMaxSize(),
                                     contentScale = ContentScale.Crop
                                 )
                             }
