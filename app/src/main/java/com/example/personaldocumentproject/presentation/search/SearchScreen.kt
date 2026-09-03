@@ -64,7 +64,7 @@ fun SearchScreen(
         topBar = { TopAppBar(
             title =  {Text(
                 text = "Search",
-                style = MaterialTheme.typography.bodyLarge,
+                //style = MaterialTheme.typography.bodyLarge,
             )},
             navigationIcon = {
                 IconButton(
@@ -79,7 +79,7 @@ fun SearchScreen(
         )}
     ) { padding ->
         Column(
-            Modifier.fillMaxSize().padding(padding),
+            Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             SearchBar(
@@ -89,7 +89,7 @@ fun SearchScreen(
                 onClearQuery = onClearQuery
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            //Spacer(modifier = Modifier.height(24.dp))
 
             // Results of search
             Text(
@@ -99,11 +99,11 @@ fun SearchScreen(
                 fontFamily = FontFamily.Serif
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            //Spacer(modifier = Modifier.height(12.dp))
 
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).padding(horizontal = 12.dp)
             ) {
                 items(state.results, key = { it.document.id }) { result ->
                     SearchResultCard(

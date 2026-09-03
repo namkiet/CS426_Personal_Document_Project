@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -72,7 +73,7 @@ fun LibraryScreen(stateLibrary: LibraryUiState, onSearch: () -> Unit, onDocument
         topBar = { TopAppBar(
             title =  {Text(
                 text = "Library",
-                style = MaterialTheme.typography.bodyLarge,
+                //style = MaterialTheme.typography.bodyLarge,
             )},
             actions = {
                 IconButton(onClick = onAccountClick) {
@@ -91,7 +92,7 @@ fun LibraryScreen(stateLibrary: LibraryUiState, onSearch: () -> Unit, onDocument
         )}
     ) { padding ->
         Column(
-            Modifier.fillMaxSize().padding(padding),
+            Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             FakeSearchBar { onSearch() }
@@ -99,7 +100,7 @@ fun LibraryScreen(stateLibrary: LibraryUiState, onSearch: () -> Unit, onDocument
 
             //OutlinedButton(onClick = onSearch, modifier = Modifier.fillMaxWidth()) { Text("Search library") }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            //Spacer(modifier = Modifier.height(8.dp))
 
             // Recent Search Section Header
             Text(
@@ -114,7 +115,7 @@ fun LibraryScreen(stateLibrary: LibraryUiState, onSearch: () -> Unit, onDocument
             // Horizontal Scrollable Items for Recent Search
 
             LazyRow(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 //Items
@@ -131,7 +132,7 @@ fun LibraryScreen(stateLibrary: LibraryUiState, onSearch: () -> Unit, onDocument
                 fontFamily = FontFamily.Serif
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            //Spacer(modifier = Modifier.height(12.dp))
 
             // Grid Items for Main Library
             if (stateLibrary.documents.isEmpty()) Text("Your document library is empty.")
@@ -140,7 +141,7 @@ fun LibraryScreen(stateLibrary: LibraryUiState, onSearch: () -> Unit, onDocument
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(bottom = 80.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
             ) {
                 items(items = stateLibrary.documents, key = Document::id) { document ->
                     DocumentCard(
