@@ -1,20 +1,9 @@
 package com.example.personaldocumentproject.data.ml.metadata
 
 import com.example.personaldocumentproject.domain.model.DocumentCategory
-import com.example.personaldocumentproject.domain.service.MetadataService
+import com.example.personaldocumentproject.domain.service.CategoryClassificationService
 
-class SimpleMetadataService : MetadataService {
-    override suspend fun generateTitle(ocrText: String, detectedObjects: List<String>): String =
-        ocrText.lineSequence().firstOrNull { it.isNotBlank() }?.take(80)
-            ?: detectedObjects.firstOrNull()?.replaceFirstChar(Char::uppercase)
-            ?: "New document"
-
-    override suspend fun generateDescription(ocrText: String, detectedObjects: List<String>): String = when {
-        ocrText.isNotBlank() -> "Text extracted from the image"
-        detectedObjects.isNotEmpty() -> "Objects detected in the image"
-        else -> "No content detected"
-    }
-
+object SimpleCategoryClassificationService : CategoryClassificationService {
     override suspend fun classifyCategory(
         ocrText: String,
         detectedObjects: List<String>,
@@ -29,7 +18,4 @@ class SimpleMetadataService : MetadataService {
             else -> DocumentCategory.OTHER
         }
     }
-
-    override suspend fun generateTags(ocrText: String, detectedObjects: List<String>): List<String> =
-        detectedObjects.map(String::trim).filter(String::isNotBlank).distinct()
 }

@@ -11,7 +11,10 @@ import com.example.personaldocumentproject.data.ml.labeling.MlKitImageLabelingSe
 import com.example.personaldocumentproject.data.ml.llm.ModelCatalog
 import com.example.personaldocumentproject.data.ml.llm.ModelManagerRepository
 import com.example.personaldocumentproject.data.ml.llm.LiteRtLmService
-import com.example.personaldocumentproject.data.ml.metadata.MediaPipeMetadataService
+import com.example.personaldocumentproject.data.ml.metadata.MediaPipeDescriptionGenerationService
+import com.example.personaldocumentproject.data.ml.metadata.SimpleCategoryClassificationService
+import com.example.personaldocumentproject.data.ml.metadata.SimpleTagGenerationService
+import com.example.personaldocumentproject.data.ml.metadata.SimpleTitleGenerationService
 import com.example.personaldocumentproject.data.ml.ocr.MlKitOcrService
 import com.example.personaldocumentproject.data.ml.translation.MlKitEnglishTranslationService
 import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
@@ -34,7 +37,10 @@ class AppContainer(private val context: Context) {
     private val repository = DefaultDocumentRepository(database.documentDao(), DocumentMapper())
     private val ocrService = MlKitOcrService(context)
     private val objectDetectionService = MlKitImageLabelingService(context)
-    private val metadataService = MediaPipeMetadataService(context)
+    private val titleGenerationService = SimpleTitleGenerationService
+    private val descriptionGenerationService = MediaPipeDescriptionGenerationService(context)
+    private val categoryClassificationService = SimpleCategoryClassificationService
+    private val tagGenerationService = SimpleTagGenerationService
     private val embeddingService = MediaPipeEmbeddingService(context)
     private val imageStorageService = LocalImageStorageService(context)
     private val textTranslationService = MlKitEnglishTranslationService()
@@ -60,7 +66,10 @@ class AppContainer(private val context: Context) {
     val analyzeDocument = AnalyzeDocument(
         ocrService,
         objectDetectionService,
-        metadataService,
+        titleGenerationService,
+        descriptionGenerationService,
+        categoryClassificationService,
+        tagGenerationService,
         textTranslationService,
     )
     val saveDocument = SaveDocument(repository, imageStorageService, embeddingService)

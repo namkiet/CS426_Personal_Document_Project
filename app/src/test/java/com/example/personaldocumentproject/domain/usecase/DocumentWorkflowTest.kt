@@ -4,7 +4,10 @@ import com.example.personaldocumentproject.data.local.DocumentDao
 import com.example.personaldocumentproject.data.local.DocumentEntity
 import com.example.personaldocumentproject.data.mapper.DocumentMapper
 import com.example.personaldocumentproject.data.ml.embedding.SimpleEmbeddingService
-import com.example.personaldocumentproject.data.ml.metadata.SimpleMetadataService
+import com.example.personaldocumentproject.data.ml.metadata.SimpleCategoryClassificationService
+import com.example.personaldocumentproject.data.ml.metadata.SimpleDescriptionGenerationService
+import com.example.personaldocumentproject.data.ml.metadata.SimpleTagGenerationService
+import com.example.personaldocumentproject.data.ml.metadata.SimpleTitleGenerationService
 import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
 import com.example.personaldocumentproject.domain.model.DocumentCategory
 import com.example.personaldocumentproject.domain.model.DocumentDraft
@@ -35,7 +38,10 @@ class DocumentWorkflowTest {
             objectDetectionService = object : ObjectDetectionService {
                 override suspend fun detectObjects(imageUri: String) = listOf("book")
             },
-            metadataService = SimpleMetadataService(),
+            titleGenerationService = SimpleTitleGenerationService,
+            descriptionGenerationService = SimpleDescriptionGenerationService,
+            categoryClassificationService = SimpleCategoryClassificationService,
+            tagGenerationService = SimpleTagGenerationService,
             textTranslationService = object : TextTranslationService {
                 override suspend fun translateToEnglish(text: String) = text
             },

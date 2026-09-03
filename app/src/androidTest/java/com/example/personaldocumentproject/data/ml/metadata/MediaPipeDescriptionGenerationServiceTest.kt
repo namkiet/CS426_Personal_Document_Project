@@ -7,8 +7,8 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class MediaPipeMetadataServiceTest {
-    private val service = MediaPipeMetadataService(
+class MediaPipeDescriptionGenerationServiceTest {
+    private val service = MediaPipeDescriptionGenerationService(
         InstrumentationRegistry.getInstrumentation().targetContext,
     )
 

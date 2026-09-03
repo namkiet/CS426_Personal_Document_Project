@@ -1,7 +1,7 @@
 package com.example.personaldocumentproject.data.ml.metadata
 
 import android.content.Context
-import com.example.personaldocumentproject.domain.service.MetadataService
+import com.example.personaldocumentproject.domain.service.DescriptionGenerationService
 import com.google.mediapipe.tasks.text.textsummarizer.TextSummarizer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -9,10 +9,10 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 
-class MediaPipeMetadataService(
+class MediaPipeDescriptionGenerationService(
     context: Context,
-    private val fallback: MetadataService = SimpleMetadataService(),
-) : MetadataService by fallback {
+    private val fallback: DescriptionGenerationService = SimpleDescriptionGenerationService,
+) : DescriptionGenerationService {
     private val applicationContext = context.applicationContext
 
     override suspend fun generateDescription(ocrText: String, detectedObjects: List<String>): String {

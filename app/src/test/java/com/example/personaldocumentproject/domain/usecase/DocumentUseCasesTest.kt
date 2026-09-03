@@ -4,14 +4,21 @@ import com.example.personaldocumentproject.data.local.DocumentDao
 import com.example.personaldocumentproject.data.local.DocumentEntity
 import com.example.personaldocumentproject.data.mapper.DocumentMapper
 import com.example.personaldocumentproject.data.ml.embedding.SimpleEmbeddingService
-import com.example.personaldocumentproject.data.ml.metadata.SimpleMetadataService
+import com.example.personaldocumentproject.data.ml.metadata.SimpleCategoryClassificationService
+import com.example.personaldocumentproject.data.ml.metadata.SimpleDescriptionGenerationService
+import com.example.personaldocumentproject.data.ml.metadata.SimpleTagGenerationService
+import com.example.personaldocumentproject.data.ml.metadata.SimpleTitleGenerationService
 import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
 import com.example.personaldocumentproject.domain.model.DocumentCategory
 import com.example.personaldocumentproject.domain.model.DocumentDraft
+import com.example.personaldocumentproject.domain.service.CategoryClassificationService
+import com.example.personaldocumentproject.domain.service.DescriptionGenerationService
 import com.example.personaldocumentproject.domain.service.ImageStorageService
 import com.example.personaldocumentproject.domain.service.ObjectDetectionService
 import com.example.personaldocumentproject.domain.service.OcrService
+import com.example.personaldocumentproject.domain.service.TagGenerationService
 import com.example.personaldocumentproject.domain.service.TextTranslationService
+import com.example.personaldocumentproject.domain.service.TitleGenerationService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
@@ -28,7 +35,10 @@ class DocumentUseCasesTest {
         val analyzeDocument = AnalyzeDocument(
             ocrService = FakeOcrService("University lecture\nDatabase indexing"),
             objectDetectionService = FakeObjectDetectionService(listOf("book", "laptop")),
-            metadataService = SimpleMetadataService(),
+            titleGenerationService = SimpleTitleGenerationService,
+            descriptionGenerationService = SimpleDescriptionGenerationService,
+            categoryClassificationService = SimpleCategoryClassificationService,
+            tagGenerationService = SimpleTagGenerationService,
             textTranslationService = FakeTextTranslationService(),
         )
 
@@ -44,11 +54,27 @@ class DocumentUseCasesTest {
     }
 
     @Test
-    fun analyzeDocument_usesEnglishTranslationForMetadataAndStoredOcrText() = runBlocking {
+    fun analyzeDocument_usesEnglishTranslationOnlyForDescription() = runBlocking {
+        val titleGenerationService = object : TitleGenerationService {
+            override suspend fun generateTitle(ocrText: String, detectedObjects: List<String>) = ocrText
+        }
+        val descriptionGenerationService = object : DescriptionGenerationService {
+            override suspend fun generateDescription(ocrText: String, detectedObjects: List<String>) = ocrText
+        }
+        val categoryClassificationService = object : CategoryClassificationService {
+            override suspend fun classifyCategory(ocrText: String, detectedObjects: List<String>) =
+                if (ocrText.startsWith("Bài giảng")) DocumentCategory.STUDY else DocumentCategory.OTHER
+        }
+        val tagGenerationService = object : TagGenerationService {
+            override suspend fun generateTags(ocrText: String, detectedObjects: List<String>) = listOf(ocrText)
+        }
         val analyzeDocument = AnalyzeDocument(
             ocrService = FakeOcrService("Bài giảng đại học\nLập chỉ mục cơ sở dữ liệu"),
             objectDetectionService = FakeObjectDetectionService(listOf("book")),
-            metadataService = SimpleMetadataService(),
+            titleGenerationService = titleGenerationService,
+            descriptionGenerationService = descriptionGenerationService,
+            categoryClassificationService = categoryClassificationService,
+            tagGenerationService = tagGenerationService,
             textTranslationService = FakeTextTranslationService(
                 "University lecture\nDatabase indexing",
             ),
@@ -56,9 +82,11 @@ class DocumentUseCasesTest {
 
         val draft = analyzeDocument("content://vietnamese-lecture")
 
-        assertEquals("University lecture\nDatabase indexing", draft.ocrText)
-        assertEquals("University lecture", draft.title)
+        assertEquals("Bài giảng đại học\nLập chỉ mục cơ sở dữ liệu", draft.ocrText)
+        assertEquals("Bài giảng đại học\nLập chỉ mục cơ sở dữ liệu", draft.title)
+        assertEquals("University lecture\nDatabase indexing", draft.description)
         assertEquals(DocumentCategory.STUDY, draft.category)
+        assertEquals(listOf("Bài giảng đại học\nLập chỉ mục cơ sở dữ liệu"), draft.tags)
     }
 
     @Test
