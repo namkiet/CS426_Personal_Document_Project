@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.personaldocumentproject.domain.usecase.SearchDocuments
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -16,13 +17,17 @@ class SearchViewModel(private val searchDocuments: SearchDocuments) : ViewModel(
 
     fun onQueryChanged(query: String) {
         mutableState.value = mutableState.value.copy(query = query)
+        performSearch(300)
     }
 
-    fun performSearch() {
+    fun performSearch() = performSearch(0)
+
+    private fun performSearch(delayMillis: Long) {
         val query = mutableState.value.query
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             try {
+                delay(delayMillis)
                 searchDocuments(query).collectLatest { results ->
                     mutableState.value = mutableState.value.copy(results = results)
                 }
