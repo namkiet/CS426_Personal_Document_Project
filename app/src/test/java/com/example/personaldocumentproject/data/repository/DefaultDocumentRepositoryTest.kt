@@ -27,6 +27,16 @@ class DefaultDocumentRepositoryTest {
         assertEquals("database", result.first().document.id)
     }
 
+    @Test
+    fun search_does_not_match_substrings() = runBlocking {
+        val repository = DefaultDocumentRepository(FakeDocumentDao(), DocumentMapper())
+        repository.save(document("education", "Education notes", listOf(0f, 1f)))
+
+        val result = repository.search("cat", listOf(1f, 0f)).first()
+
+        assertEquals(emptyList<Document>(), result.map { it.document })
+    }
+
     private fun document(id: String, title: String, embedding: List<Float>) = Document(
         id = id, imageUri = "content://$id", title = title, description = "",
         ocrText = "", category = DocumentCategory.OTHER, tags = emptyList(),

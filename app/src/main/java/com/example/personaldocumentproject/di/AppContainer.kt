@@ -11,7 +11,7 @@ import com.example.personaldocumentproject.data.ml.labeling.MlKitImageLabelingSe
 import com.example.personaldocumentproject.data.ml.llm.ModelCatalog
 import com.example.personaldocumentproject.data.ml.llm.ModelManagerRepository
 import com.example.personaldocumentproject.data.ml.llm.LiteRtLmService
-import com.example.personaldocumentproject.data.ml.metadata.SimpleMetadataService
+import com.example.personaldocumentproject.data.ml.metadata.MediaPipeMetadataService
 import com.example.personaldocumentproject.data.ml.ocr.MlKitOcrService
 import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
 import com.example.personaldocumentproject.domain.service.LlmService
@@ -33,7 +33,7 @@ class AppContainer(private val context: Context) {
     private val repository = DefaultDocumentRepository(database.documentDao(), DocumentMapper())
     private val ocrService = MlKitOcrService(context)
     private val objectDetectionService = MlKitImageLabelingService(context)
-    private val metadataService = SimpleMetadataService()
+    private val metadataService = MediaPipeMetadataService(context)
     private val embeddingService = MediaPipeEmbeddingService(context)
     private val imageStorageService = LocalImageStorageService(context)
 

@@ -17,7 +17,7 @@ class SearchViewModel(private val searchDocuments: SearchDocuments) : ViewModel(
 
     fun onQueryChanged(query: String) {
         mutableState.value = mutableState.value.copy(query = query)
-        performSearch(300)
+        performSearch(100)
     }
 
     fun performSearch() = performSearch(0)

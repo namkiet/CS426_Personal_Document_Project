@@ -41,6 +41,7 @@ android {
     }
     androidResources {
         noCompress += "litertlm"
+    }
     packaging {
         jniLibs {
             useLegacyPackaging = true

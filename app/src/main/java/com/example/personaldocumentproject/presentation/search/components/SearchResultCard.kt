@@ -22,7 +22,14 @@ fun SearchResultCard(result: SearchResult, onClick: () -> Unit = {}) {
             Text(result.document.title, style = MaterialTheme.typography.titleMedium)
             Text(result.document.description, style = MaterialTheme.typography.bodyMedium)
             if (LocalContext.current.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) {
-                Text("Score: %.2f".format(result.score), style = MaterialTheme.typography.labelMedium)
+                Text(
+                    "Semantic: %.2f\nLexical: %.2f\nCombined: %.2f".format(
+                        result.semanticScore,
+                        result.lexicalScore,
+                        result.score,
+                    ),
+                    style = MaterialTheme.typography.labelMedium,
+                )
             }
         }
     }
