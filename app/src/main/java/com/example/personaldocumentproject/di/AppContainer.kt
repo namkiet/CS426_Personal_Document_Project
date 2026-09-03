@@ -3,6 +3,7 @@ package com.example.personaldocumentproject.di
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.personaldocumentproject.MainViewModel
 import com.example.personaldocumentproject.data.local.AppDatabase
 import com.example.personaldocumentproject.data.local.SettingsLocalDataSource
 import com.example.personaldocumentproject.data.local.dataStore
@@ -54,6 +55,7 @@ class AppContainer(private val context: Context) {
     val reviewViewModelFactory = factory { ReviewViewModel(analyzeDocument, saveDocument) }
     val searchViewModelFactory = factory { SearchViewModel(searchDocuments) }
     val detailViewModelFactory = factory { DetailViewModel(getDocument) }
+    val mainViewModelFactory = factory { MainViewModel(settingsRepository) }
 
     val settingViewModelFactory = factory { SettingViewModel(
         repository = settingsRepository
