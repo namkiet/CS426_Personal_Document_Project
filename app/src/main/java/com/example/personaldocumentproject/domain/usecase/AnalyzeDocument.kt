@@ -8,7 +8,7 @@ import com.example.personaldocumentproject.domain.service.ObjectDetectionService
 import com.example.personaldocumentproject.domain.service.TagGenerationService
 import com.example.personaldocumentproject.domain.service.TextTranslationService
 import com.example.personaldocumentproject.domain.service.TitleGenerationService
-
+import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
 class AnalyzeDocument(
@@ -23,33 +23,36 @@ class AnalyzeDocument(
     suspend operator fun invoke(imageUri: String): DocumentDraft = coroutineScope {
         require(imageUri.isNotBlank()) { "An image URI is required" }
 
-        // 01. Extract text from the selected image using OCR.
-        val recognizedText = ocrService.recognizeText(imageUri)
+        // 01. Extract text and detect objects in parallel.
+        val recognizedTextDeferred = async { ocrService.recognizeText(imageUri) }
+        val detectedObjectsDeferred = async { objectDetectionService.detectObjects(imageUri) }
+        val recognizedText = recognizedTextDeferred.await()
+        val detectedObjects = detectedObjectsDeferred.await()
 
-        // 02. Translate OCR text only for English description generation.
-        val translatedText = textTranslationService.translateToEnglish(recognizedText)
+        // 02. Generate independent metadata in parallel. Translation feeds only description.
+        val titleDeferred = async {
+            titleGenerationService.generateTitle(recognizedText, detectedObjects)
+        }
+        val categoryDeferred = async {
+            categoryClassificationService.classifyCategory(recognizedText, detectedObjects)
+        }
+        val tagsDeferred = async {
+            tagGenerationService.generateTags(recognizedText, detectedObjects)
+        }
+        val descriptionDeferred = async {
+            val translatedText = textTranslationService.translateToEnglish(recognizedText)
+            descriptionGenerationService.generateDescription(translatedText, detectedObjects)
+        }
 
-        // 03. Detect and label objects found in the selected image.
-        val detectedObjects = objectDetectionService.detectObjects(imageUri)
-
-        // 04. Generate editable metadata from the image content.
-        val title = titleGenerationService.generateTitle(recognizedText, detectedObjects)
-        val description = descriptionGenerationService.generateDescription(translatedText, detectedObjects)
-        val category = categoryClassificationService.classifyCategory(recognizedText, detectedObjects)
-        val tags = tagGenerationService.generateTags(recognizedText, detectedObjects)
-
-        // 05. Create a document draft from the analysis results.
-        val draft = DocumentDraft(
+        // 03. Create a document draft from the analysis results.
+        DocumentDraft(
             imageUri = imageUri,
-            title = title,
-            description = description,
+            title = titleDeferred.await(),
+            description = descriptionDeferred.await(),
             ocrText = recognizedText,
-            category = category,
-            tags = tags,
+            category = categoryDeferred.await(),
+            tags = tagsDeferred.await(),
             detectedObjects = detectedObjects,
         )
-
-        // 06. Return the analyzed draft to the caller for review.
-        draft
     }
 }

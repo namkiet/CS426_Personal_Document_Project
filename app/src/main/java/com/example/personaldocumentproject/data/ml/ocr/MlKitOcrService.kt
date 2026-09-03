@@ -14,6 +14,10 @@ class MlKitOcrService(private val context: Context) : OcrService {
 
     private val recognizer by lazy { TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS) }
 
+    fun prepare() {
+        recognizer
+    }
+
     override suspend fun recognizeText(imageUri: String): String {
         return try {
             val uri = imageUri.toUri()

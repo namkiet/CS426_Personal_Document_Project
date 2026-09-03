@@ -15,6 +15,10 @@ class MediaPipeDescriptionGenerationService(
 ) : DescriptionGenerationService {
     private val applicationContext = context.applicationContext
 
+    suspend fun prepare() {
+        withContext(Dispatchers.IO) { copyModelToCache() }
+    }
+
     override suspend fun generateDescription(ocrText: String, detectedObjects: List<String>): String {
         val objects = detectedObjects.map(String::trim).filter(String::isNotBlank).distinct()
         val input = listOf(
@@ -25,7 +29,8 @@ class MediaPipeDescriptionGenerationService(
         if (input.isBlank()) return fallback.generateDescription(ocrText, detectedObjects)
 
         return runCatching {
-            val modelPath = withContext(Dispatchers.IO) { copyModelToCache() }
+            prepare()
+            val modelPath = File(applicationContext.cacheDir, MODEL_PATH).absolutePath
             withContext(Dispatchers.Default) {
                 val options = TextSummarizer.TextSummarizerOptions.builder()
                     .setModelPath(modelPath)

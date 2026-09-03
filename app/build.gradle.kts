@@ -40,7 +40,7 @@ android {
         compose = true
     }
     androidResources {
-        noCompress += "litertlm"
+        noCompress += listOf("litertlm", "tflite")
     }
     packaging {
         jniLibs {

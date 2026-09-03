@@ -48,6 +48,15 @@ class AppContainer(private val context: Context) {
     // ── Model Manager ─────────────────────────────────────────────────────────
     val modelManagerRepository = ModelManagerRepository(context)
 
+    suspend fun warmCaches() {
+        runCatching {
+            ocrService.prepare()
+            objectDetectionService.prepare()
+            descriptionGenerationService.prepare()
+            categoryClassificationService.prepare()
+        }
+    }
+
     /**
      * Returns the active [LlmService] for the model the user selected in Model Manager.
      * If no model file is present on disk, falls back to a no-op stub so the rest of the
@@ -91,7 +100,6 @@ class AppContainer(private val context: Context) {
     val searchViewModelFactory = factory { SearchViewModel(searchDocuments) }
     val detailViewModelFactory = factory { DetailViewModel(getDocument) }
     val modelManagerViewModelFactory = factory { ModelManagerViewModel(modelManagerRepository) }
-
     private fun factory(create: () -> ViewModel): ViewModelProvider.Factory =
         object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")

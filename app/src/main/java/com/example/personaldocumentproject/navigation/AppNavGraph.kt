@@ -1,6 +1,7 @@
 package com.example.personaldocumentproject.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,7 +23,10 @@ import com.example.personaldocumentproject.presentation.search.SearchViewModel
 
 @Composable
 fun AppNavGraph(container: AppContainer) {
-    var route: Routes by remember { mutableStateOf(Routes.Library) }
+    var route: Routes by remember { mutableStateOf<Routes>(Routes.Library) }
+    LaunchedEffect(Unit) {
+        container.warmCaches()
+    }
     when (val current = route) {
         Routes.Library -> {
             val viewModel: LibraryViewModel = viewModel(factory = container.libraryViewModelFactory)

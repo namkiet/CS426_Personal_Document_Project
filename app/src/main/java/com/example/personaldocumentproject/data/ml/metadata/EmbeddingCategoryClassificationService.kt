@@ -20,6 +20,10 @@ class EmbeddingCategoryClassificationService(
     private val cacheMutex = Mutex()
     private var cachedCategoryEmbeddings: Map<DocumentCategory, List<Float>>? = null
 
+    suspend fun prepare() {
+        categoryEmbeddings()
+    }
+
     override suspend fun classifyCategory(
         ocrText: String,
         detectedObjects: List<String>,
@@ -52,11 +56,11 @@ class EmbeddingCategoryClassificationService(
 
     private companion object {
         val categoryDescriptions = mapOf(
-            DocumentCategory.NOTE to "personal note, memo, reminder, or written thought",
+            DocumentCategory.NOTE to "personal note, memo or reminder",
             DocumentCategory.RECEIPT to "receipt, invoice, purchase, payment, subtotal, or total",
-            DocumentCategory.IDENTITY to "identity document, passport, driver license, or citizen card",
-            DocumentCategory.STUDY to "study material, lecture, course, school, university, or textbook",
-            DocumentCategory.WORK to "work document, meeting, project, company, business, or contract",
+            DocumentCategory.IDENTITY to "passport, driver license, or citizen card",
+            DocumentCategory.STUDY to "study material, lecture, course, school, university, exam or textbook",
+            DocumentCategory.WORK to "meeting, project, company, business, or contract",
         )
     }
 }

@@ -18,6 +18,10 @@ class MlKitImageLabelingService(private val context: Context) : ObjectDetectionS
         )
     }
 
+    fun prepare() {
+        labeler
+    }
+
     override suspend fun detectObjects(imageUri: String): List<String> {
         return try {
             val uri = Uri.parse(imageUri)
