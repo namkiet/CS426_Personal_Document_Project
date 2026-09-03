@@ -51,6 +51,11 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.mlkit.text.recognition)
     implementation(libs.kotlinx.coroutines.play.services)
+    implementation("androidx.datastore:datastore-preferences:1.2.1")
+    implementation("com.google.dagger:dagger:2.60.1")
+    implementation("com.google.dagger:dagger-compiler:2.60.1")
+    implementation("com.google.dagger:hilt-android:2.60.1")
+
 
     testImplementation(libs.junit)
 

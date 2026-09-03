@@ -35,10 +35,13 @@ import com.example.personaldocumentproject.presentation.capture.CaptureViewModel
 import com.example.personaldocumentproject.presentation.library.components.FakeSearchBar
 import com.example.personaldocumentproject.presentation.search.components.SearchBar
 import com.example.personaldocumentproject.presentation.search.components.SearchResultCard
+import com.example.personaldocumentproject.ui.imageVector.FluentuiSystemIconsPerson
+import com.example.personaldocumentproject.ui.imageVector.FluentuiSystemIconsSettings
 
 @Composable
 fun SearchRoute(viewModelSearch: SearchViewModel,
-                onBack: () -> Unit, onDocumentClick: (String) -> Unit) {
+                onBack: () -> Unit, onDocumentClick: (String) -> Unit,
+                onAccountClick: () -> Unit,onSettingClick: () -> Unit) {
     val stateSearch by viewModelSearch.uiState.collectAsState()
     SearchScreen(
         state = stateSearch,
@@ -46,7 +49,9 @@ fun SearchRoute(viewModelSearch: SearchViewModel,
         onSearch = viewModelSearch::performSearch,
         onClearQuery = viewModelSearch::onClearQuery,
         onBack = onBack,
-        onDocumentClick = onDocumentClick
+        onDocumentClick = onDocumentClick,
+        onAccountClick = onAccountClick,
+        onSettingClick = onSettingClick
     )
 }
 
@@ -58,7 +63,9 @@ fun SearchScreen(
     onSearch: () -> Unit,
     onBack: () -> Unit,
     onClearQuery: () -> Unit,
-    onDocumentClick: (String) -> Unit
+    onDocumentClick: (String) -> Unit,
+    onAccountClick:() -> Unit,
+    onSettingClick: () -> Unit
 ) {
     Scaffold(
         topBar = { TopAppBar(
@@ -73,6 +80,20 @@ fun SearchScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Navigate back"
+                    )
+                }
+            },
+            actions = {
+                IconButton(onClick = onAccountClick) {
+                    Icon(
+                        imageVector = FluentuiSystemIconsPerson,
+                        contentDescription = "account profile"
+                    )
+                }
+                IconButton(onClick = onSettingClick) {
+                    Icon(
+                        imageVector = FluentuiSystemIconsSettings,
+                        contentDescription = "setting"
                     )
                 }
             }

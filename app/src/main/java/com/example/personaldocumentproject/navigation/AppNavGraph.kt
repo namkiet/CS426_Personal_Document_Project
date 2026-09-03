@@ -17,6 +17,8 @@ import com.example.personaldocumentproject.presentation.review.ReviewRoute
 import com.example.personaldocumentproject.presentation.review.ReviewViewModel
 import com.example.personaldocumentproject.presentation.search.SearchRoute
 import com.example.personaldocumentproject.presentation.search.SearchViewModel
+import com.example.personaldocumentproject.presentation.setting.SettingRoute
+import com.example.personaldocumentproject.presentation.setting.SettingViewModel
 
 @Composable
 fun AppNavGraph(container: AppContainer) {
@@ -66,7 +68,9 @@ fun AppNavGraph(container: AppContainer) {
             SearchRoute(
                 viewModelSearch = viewModelSearch,
                 onBack = { route = Routes.Library },
-                onDocumentClick = { route = Routes.Detail(it) }
+                onDocumentClick = { route = Routes.Detail(it) },
+                onSettingClick = { route = Routes.Setting },
+                onAccountClick = {route= Routes.Account},
             )
             CaptureRoute(
                 viewModel = viewModelCapture,
@@ -88,6 +92,12 @@ fun AppNavGraph(container: AppContainer) {
 
         Routes.Account -> {}
 
-        Routes.Setting -> {}
+        Routes.Setting -> {
+            val viewModel: SettingViewModel = viewModel(factory = container.settingViewModelFactory)
+            SettingRoute(
+                viewModel = viewModel,
+                onBack = { route = Routes.Library}
+            )
+        }
     }
 }

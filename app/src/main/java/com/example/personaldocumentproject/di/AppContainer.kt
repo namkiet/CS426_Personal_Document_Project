@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.personaldocumentproject.data.local.AppDatabase
+import com.example.personaldocumentproject.data.local.SettingsLocalDataSource
+import com.example.personaldocumentproject.data.local.dataStore
 import com.example.personaldocumentproject.data.local.storage.LocalImageStorageService
 import com.example.personaldocumentproject.data.mapper.DocumentMapper
 import com.example.personaldocumentproject.data.ml.embedding.SimpleEmbeddingService
@@ -11,6 +13,7 @@ import com.example.personaldocumentproject.data.ml.ocr.MlKitOcrService
 import com.example.personaldocumentproject.data.ml.objectdetection.LocalObjectDetectionService
 import com.example.personaldocumentproject.data.ml.metadata.SimpleMetadataService
 import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
+import com.example.personaldocumentproject.data.repository.SettingRepositoryImpl
 import com.example.personaldocumentproject.domain.usecase.AnalyzeDocument
 import com.example.personaldocumentproject.domain.usecase.GetDocument
 import com.example.personaldocumentproject.domain.usecase.ObserveDocuments
@@ -21,6 +24,7 @@ import com.example.personaldocumentproject.presentation.detail.DetailViewModel
 import com.example.personaldocumentproject.presentation.library.LibraryViewModel
 import com.example.personaldocumentproject.presentation.review.ReviewViewModel
 import com.example.personaldocumentproject.presentation.search.SearchViewModel
+import com.example.personaldocumentproject.presentation.setting.SettingViewModel
 
 /** Composition root. Replace adapters here without leaking infrastructure into domain or UI. */
 class AppContainer(private val context: Context) {
@@ -31,6 +35,9 @@ class AppContainer(private val context: Context) {
     private val metadataService = SimpleMetadataService()
     private val embeddingService = SimpleEmbeddingService()
     private val imageStorageService = LocalImageStorageService(context)
+
+    private val settingsLocalDataSource = SettingsLocalDataSource(context.dataStore)
+    private val settingsRepository = SettingRepositoryImpl(settingsLocalDataSource)
 
     val observeDocuments = ObserveDocuments(repository)
     val getDocument = GetDocument(repository)
@@ -47,6 +54,10 @@ class AppContainer(private val context: Context) {
     val reviewViewModelFactory = factory { ReviewViewModel(analyzeDocument, saveDocument) }
     val searchViewModelFactory = factory { SearchViewModel(searchDocuments) }
     val detailViewModelFactory = factory { DetailViewModel(getDocument) }
+
+    val settingViewModelFactory = factory { SettingViewModel(
+        repository = settingsRepository
+    ) }
 
     private fun factory(create: () -> ViewModel): ViewModelProvider.Factory =
         object : ViewModelProvider.Factory {
