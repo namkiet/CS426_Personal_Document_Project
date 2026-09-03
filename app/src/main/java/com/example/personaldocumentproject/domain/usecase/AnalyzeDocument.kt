@@ -4,6 +4,7 @@ import com.example.personaldocumentproject.domain.model.DocumentDraft
 import com.example.personaldocumentproject.domain.service.OcrService
 import com.example.personaldocumentproject.domain.service.ObjectDetectionService
 import com.example.personaldocumentproject.domain.service.MetadataService
+import com.example.personaldocumentproject.domain.service.TextTranslationService
 
 import kotlinx.coroutines.coroutineScope
 
@@ -11,23 +12,27 @@ class AnalyzeDocument(
     private val ocrService: OcrService,
     private val objectDetectionService: ObjectDetectionService,
     private val metadataService: MetadataService,
+    private val textTranslationService: TextTranslationService,
 ) {
     suspend operator fun invoke(imageUri: String): DocumentDraft = coroutineScope {
         require(imageUri.isNotBlank()) { "An image URI is required" }
 
         // 01. Extract text from the selected image using OCR.
-        val text = ocrService.recognizeText(imageUri)
+        val recognizedText = ocrService.recognizeText(imageUri)
 
-        // 02. Detect and label objects found in the selected image.
+        // 02. Normalize supported non-English OCR text to English.
+        val text = textTranslationService.translateToEnglish(recognizedText)
+
+        // 03. Detect and label objects found in the selected image.
         val detectedObjects = objectDetectionService.detectObjects(imageUri)
 
-        // 03. Generate editable metadata from the extracted image content.
+        // 04. Generate editable metadata from the translated image content.
         val title = metadataService.generateTitle(text, detectedObjects)
         val description = metadataService.generateDescription(text, detectedObjects)
         val category = metadataService.classifyCategory(text, detectedObjects)
         val tags = metadataService.generateTags(text, detectedObjects)
 
-        // 04. Create a document draft from the analysis results.
+        // 05. Create a document draft from the analysis results.
         val draft = DocumentDraft(
             imageUri = imageUri,
             title = title,
@@ -38,7 +43,7 @@ class AnalyzeDocument(
             detectedObjects = detectedObjects,
         )
 
-        // 05. Return the analyzed draft to the caller for review.
+        // 06. Return the analyzed draft to the caller for review.
         draft
     }
 }

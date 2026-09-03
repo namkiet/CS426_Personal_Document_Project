@@ -66,6 +66,8 @@ dependencies {
     implementation(libs.mlkit.text.recognition)
     implementation(libs.mlkit.image.labeling)
     implementation(libs.mlkit.document.scanner)
+    implementation(libs.mlkit.language.id)
+    implementation(libs.mlkit.translate)
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.mediapipe.tasks.text)
 

@@ -13,6 +13,7 @@ import com.example.personaldocumentproject.data.ml.llm.ModelManagerRepository
 import com.example.personaldocumentproject.data.ml.llm.LiteRtLmService
 import com.example.personaldocumentproject.data.ml.metadata.MediaPipeMetadataService
 import com.example.personaldocumentproject.data.ml.ocr.MlKitOcrService
+import com.example.personaldocumentproject.data.ml.translation.MlKitEnglishTranslationService
 import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
 import com.example.personaldocumentproject.domain.service.LlmService
 import com.example.personaldocumentproject.domain.usecase.AnalyzeDocument
@@ -36,6 +37,7 @@ class AppContainer(private val context: Context) {
     private val metadataService = MediaPipeMetadataService(context)
     private val embeddingService = MediaPipeEmbeddingService(context)
     private val imageStorageService = LocalImageStorageService(context)
+    private val textTranslationService = MlKitEnglishTranslationService()
 
     // ── Model Manager ─────────────────────────────────────────────────────────
     val modelManagerRepository = ModelManagerRepository(context)
@@ -59,6 +61,7 @@ class AppContainer(private val context: Context) {
         ocrService,
         objectDetectionService,
         metadataService,
+        textTranslationService,
     )
     val saveDocument = SaveDocument(repository, imageStorageService, embeddingService)
     val searchDocuments = SearchDocuments(repository, embeddingService)

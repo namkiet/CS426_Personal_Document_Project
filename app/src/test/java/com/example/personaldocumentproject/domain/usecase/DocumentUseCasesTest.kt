@@ -11,6 +11,7 @@ import com.example.personaldocumentproject.domain.model.DocumentDraft
 import com.example.personaldocumentproject.domain.service.ImageStorageService
 import com.example.personaldocumentproject.domain.service.ObjectDetectionService
 import com.example.personaldocumentproject.domain.service.OcrService
+import com.example.personaldocumentproject.domain.service.TextTranslationService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
@@ -28,6 +29,7 @@ class DocumentUseCasesTest {
             ocrService = FakeOcrService("University lecture\nDatabase indexing"),
             objectDetectionService = FakeObjectDetectionService(listOf("book", "laptop")),
             metadataService = SimpleMetadataService(),
+            textTranslationService = FakeTextTranslationService(),
         )
 
         val draft = analyzeDocument("content://lecture")
@@ -39,6 +41,24 @@ class DocumentUseCasesTest {
         assertEquals(DocumentCategory.STUDY, draft.category)
         assertEquals(listOf("book", "laptop"), draft.tags)
         assertEquals(listOf("book", "laptop"), draft.detectedObjects)
+    }
+
+    @Test
+    fun analyzeDocument_usesEnglishTranslationForMetadataAndStoredOcrText() = runBlocking {
+        val analyzeDocument = AnalyzeDocument(
+            ocrService = FakeOcrService("Bài giảng đại học\nLập chỉ mục cơ sở dữ liệu"),
+            objectDetectionService = FakeObjectDetectionService(listOf("book")),
+            metadataService = SimpleMetadataService(),
+            textTranslationService = FakeTextTranslationService(
+                "University lecture\nDatabase indexing",
+            ),
+        )
+
+        val draft = analyzeDocument("content://vietnamese-lecture")
+
+        assertEquals("University lecture\nDatabase indexing", draft.ocrText)
+        assertEquals("University lecture", draft.title)
+        assertEquals(DocumentCategory.STUDY, draft.category)
     }
 
     @Test
@@ -137,6 +157,12 @@ class DocumentUseCasesTest {
         tags = tags,
         detectedObjects = detectedObjects,
     )
+}
+
+private class FakeTextTranslationService(
+    private val translation: String? = null,
+) : TextTranslationService {
+    override suspend fun translateToEnglish(text: String) = translation ?: text
 }
 
 private class FakeDocumentDao : DocumentDao {

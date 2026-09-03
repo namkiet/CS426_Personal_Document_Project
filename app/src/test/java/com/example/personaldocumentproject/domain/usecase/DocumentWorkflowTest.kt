@@ -11,6 +11,7 @@ import com.example.personaldocumentproject.domain.model.DocumentDraft
 import com.example.personaldocumentproject.domain.service.ImageStorageService
 import com.example.personaldocumentproject.domain.service.ObjectDetectionService
 import com.example.personaldocumentproject.domain.service.OcrService
+import com.example.personaldocumentproject.domain.service.TextTranslationService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
@@ -35,6 +36,9 @@ class DocumentWorkflowTest {
                 override suspend fun detectObjects(imageUri: String) = listOf("book")
             },
             metadataService = SimpleMetadataService(),
+            textTranslationService = object : TextTranslationService {
+                override suspend fun translateToEnglish(text: String) = text
+            },
         )
         val save = SaveDocument(
             repository = repository,
