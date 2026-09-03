@@ -73,7 +73,7 @@ fun DetailScreen(
                 Text(document.description, style = MaterialTheme.typography.bodyMedium, color = Color.White)
 
                 if (document.tags.isNotEmpty()) {
-                    Text("Tags", style = MaterialTheme.typography.titleMedium, color = Color.White)
+                    Text("Image Labels (Visual Content)", style = MaterialTheme.typography.titleMedium, color = Color.White)
                     Text(document.tags.joinToString(", "), style = MaterialTheme.typography.bodyMedium, color = Color.White)
                 }
 

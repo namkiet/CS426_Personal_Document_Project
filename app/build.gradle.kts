@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -17,6 +19,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            abiFilters += listOf("arm64-v8a", "x86_64")
+        }
     }
 
     buildTypes {
@@ -35,6 +41,10 @@ android {
     }
     androidResources {
         noCompress += "litertlm"
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
     }
 }
 
@@ -43,6 +53,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
@@ -52,8 +63,20 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.coil.compose)
     implementation(libs.mlkit.text.recognition)
+    implementation(libs.mlkit.image.labeling)
+    implementation(libs.mlkit.document.scanner)
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.mediapipe.tasks.text)
+
+    implementation(platform(libs.firebase.bom))
+
+    // Room
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
+    // LiteRT-LM on-device LLM inference
+    implementation(libs.litertlm.android)
 
     testImplementation(libs.junit)
 
@@ -61,6 +84,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.room.testing)
 
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)

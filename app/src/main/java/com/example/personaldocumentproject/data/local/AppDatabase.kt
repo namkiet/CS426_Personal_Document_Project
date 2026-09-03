@@ -1,23 +1,26 @@
 package com.example.personaldocumentproject.data.local
 
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
 
-/** Database boundary; replace [InMemoryDocumentDao] with the Room-generated database. */
-class AppDatabase {
-    val documentDao: DocumentDao = InMemoryDocumentDao()
-}
+/** Room database; single instance shared across the app via [getInstance]. */
+@Database(entities = [DocumentEntity::class], version = 1, exportSchema = false)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun documentDao(): DocumentDao
 
-private class InMemoryDocumentDao : DocumentDao {
-    private val documents = MutableStateFlow<List<DocumentEntity>>(emptyList())
+    companion object {
+        @Volatile
+        private var instance: AppDatabase? = null
 
-    override fun observeAll() = documents.asStateFlow()
-    override suspend fun get(id: String) = documents.value.firstOrNull { it.id == id }
-    override suspend fun upsert(document: DocumentEntity) {
-        documents.update { current ->
-            (current.filterNot { it.id == document.id } + document)
-                .sortedByDescending(DocumentEntity::createdAt)
-        }
+        fun getInstance(context: Context): AppDatabase =
+            instance ?: synchronized(this) {
+                instance ?: Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "documents.db",
+                ).build().also { instance = it }
+            }
     }
 }
