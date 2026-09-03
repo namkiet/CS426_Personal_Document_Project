@@ -5,6 +5,7 @@ import com.example.personaldocumentproject.data.mapper.DocumentMapper
 import com.example.personaldocumentproject.domain.model.Document
 import com.example.personaldocumentproject.domain.model.SearchResult
 import com.example.personaldocumentproject.domain.repository.DocumentRepository
+import com.example.personaldocumentproject.domain.service.cosineSimilarity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -48,13 +49,4 @@ class DefaultDocumentRepository(
     }
 
     override suspend fun save(document: Document) = documentDao.upsert(mapper.toEntity(document))
-
-    private fun cosineSimilarity(first: List<Float>, second: List<Float>): Float {
-        if (first.isEmpty() || first.size != second.size) return 0f
-        val dot = first.indices.sumOf { (first[it] * second[it]).toDouble() }
-        val firstMagnitude = kotlin.math.sqrt(first.sumOf { (it * it).toDouble() })
-        val secondMagnitude = kotlin.math.sqrt(second.sumOf { (it * it).toDouble() })
-        return if (firstMagnitude == 0.0 || secondMagnitude == 0.0) 0f
-        else (dot / (firstMagnitude * secondMagnitude)).toFloat().coerceIn(0f, 1f)
-    }
 }

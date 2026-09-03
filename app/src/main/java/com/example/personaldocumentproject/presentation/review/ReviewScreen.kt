@@ -83,6 +83,12 @@ fun ReviewScreen(
             state.draft?.let { draft ->
                 DraftTitleField(draft.title, onTitleChanged)
 
+                Text(
+                    "Category: ${draft.category.name.lowercase().replaceFirstChar(Char::uppercase)}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White,
+                )
+
                 OutlinedCard(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("Description", style = MaterialTheme.typography.titleMedium)

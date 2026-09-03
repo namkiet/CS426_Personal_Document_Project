@@ -12,7 +12,7 @@ import com.example.personaldocumentproject.data.ml.llm.ModelCatalog
 import com.example.personaldocumentproject.data.ml.llm.ModelManagerRepository
 import com.example.personaldocumentproject.data.ml.llm.LiteRtLmService
 import com.example.personaldocumentproject.data.ml.metadata.MediaPipeDescriptionGenerationService
-import com.example.personaldocumentproject.data.ml.metadata.SimpleCategoryClassificationService
+import com.example.personaldocumentproject.data.ml.metadata.EmbeddingCategoryClassificationService
 import com.example.personaldocumentproject.data.ml.metadata.SimpleTagGenerationService
 import com.example.personaldocumentproject.data.ml.metadata.SimpleTitleGenerationService
 import com.example.personaldocumentproject.data.ml.ocr.MlKitOcrService
@@ -39,9 +39,9 @@ class AppContainer(private val context: Context) {
     private val objectDetectionService = MlKitImageLabelingService(context)
     private val titleGenerationService = SimpleTitleGenerationService
     private val descriptionGenerationService = MediaPipeDescriptionGenerationService(context)
-    private val categoryClassificationService = SimpleCategoryClassificationService
     private val tagGenerationService = SimpleTagGenerationService
     private val embeddingService = MediaPipeEmbeddingService(context)
+    private val categoryClassificationService = EmbeddingCategoryClassificationService(embeddingService)
     private val imageStorageService = LocalImageStorageService(context)
     private val textTranslationService = MlKitEnglishTranslationService()
 

@@ -74,6 +74,12 @@ fun DetailScreen(
 
                 Text(document.title, style = MaterialTheme.typography.headlineMedium, color = Color.White)
 
+                Text(
+                    "Category: ${document.category.name.lowercase().replaceFirstChar(Char::uppercase)}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White,
+                )
+
                 Text("Description", style = MaterialTheme.typography.titleMedium, color = Color.White)
                 Text(document.description, style = MaterialTheme.typography.bodyMedium, color = Color.White)
 

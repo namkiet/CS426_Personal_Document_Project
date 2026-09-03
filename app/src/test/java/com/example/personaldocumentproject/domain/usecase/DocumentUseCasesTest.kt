@@ -4,7 +4,6 @@ import com.example.personaldocumentproject.data.local.DocumentDao
 import com.example.personaldocumentproject.data.local.DocumentEntity
 import com.example.personaldocumentproject.data.mapper.DocumentMapper
 import com.example.personaldocumentproject.data.ml.embedding.SimpleEmbeddingService
-import com.example.personaldocumentproject.data.ml.metadata.SimpleCategoryClassificationService
 import com.example.personaldocumentproject.data.ml.metadata.SimpleDescriptionGenerationService
 import com.example.personaldocumentproject.data.ml.metadata.SimpleTagGenerationService
 import com.example.personaldocumentproject.data.ml.metadata.SimpleTitleGenerationService
@@ -37,7 +36,10 @@ class DocumentUseCasesTest {
             objectDetectionService = FakeObjectDetectionService(listOf("book", "laptop")),
             titleGenerationService = SimpleTitleGenerationService,
             descriptionGenerationService = SimpleDescriptionGenerationService,
-            categoryClassificationService = SimpleCategoryClassificationService,
+            categoryClassificationService = object : CategoryClassificationService {
+                override suspend fun classifyCategory(ocrText: String, detectedObjects: List<String>) =
+                    DocumentCategory.STUDY
+            },
             tagGenerationService = SimpleTagGenerationService,
             textTranslationService = FakeTextTranslationService(),
         )
