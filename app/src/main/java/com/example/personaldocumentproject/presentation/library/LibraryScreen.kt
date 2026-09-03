@@ -146,7 +146,8 @@ fun LibraryScreen(stateLibrary: LibraryUiState, onSearch: () -> Unit, onDocument
                 items(items = stateLibrary.documents, key = Document::id) { document ->
                     DocumentCard(
                         document = document,
-                        onClick = { onDocumentClick(document.id) }
+                        onClick = { onDocumentClick(document.id) },
+                        isImage = true,
                     )
                 }
             }

@@ -5,4 +5,4 @@ import com.example.personaldocumentproject.domain.model.SearchResult
 import com.example.personaldocumentproject.presentation.library.components.DocumentCard
 
 @Composable
-fun SearchResultCard(result: SearchResult, onClick: () -> Unit = {}) = DocumentCard(result.document, onClick)
+fun SearchResultCard(result: SearchResult, onClick: () -> Unit = {}) = DocumentCard(result.document, onClick, isImage = true)
