@@ -3,7 +3,10 @@ package com.example.personaldocumentproject.di
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.personaldocumentproject.MainViewModel
 import com.example.personaldocumentproject.data.local.AppDatabase
+import com.example.personaldocumentproject.data.local.SettingsLocalDataSource
+import com.example.personaldocumentproject.data.local.dataStore
 import com.example.personaldocumentproject.data.local.storage.LocalImageStorageService
 import com.example.personaldocumentproject.data.mapper.DocumentMapper
 import com.example.personaldocumentproject.data.ml.embedding.MediaPipeEmbeddingService
@@ -15,6 +18,7 @@ import com.example.personaldocumentproject.data.ml.metadata.SimpleMetadataServic
 import com.example.personaldocumentproject.data.ml.ocr.MlKitOcrService
 import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
 import com.example.personaldocumentproject.domain.service.LlmService
+import com.example.personaldocumentproject.data.repository.SettingRepositoryImpl
 import com.example.personaldocumentproject.domain.usecase.AnalyzeDocument
 import com.example.personaldocumentproject.domain.usecase.GetDocument
 import com.example.personaldocumentproject.domain.usecase.ObserveDocuments
@@ -26,6 +30,7 @@ import com.example.personaldocumentproject.presentation.library.LibraryViewModel
 import com.example.personaldocumentproject.presentation.modelmanager.ModelManagerViewModel
 import com.example.personaldocumentproject.presentation.review.ReviewViewModel
 import com.example.personaldocumentproject.presentation.search.SearchViewModel
+import com.example.personaldocumentproject.presentation.setting.SettingViewModel
 
 /** Composition root. Replace adapters here without leaking infrastructure into domain or UI. */
 class AppContainer(private val context: Context) {
@@ -37,21 +42,8 @@ class AppContainer(private val context: Context) {
     private val embeddingService = MediaPipeEmbeddingService(context)
     private val imageStorageService = LocalImageStorageService(context)
 
-    // ── Model Manager ─────────────────────────────────────────────────────────
-    val modelManagerRepository = ModelManagerRepository(context)
-
-    /**
-     * Returns the active [LlmService] for the model the user selected in Model Manager.
-     * If no model file is present on disk, falls back to a no-op stub so the rest of the
-     * app doesn't crash — the Review screen will show a clear error message instead.
-     *
-     * This is evaluated fresh on each call, so switching the active model in Model Manager
-     * takes effect the next time the Review screen requests an enhancement.
-     */
-    fun activeLlmService(): LlmService =
-        modelManagerRepository.activeServiceOrNull() ?: NoModelLlmService
-
-    // ── Use-cases ─────────────────────────────────────────────────────────────
+    private val settingsLocalDataSource = SettingsLocalDataSource(context.dataStore)
+    private val settingsRepository = SettingRepositoryImpl(settingsLocalDataSource)
 
     val observeDocuments = ObserveDocuments(repository)
     val getDocument = GetDocument(repository)
@@ -79,6 +71,11 @@ class AppContainer(private val context: Context) {
     val searchViewModelFactory = factory { SearchViewModel(searchDocuments) }
     val detailViewModelFactory = factory { DetailViewModel(getDocument) }
     val modelManagerViewModelFactory = factory { ModelManagerViewModel(modelManagerRepository) }
+    val mainViewModelFactory = factory { MainViewModel(settingsRepository) }
+
+    val settingViewModelFactory = factory { SettingViewModel(
+        repository = settingsRepository
+    ) }
 
     private fun factory(create: () -> ViewModel): ViewModelProvider.Factory =
         object : ViewModelProvider.Factory {

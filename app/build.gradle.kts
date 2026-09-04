@@ -49,6 +49,7 @@ android {
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.core)
     implementation(libs.androidx.compose.material.icons.extended)
@@ -75,6 +76,11 @@ dependencies {
 
     // LiteRT-LM on-device LLM inference
     implementation(libs.litertlm.android)
+    implementation("androidx.datastore:datastore-preferences:1.2.1")
+    implementation("com.google.dagger:dagger:2.60.1")
+    implementation("com.google.dagger:dagger-compiler:2.60.1")
+    implementation("com.google.dagger:hilt-android:2.60.1")
+
 
     testImplementation(libs.junit)
 

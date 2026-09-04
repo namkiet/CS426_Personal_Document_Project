@@ -13,17 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.personaldocumentproject.domain.model.SearchResult
+import androidx.compose.ui.unit.dp
+import com.example.personaldocumentproject.domain.model.SearchResult
+import com.example.personaldocumentproject.presentation.components.DocumentCard
+import com.example.personaldocumentproject.presentation.components.DocumentCardLayoutConfig
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchResultCard(result: SearchResult, onClick: () -> Unit = {}) {
-    Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp)) {
-            Text(result.document.title, style = MaterialTheme.typography.titleMedium)
-            Text(result.document.description, style = MaterialTheme.typography.bodyMedium)
-            if (LocalContext.current.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) {
-                Text("Score: %.2f".format(result.score), style = MaterialTheme.typography.labelMedium)
-            }
-        }
-    }
-}
+fun SearchResultCard(result: SearchResult, onClick: () -> Unit = {}) = DocumentCard(result.document, onClick, config = DocumentCardLayoutConfig(false, 0.dp, 0.dp))

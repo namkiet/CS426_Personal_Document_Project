@@ -20,9 +20,11 @@ class SearchViewModel(private val searchDocuments: SearchDocuments) : ViewModel(
         performSearch(300)
     }
 
-    fun performSearch() = performSearch(0)
+    fun onClearQuery() {
+        mutableState.value = mutableState.value.copy(query = "")
+    }
 
-    private fun performSearch(delayMillis: Long) {
+    fun performSearch() {
         val query = mutableState.value.query
         searchJob?.cancel()
         searchJob = viewModelScope.launch {

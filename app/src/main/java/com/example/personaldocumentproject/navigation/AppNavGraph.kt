@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.personaldocumentproject.di.AppContainer
+import com.example.personaldocumentproject.domain.model.UserSetting
 import com.example.personaldocumentproject.presentation.capture.CaptureRoute
 import com.example.personaldocumentproject.presentation.capture.CaptureViewModel
 import com.example.personaldocumentproject.presentation.detail.DetailRoute
@@ -19,29 +20,41 @@ import com.example.personaldocumentproject.presentation.review.ReviewRoute
 import com.example.personaldocumentproject.presentation.review.ReviewViewModel
 import com.example.personaldocumentproject.presentation.search.SearchRoute
 import com.example.personaldocumentproject.presentation.search.SearchViewModel
+import com.example.personaldocumentproject.presentation.setting.SettingRoute
+import com.example.personaldocumentproject.presentation.setting.SettingViewModel
 
 @Composable
-fun AppNavGraph(container: AppContainer) {
+fun AppNavGraph(container: AppContainer, userSetting: UserSetting) {
     var route: Routes by remember { mutableStateOf(Routes.Library) }
     when (val current = route) {
         Routes.Library -> {
-            val viewModel: LibraryViewModel = viewModel(factory = container.libraryViewModelFactory)
+            val viewModelLibrary: LibraryViewModel = viewModel(factory = container.libraryViewModelFactory)
+            val viewModelCapture: CaptureViewModel = viewModel(factory = container.captureViewModelFactory)
+
             LibraryRoute(
-                viewModel = viewModel,
-                onCapture = { route = Routes.Capture },
+                viewModelLibrary = viewModelLibrary,
+                userSetting = userSetting,
                 onSearch = { route = Routes.Search },
                 onDocumentClick = { route = Routes.Detail(it) },
                 onManageModels = { route = Routes.ModelManager },
+                onAccountClick = { route = Routes.Account},
+                onSettingClick = { route = Routes.Setting},
             )
-        }
-        Routes.Capture -> {
-            val viewModel: CaptureViewModel = viewModel(factory = container.captureViewModelFactory)
             CaptureRoute(
-                viewModel = viewModel,
-                onImageSelected = { route = Routes.Review(it) },
-                onBack = { route = Routes.Library },
+                viewModel = viewModelCapture,
+                onImageSelected = {route = Routes.Review(it)},
+                onBack = {}
             )
         }
+        Routes.Capture -> {}
+//        Routes.Capture -> {
+//            val viewModel: CaptureViewModel = viewModel(factory = container.captureViewModelFactory)
+//            CaptureRoute(
+//                viewModel = viewModel,
+//                onImageSelected = { route = Routes.Review(it) },
+//                onBack = { route = Routes.Library },
+//            )
+//        }
         is Routes.Review -> {
             val viewModel: ReviewViewModel = viewModel(
                 key = "review:${current.imageUri}",
@@ -55,11 +68,20 @@ fun AppNavGraph(container: AppContainer) {
             )
         }
         Routes.Search -> {
-            val viewModel: SearchViewModel = viewModel(factory = container.searchViewModelFactory)
+            val viewModelSearch: SearchViewModel = viewModel(factory = container.searchViewModelFactory)
+            val viewModelCapture: CaptureViewModel = viewModel(factory = container.captureViewModelFactory)
             SearchRoute(
-                viewModel = viewModel,
+                viewModelSearch = viewModelSearch,
+                userSetting = userSetting,
                 onBack = { route = Routes.Library },
                 onDocumentClick = { route = Routes.Detail(it) },
+                onSettingClick = { route = Routes.Setting },
+                onAccountClick = {route= Routes.Account},
+            )
+            CaptureRoute(
+                viewModel = viewModelCapture,
+                onImageSelected = {route = Routes.Review(it)},
+                onBack = {}
             )
         }
         is Routes.Detail -> {
@@ -80,6 +102,16 @@ fun AppNavGraph(container: AppContainer) {
             ModelManagerRoute(
                 viewModel = viewModel,
                 onBack = { route = Routes.Library },
+            )
+        }
+
+        Routes.Account -> {}
+
+        Routes.Setting -> {
+            val viewModel: SettingViewModel = viewModel(factory = container.settingViewModelFactory)
+            SettingRoute(
+                viewModel = viewModel,
+                onBack = { route = Routes.Library}
             )
         }
     }
