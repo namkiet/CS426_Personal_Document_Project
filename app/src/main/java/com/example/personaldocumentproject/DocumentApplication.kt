@@ -16,7 +16,9 @@ class DocumentApplication : Application() {
         super.onCreate()
         container = AppContainer(this)
         applicationScope.launch {
-            container.seedDebugDocuments()
+            if (BuildConfig.DEBUG) {
+                container.seedDebugDocuments()
+            }
             container.warmCaches()
         }
     }

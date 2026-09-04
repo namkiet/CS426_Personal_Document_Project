@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import coil.compose.AsyncImage
+import com.example.personaldocumentproject.BuildConfig
 import com.example.personaldocumentproject.domain.model.Document
 import com.example.personaldocumentproject.domain.model.DocumentCategory
 import com.example.personaldocumentproject.domain.model.MockDocuments
@@ -130,8 +131,8 @@ fun DocumentCard(
             Spacer(Modifier.height(4.dp))
             Text(SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(document.createdAt)),
                 color = TextDim, fontSize = 11.sp)
-            // Debug: show search scores
-            if (searchResult != null) {
+            // Debug-only: show search scores to inspect ranking behavior without exposing internals in release builds.
+            if (BuildConfig.DEBUG && searchResult != null) {
                 Spacer(Modifier.height(6.dp))
                 Column(
                     Modifier

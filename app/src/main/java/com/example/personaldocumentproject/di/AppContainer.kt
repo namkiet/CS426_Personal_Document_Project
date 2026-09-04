@@ -70,6 +70,7 @@ class AppContainer(private val context: Context) {
     }
 
     suspend fun seedDebugDocuments() {
+        if (!BuildConfig.DEBUG) return
         val isDebuggable = context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
         if (isDebuggable) debugDocumentSeeder.seed()
     }
