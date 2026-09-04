@@ -1,8 +1,11 @@
 package com.example.personaldocumentproject.presentation.capture
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,8 +31,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.example.personaldocumentproject.ui.theme.*
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.RESULT_FORMAT_JPEG
@@ -79,6 +84,34 @@ fun CaptureScreen(
         setLoading(false)
         if (uri != null) {
             onImageSelected(uri.toString())
+        }
+    }
+
+    val mediaPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Manifest.permission.READ_MEDIA_IMAGES
+    } else {
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            picker.launch("image/*")
+        } else {
+            onError("Permission to access photos was denied. Please allow photo access in settings.")
+        }
+    }
+
+    fun openGallery() {
+        onClearError()
+        // On Android 13+ Photo Picker / GetContent doesn't strictly block without runtime permission,
+        // but if permission is required or on older SDKs, we verify and request appropriately.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ||
+            ContextCompat.checkSelfPermission(context, mediaPermission) == PackageManager.PERMISSION_GRANTED) {
+            picker.launch("image/*")
+        } else {
+            permissionLauncher.launch(mediaPermission)
         }
     }
 
@@ -206,10 +239,7 @@ fun CaptureScreen(
                     iconTint = StudyColor,
                     title = "Import from Gallery",
                     subtitle = "Select an existing photo, scanned file, or screenshot from your device.",
-                    onClick = {
-                        onClearError()
-                        picker.launch("image/*")
-                    },
+                    onClick = { openGallery() },
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -238,7 +268,7 @@ fun CaptureScreen(
                                 fontSize = 13.sp,
                             )
                             Text(
-                                text = "• Place document on a flat, contrasting background.\n• Ensure adequate lighting and avoid strong glare.\n• 100% on-device processing: your data never leaves your phone.",
+                                text = "• Place document on a flat, contrasting background.\n• Ensure adequate lighting and avoid strong glare.",
                                 color = TextMuted,
                                 fontSize = 12.sp,
                                 lineHeight = 18.sp,
@@ -321,3 +351,16 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
     is ContextWrapper -> baseContext.findActivity()
     else -> null
 }
+
+@Preview(name = "Capture Screen - Dark", showBackground = true, backgroundColor = 0xFF0D0D12, widthDp = 390, heightDp = 844)
+@Composable
+private fun CaptureScreenPreview() {
+    PersonalDocumentProjectTheme {
+        CaptureScreen(
+            state = CaptureUiState(),
+            onImageSelected = {},
+            onBack = {},
+        )
+    }
+}
+

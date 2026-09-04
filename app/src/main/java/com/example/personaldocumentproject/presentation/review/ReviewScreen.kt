@@ -1,5 +1,6 @@
 package com.example.personaldocumentproject.presentation.review
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -30,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.personaldocumentproject.domain.model.*
+import com.example.personaldocumentproject.presentation.common.FullScreenImageViewer
 import com.example.personaldocumentproject.presentation.library.components.DocumentArtwork
 import com.example.personaldocumentproject.ui.components.AppTextField
 import com.example.personaldocumentproject.ui.theme.*
@@ -67,6 +70,49 @@ fun ReviewScreen(
     var newTag by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     var categoryMenu by remember { mutableStateOf(false) }
+    var showDiscardConfirmation by rememberSaveable { mutableStateOf(false) }
+    var showFullImage by rememberSaveable { mutableStateOf(false) }
+
+    val hasUnsavedChanges = draft != null && !state.isSaved
+
+    BackHandler(enabled = hasUnsavedChanges) {
+        showDiscardConfirmation = true
+    }
+
+    if (showDiscardConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDiscardConfirmation = false },
+            title = {
+                Text("Discard Document?", color = TextPrimary, fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Text(
+                    "Your analyzed document hasn't been saved and will be lost if you leave.",
+                    color = TextMuted,
+                    fontSize = 14.sp,
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDiscardConfirmation = false
+                        onBack()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = DeleteColor),
+                ) {
+                    Text("Discard", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDiscardConfirmation = false }) {
+                    Text("Keep Editing", color = TextDim)
+                }
+            },
+            containerColor = SurfaceRaised,
+            shape = RoundedCornerShape(14.dp),
+        )
+    }
+
     val addTag = {
         if (newTag.isNotBlank()) {
             onTagsChanged(draft?.tags.orEmpty() + newTag.trim())
@@ -78,11 +124,27 @@ fun ReviewScreen(
         Modifier.fillMaxSize().background(AppBackground).statusBarsPadding().navigationBarsPadding()
             .pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) }
     ) {
+        if (showFullImage && draft != null && draft.imageUri.isNotBlank()) {
+            FullScreenImageViewer(
+                imageUri = draft.imageUri,
+                onDismiss = { showFullImage = false },
+            )
+        }
+
         Row(
             Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TextButton(onClick = onBack, contentPadding = PaddingValues(4.dp)) {
+            TextButton(
+                onClick = {
+                    if (hasUnsavedChanges) {
+                        showDiscardConfirmation = true
+                    } else {
+                        onBack()
+                    }
+                },
+                contentPadding = PaddingValues(4.dp),
+            ) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
                 Spacer(Modifier.width(6.dp))
                 Text("Review Document", fontWeight = FontWeight.SemiBold)
@@ -97,7 +159,16 @@ fun ReviewScreen(
                 }
             }
             draft != null -> Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                DocumentArtwork(draft.asDocument(), Modifier.fillMaxWidth().aspectRatio(4f / 3f))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(4f / 3f)
+                        .clickable {
+                            if (draft.imageUri.isNotBlank()) showFullImage = true
+                        }
+                ) {
+                    DocumentArtwork(draft.asDocument(), Modifier.fillMaxSize())
+                }
                 Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
                     draft.warning?.let { warningText ->
                         Card(

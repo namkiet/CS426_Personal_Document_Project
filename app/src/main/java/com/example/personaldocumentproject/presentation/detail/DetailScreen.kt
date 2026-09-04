@@ -10,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.personaldocumentproject.domain.model.MockDocuments
+import com.example.personaldocumentproject.presentation.common.FullScreenImageViewer
 import com.example.personaldocumentproject.presentation.library.components.CategoryBadge
 import com.example.personaldocumentproject.presentation.library.components.DocumentArtwork
 import com.example.personaldocumentproject.ui.theme.*
@@ -45,6 +47,7 @@ fun DetailRoute(documentId: String, viewModel: DetailViewModel, onBack: () -> Un
 fun DetailScreen(state: DetailUiState, onBack: () -> Unit, onDelete: () -> Unit) {
     var ocrExpanded by rememberSaveable { mutableStateOf(false) }
     var showDeleteConfirmation by rememberSaveable { mutableStateOf(false) }
+    var showFullImage by rememberSaveable { mutableStateOf(false) }
 
     if (showDeleteConfirmation) {
         AlertDialog(
@@ -93,15 +96,26 @@ fun DetailScreen(state: DetailUiState, onBack: () -> Unit, onDelete: () -> Unit)
             }
             state.document != null -> {
                 val document = state.document
+                if (showFullImage && document.imageUri.isNotBlank()) {
+                    FullScreenImageViewer(
+                        imageUri = document.imageUri,
+                        onDismiss = { showFullImage = false },
+                    )
+                }
+
                 Column(Modifier.fillMaxSize()) {
                     Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                         TextButton(onClick = onBack, contentPadding = PaddingValues(horizontal = 4.dp)) {
-                            Icon(Icons.Default.ArrowBack, null); Spacer(Modifier.width(6.dp))
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, null); Spacer(Modifier.width(6.dp))
                             Text(document.title, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.SemiBold)
                         }
                     }
                     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                        DocumentArtwork(document, Modifier.fillMaxWidth().aspectRatio(4f / 3f))
+                        Box(modifier = Modifier.fillMaxWidth().aspectRatio(4f / 3f).clickable {
+                            if (document.imageUri.isNotBlank()) showFullImage = true
+                        }) {
+                            DocumentArtwork(document, Modifier.fillMaxSize())
+                        }
                         Column(Modifier.padding(20.dp)) {
                             Text(document.title, color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(10.dp))
