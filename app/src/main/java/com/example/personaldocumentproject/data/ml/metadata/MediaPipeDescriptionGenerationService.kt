@@ -11,7 +11,6 @@ import java.io.FileOutputStream
 
 class MediaPipeDescriptionGenerationService(
     context: Context,
-    private val fallback: DescriptionGenerationService = SimpleDescriptionGenerationService,
 ) : DescriptionGenerationService {
     private val applicationContext = context.applicationContext
 
@@ -26,7 +25,7 @@ class MediaPipeDescriptionGenerationService(
             objects.takeIf(List<String>::isNotEmpty)?.joinToString(", ", "Detected objects: ").orEmpty(),
         ).filter(String::isNotBlank).joinToString("\n\n")
 
-        if (input.isBlank()) return fallback.generateDescription(ocrText, detectedObjects)
+        if (input.isBlank()) return fallbackDescription(ocrText, detectedObjects)
 
         return runCatching {
             prepare()
@@ -40,11 +39,17 @@ class MediaPipeDescriptionGenerationService(
                 TextSummarizer.createFromOptions(applicationContext, options).use {
                     it.summarize(input).summary.trim()
                 }
-            }.ifBlank { fallback.generateDescription(ocrText, detectedObjects) }
+            }.ifBlank { fallbackDescription(ocrText, detectedObjects) }
         }.getOrElse { error ->
             if (error is CancellationException) throw error
-            fallback.generateDescription(ocrText, detectedObjects)
+            fallbackDescription(ocrText, detectedObjects)
         }
+    }
+
+    private fun fallbackDescription(ocrText: String, detectedObjects: List<String>): String = when {
+        ocrText.isNotBlank() -> ocrText.lineSequence().firstOrNull { it.isNotBlank() }?.take(100)?.trim().orEmpty()
+        detectedObjects.isNotEmpty() -> detectedObjects.joinToString(", ")
+        else -> ""
     }
 
     private fun copyModelToCache(): String {

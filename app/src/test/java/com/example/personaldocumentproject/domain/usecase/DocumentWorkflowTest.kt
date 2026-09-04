@@ -3,14 +3,14 @@ package com.example.personaldocumentproject.domain.usecase
 import com.example.personaldocumentproject.data.local.DocumentDao
 import com.example.personaldocumentproject.data.local.DocumentEntity
 import com.example.personaldocumentproject.data.mapper.DocumentMapper
-import com.example.personaldocumentproject.data.ml.embedding.SimpleEmbeddingService
-import com.example.personaldocumentproject.data.ml.metadata.SimpleDescriptionGenerationService
 import com.example.personaldocumentproject.data.ml.metadata.SimpleTagGenerationService
 import com.example.personaldocumentproject.data.ml.metadata.SimpleTitleGenerationService
 import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
 import com.example.personaldocumentproject.domain.model.DocumentCategory
 import com.example.personaldocumentproject.domain.model.DocumentDraft
 import com.example.personaldocumentproject.domain.service.CategoryClassificationService
+import com.example.personaldocumentproject.domain.service.DescriptionGenerationService
+import com.example.personaldocumentproject.domain.service.EmbeddingService
 import com.example.personaldocumentproject.domain.service.ImageStorageService
 import com.example.personaldocumentproject.domain.service.ObjectDetectionService
 import com.example.personaldocumentproject.domain.service.OcrService
@@ -28,6 +28,12 @@ class DocumentWorkflowTest {
     private val dummyImageStorage = object : ImageStorageService {
         override suspend fun saveImageLocally(sourceUri: String): String = sourceUri
     }
+    private val fakeEmbeddingService = object : EmbeddingService {
+        override suspend fun embed(text: String): List<Float> = List(16) { 1f }
+    }
+    private val fakeDescriptionService = object : DescriptionGenerationService {
+        override suspend fun generateDescription(ocrText: String, detectedObjects: List<String>) = "Test description"
+    }
 
     @Test
     fun analyze_then_save_persists_document() = runBlocking {
@@ -39,7 +45,7 @@ class DocumentWorkflowTest {
                 override suspend fun detectObjects(imageUri: String) = listOf("book")
             },
             titleGenerationService = SimpleTitleGenerationService,
-            descriptionGenerationService = SimpleDescriptionGenerationService,
+            descriptionGenerationService = fakeDescriptionService,
             categoryClassificationService = object : CategoryClassificationService {
                 override suspend fun classifyCategory(ocrText: String, detectedObjects: List<String>) =
                     DocumentCategory.OTHER
@@ -52,7 +58,7 @@ class DocumentWorkflowTest {
         val save = SaveDocument(
             repository = repository,
             imageStorageService = dummyImageStorage,
-            embeddingService = SimpleEmbeddingService(),
+            embeddingService = fakeEmbeddingService,
             idGenerator = { "id" },
             clock = { 42L },
         )
@@ -70,7 +76,7 @@ class DocumentWorkflowTest {
         SaveDocument(
             repository = repository,
             imageStorageService = dummyImageStorage,
-            embeddingService = SimpleEmbeddingService(),
+            embeddingService = fakeEmbeddingService,
             idGenerator = { "old" },
             clock = { 1L },
         )(
@@ -88,7 +94,7 @@ class DocumentWorkflowTest {
         SaveDocument(
             repository = repository,
             imageStorageService = dummyImageStorage,
-            embeddingService = SimpleEmbeddingService(),
+            embeddingService = fakeEmbeddingService,
             idGenerator = { "new" },
             clock = { 2L },
         )(

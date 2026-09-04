@@ -3,8 +3,6 @@ package com.example.personaldocumentproject.domain.usecase
 import com.example.personaldocumentproject.data.local.DocumentDao
 import com.example.personaldocumentproject.data.local.DocumentEntity
 import com.example.personaldocumentproject.data.mapper.DocumentMapper
-import com.example.personaldocumentproject.data.ml.embedding.SimpleEmbeddingService
-import com.example.personaldocumentproject.data.ml.metadata.SimpleDescriptionGenerationService
 import com.example.personaldocumentproject.data.ml.metadata.SimpleTagGenerationService
 import com.example.personaldocumentproject.data.ml.metadata.SimpleTitleGenerationService
 import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
@@ -12,6 +10,7 @@ import com.example.personaldocumentproject.domain.model.DocumentCategory
 import com.example.personaldocumentproject.domain.model.DocumentDraft
 import com.example.personaldocumentproject.domain.service.CategoryClassificationService
 import com.example.personaldocumentproject.domain.service.DescriptionGenerationService
+import com.example.personaldocumentproject.domain.service.EmbeddingService
 import com.example.personaldocumentproject.domain.service.ImageStorageService
 import com.example.personaldocumentproject.domain.service.ObjectDetectionService
 import com.example.personaldocumentproject.domain.service.OcrService
@@ -28,6 +27,15 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class DocumentUseCasesTest {
+    private val fakeEmbeddingService = object : EmbeddingService {
+        override suspend fun embed(text: String): List<Float> {
+            val vector = FloatArray(16)
+            text.lowercase().forEach { char ->
+                vector[char.code % vector.size] += 1f
+            }
+            return vector.toList()
+        }
+    }
 
     @Test
     fun analyzeDocument_generatesEveryDraftField() = runBlocking {
@@ -35,7 +43,10 @@ class DocumentUseCasesTest {
             ocrService = FakeOcrService("University lecture\nDatabase indexing"),
             objectDetectionService = FakeObjectDetectionService(listOf("book", "laptop")),
             titleGenerationService = SimpleTitleGenerationService,
-            descriptionGenerationService = SimpleDescriptionGenerationService,
+            descriptionGenerationService = object : DescriptionGenerationService {
+                override suspend fun generateDescription(ocrText: String, detectedObjects: List<String>) =
+                    "Text extracted from the image"
+            },
             categoryClassificationService = object : CategoryClassificationService {
                 override suspend fun classifyCategory(ocrText: String, detectedObjects: List<String>) =
                     DocumentCategory.STUDY
@@ -97,7 +108,7 @@ class DocumentUseCasesTest {
         val saveDocument = SaveDocument(
             repository = repository,
             imageStorageService = FakeImageStorageService("file://documents/saved.jpg"),
-            embeddingService = SimpleEmbeddingService(),
+            embeddingService = fakeEmbeddingService,
             idGenerator = { "document-id" },
             clock = { 123L },
         )
@@ -152,7 +163,7 @@ class DocumentUseCasesTest {
             ),
         )
 
-        val results = SearchDocuments(repository, SimpleEmbeddingService())("database").first()
+        val results = SearchDocuments(repository, fakeEmbeddingService)("database").first()
 
         assertTrue(results.isNotEmpty())
         assertEquals("database", results.first().document.id)
@@ -167,7 +178,7 @@ class DocumentUseCasesTest {
     ) = SaveDocument(
         repository = repository,
         imageStorageService = FakeImageStorageService(),
-        embeddingService = SimpleEmbeddingService(),
+        embeddingService = fakeEmbeddingService,
         idGenerator = { id },
         clock = { createdAt },
     )
