@@ -18,7 +18,6 @@ firebaseBom = "33.2.0"
 googleServices = "4.4.2"
 mediaPipeTasksText = "1.0.0"
 room = "2.7.2"
-litertlm = "0.16.1"
 ksp = "2.0.21-1.0.28"
 animation = "1.12.0"
 
@@ -54,7 +53,6 @@ androidx-room-runtime = { group = "androidx.room", name = "room-runtime", versio
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
-litertlm-android = { group = "com.google.ai.edge.litertlm", name = "litertlm-android", version.ref = "litertlm" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animation" }
 
 [plugins]
