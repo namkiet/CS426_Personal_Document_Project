@@ -10,12 +10,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -24,7 +22,9 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -41,6 +41,23 @@ import com.example.personaldocumentproject.ui.theme.*
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
+
+enum class DateFilter(val label: String) {
+    ALL("All Time"),
+    LAST_7_DAYS("Last 7 Days"),
+    LAST_30_DAYS("Last 30 Days"),
+    LAST_1_YEAR("Last 1 Year");
+
+    fun matches(createdAt: Long): Boolean {
+        val now = System.currentTimeMillis()
+        return when (this) {
+            ALL -> true
+            LAST_7_DAYS -> createdAt >= now - 7L * 24 * 60 * 60 * 1000
+            LAST_30_DAYS -> createdAt >= now - 30L * 24 * 60 * 60 * 1000
+            LAST_1_YEAR -> createdAt >= now - 365L * 24 * 60 * 60 * 1000
+        }
+    }
+}
 
 @Composable
 fun LibraryRoute(
@@ -64,9 +81,18 @@ fun LibraryScreen(
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
     val activity = context.findActivity()
-    var category by rememberSaveable { mutableStateOf<DocumentCategory?>(null) }
-    val visible = remember(state.documents, category) {
-        state.documents.filter { category == null || it.category == category }
+
+    var selectedCategory by rememberSaveable { mutableStateOf<DocumentCategory?>(null) }
+    var selectedDateFilter by rememberSaveable { mutableStateOf(DateFilter.ALL) }
+
+    var categoryMenuOpen by remember { mutableStateOf(false) }
+    var dateMenuOpen by remember { mutableStateOf(false) }
+
+    val visible = remember(state.documents, selectedCategory, selectedDateFilter) {
+        state.documents.filter { doc ->
+            (selectedCategory == null || doc.category == selectedCategory) &&
+            selectedDateFilter.matches(doc.createdAt)
+        }
     }
 
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -129,55 +155,210 @@ fun LibraryScreen(
         },
     ) { insets ->
         Column(Modifier.fillMaxSize().padding(insets)) {
-            Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+            // Header
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Column(Modifier.weight(1f)) {
                     Text("PERSONAL", color = TextDim, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, letterSpacing = .7.sp)
                     Text("Documents", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 }
-                Box(Modifier.size(38.dp).background(SurfaceRaised, RoundedCornerShape(12.dp))
-                    .border(1.dp, AppBorder, RoundedCornerShape(12.dp))
-                    .clickable(onClick = onSettingClick), contentAlignment = Alignment.Center) {
+                Box(
+                    Modifier
+                        .size(38.dp)
+                        .background(SurfaceRaised, RoundedCornerShape(12.dp))
+                        .border(1.dp, AppBorder, RoundedCornerShape(12.dp))
+                        .clickable(onClick = onSettingClick),
+                    contentAlignment = Alignment.Center
+                ) {
                     Icon(Icons.Default.Settings, "Settings", tint = TextMuted)
                 }
             }
-            AppTextField(value = state.query, onValueChange = onQueryChanged, singleLine = true,
+
+            // Search Bar
+            AppTextField(
+                value = state.query,
+                onValueChange = onQueryChanged,
+                singleLine = true,
                 placeholder = "Search your documents...",
                 leadingIcon = { Icon(Icons.Default.Search, null, tint = TextDim) },
-                trailingIcon = if (state.query.isNotEmpty()) {{ IconButton({ onQueryChanged("") }) { Icon(Icons.Default.Close, "Clear", tint = TextMuted) } }} else null,
-                shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp))
-            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 14.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterPill("All", null, category) { category = null }
-                DocumentCategory.entries.forEach { item ->
-                    FilterPill(item.name.lowercase().replaceFirstChar { it.uppercase() }, item, category) { category = item }
+                trailingIcon = if (state.query.isNotEmpty()) {
+                    { IconButton({ onQueryChanged("") }) { Icon(Icons.Default.Close, "Clear", tint = TextMuted) } }
+                } else null,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+            )
+
+            // 2 Filter Dropdown Buttons
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // Button 1: Filter Category
+                FilterDropdownButton(
+                    icon = Icons.Default.Category,
+                    label = selectedCategory?.name?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "All Categories",
+                    isActive = selectedCategory != null,
+                    modifier = Modifier.weight(1f),
+                    onClick = { categoryMenuOpen = true }
+                ) {
+                    DropdownMenu(
+                        expanded = categoryMenuOpen,
+                        onDismissRequest = { categoryMenuOpen = false },
+                        modifier = Modifier.background(SurfaceRaised)
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("All Categories", color = if (selectedCategory == null) AppPrimary else TextPrimary, fontWeight = if (selectedCategory == null) FontWeight.Bold else FontWeight.Normal) },
+                            onClick = {
+                                selectedCategory = null
+                                categoryMenuOpen = false
+                            }
+                        )
+                        DocumentCategory.entries.forEach { cat ->
+                            val isSelected = selectedCategory == cat
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        cat.name.lowercase().replaceFirstChar { it.uppercase() },
+                                        color = if (isSelected) categoryColor(cat) else TextPrimary,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                },
+                                onClick = {
+                                    selectedCategory = cat
+                                    categoryMenuOpen = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                // Button 2: Filter Date
+                FilterDropdownButton(
+                    icon = Icons.Default.DateRange,
+                    label = selectedDateFilter.label,
+                    isActive = selectedDateFilter != DateFilter.ALL,
+                    modifier = Modifier.weight(1f),
+                    onClick = { dateMenuOpen = true }
+                ) {
+                    DropdownMenu(
+                        expanded = dateMenuOpen,
+                        onDismissRequest = { dateMenuOpen = false },
+                        modifier = Modifier.background(SurfaceRaised)
+                    ) {
+                        DateFilter.entries.forEach { df ->
+                            val isSelected = selectedDateFilter == df
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        df.label,
+                                        color = if (isSelected) AppPrimary else TextPrimary,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                },
+                                onClick = {
+                                    selectedDateFilter = df
+                                    dateMenuOpen = false
+                                }
+                            )
+                        }
+                    }
                 }
             }
-            Text(if (state.query.isBlank()) "RECENT" else "${visible.size} RESULTS FOR \"${state.query}\"", color = TextDim,
-                fontSize = 12.sp, fontWeight = FontWeight.SemiBold, letterSpacing = .5.sp,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp))
+
+            // Error message if any
             state.errorMessage?.let { error ->
-                Text(error, color = DeleteColor, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 20.dp))
+                Text(error, color = DeleteColor, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp))
             }
-            if (visible.isEmpty()) Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center) {
-                Icon(Icons.Default.Search, null, tint = TextDim.copy(alpha = .4f), modifier = Modifier.size(48.dp))
-                Spacer(Modifier.height(12.dp)); Text("No documents found", color = TextDim, fontSize = 14.sp)
-                Text("Try another search or category", color = TextDim, fontSize = 12.sp)
-            } else LazyVerticalGrid(GridCells.Fixed(2), contentPadding = PaddingValues(20.dp, 12.dp, 20.dp, 100.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                items(visible, key = { it.id }) { doc -> DocumentCard(doc, state.searchResults[doc.id]) { onDocumentClick(doc.id) } }
+
+            // Results Grid or Empty state
+            if (visible.isEmpty()) {
+                Column(
+                    Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(Icons.Default.Search, null, tint = TextDim.copy(alpha = .4f), modifier = Modifier.size(48.dp))
+                    Spacer(Modifier.height(12.dp))
+                    Text("No documents found", color = TextDim, fontSize = 14.sp)
+                    Text("Try changing search or filters", color = TextDim, fontSize = 12.sp)
+                }
+            } else {
+                LazyVerticalGrid(
+                    GridCells.Fixed(2),
+                    contentPadding = PaddingValues(20.dp, 6.dp, 20.dp, 100.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(visible, key = { it.id }) { doc ->
+                        DocumentCard(doc, state.searchResults[doc.id]) { onDocumentClick(doc.id) }
+                    }
+                }
             }
         }
     }
 }
 
-@Composable private fun FilterPill(label: String, value: DocumentCategory?, selected: DocumentCategory?, onClick: () -> Unit) {
-    val active = value == selected
-    val accent = if (value != null) categoryColor(value) else AppPrimary
-    Text(label, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = if (active) Color.White else if (value == null) TextMuted else accent,
-        modifier = Modifier.background(if (active) accent else if (value == null) SurfaceRaised else accent.copy(alpha = .13f), RoundedCornerShape(100.dp))
-            .border(1.dp, if (active || value != null) accent.copy(alpha = .8f) else AppBorder, RoundedCornerShape(100.dp))
-            .clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 7.dp))
+@Composable
+private fun FilterDropdownButton(
+    icon: ImageVector,
+    label: String,
+    isActive: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+    menu: @Composable () -> Unit,
+) {
+    Box(modifier = modifier) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(10.dp))
+                .background(if (isActive) AppPrimary.copy(alpha = 0.12f) else SurfaceRaised)
+                .border(
+                    1.dp,
+                    if (isActive) AppPrimary else AppBorder,
+                    RoundedCornerShape(10.dp)
+                )
+                .clickable(onClick = onClick)
+                .padding(horizontal = 12.dp, vertical = 9.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f, fill = false)
+            ) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = if (isActive) AppPrimary else TextMuted,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    text = label,
+                    color = if (isActive) AppPrimary else TextPrimary,
+                    fontSize = 12.sp,
+                    fontWeight = if (isActive) FontWeight.SemiBold else FontWeight.Medium,
+                    maxLines = 1
+                )
+            }
+            Icon(
+                Icons.Default.ArrowDropDown,
+                contentDescription = null,
+                tint = if (isActive) AppPrimary else TextDim,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+        menu()
+    }
 }
 
 @Preview(name = "Library - Dark", showBackground = true, backgroundColor = 0xFF0D0D12, widthDp = 390, heightDp = 844)
