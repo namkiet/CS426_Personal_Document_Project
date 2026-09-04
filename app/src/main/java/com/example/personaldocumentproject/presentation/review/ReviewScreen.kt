@@ -70,6 +70,7 @@ fun ReviewScreen(
     val draft = state.draft
     var newTag by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
+    var detectedExpanded by remember { mutableStateOf(false) }
     var categoryMenu by remember { mutableStateOf(false) }
     var showDiscardConfirmation by rememberSaveable { mutableStateOf(false) }
     var showFullImage by rememberSaveable { mutableStateOf(false) }
@@ -218,27 +219,6 @@ fun ReviewScreen(
                             }
                         }
                     }
-                    ReviewField("DETECTED OBJECTS") {
-                        Column(
-                            Modifier.fillMaxWidth().background(SurfaceRaised, RoundedCornerShape(8.dp))
-                                .border(1.dp, AppBorder, RoundedCornerShape(8.dp)).padding(horizontal = 14.dp)
-                        ) {
-                            draft.detectedObjects.forEachIndexed { index, item ->
-                                Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Text(item, color = TextPrimary, fontSize = 14.sp, modifier = Modifier.weight(1f))
-                                    Icon(
-                                        Icons.Default.Close,
-                                        "Remove",
-                                        tint = TextDim,
-                                        modifier = Modifier.size(19.dp).clickable {
-                                            onDetectedObjectsChanged(draft.detectedObjects - item)
-                                        },
-                                    )
-                                }
-                                if (index < draft.detectedObjects.lastIndex) HorizontalDivider(color = AppBorder)
-                            }
-                        }
-                    }
                     ReviewField("TAGS") {
                         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             draft.tags.forEach { tag ->
@@ -300,6 +280,44 @@ fun ReviewScreen(
                                 fontFamily = FontFamily.Monospace,
                                 modifier = Modifier.padding(start = 14.dp, end = 14.dp, bottom = 14.dp),
                             )
+                        }
+                    }
+                    Column(
+                        Modifier.fillMaxWidth().background(SurfaceRaised, RoundedCornerShape(8.dp))
+                            .border(1.dp, AppBorder, RoundedCornerShape(8.dp))
+                    ) {
+                        Row(
+                            Modifier.fillMaxWidth().clickable { detectedExpanded = !detectedExpanded }.padding(14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text("Detected Objects", color = TextMuted, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                            Icon(
+                                Icons.Default.KeyboardArrowDown,
+                                null,
+                                tint = TextDim,
+                                modifier = Modifier.rotate(if (detectedExpanded) 180f else 0f),
+                            )
+                        }
+                        AnimatedVisibility(detectedExpanded) {
+                            Column(
+                                Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp, bottom = 14.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                if (draft.detectedObjects.isEmpty()) {
+                                    Text("No objects detected.", color = TextMuted, fontSize = 12.sp)
+                                } else {
+                                    draft.detectedObjects.forEach { item ->
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.fillMaxWidth().background(SurfaceRaised, RoundedCornerShape(8.dp)).padding(horizontal = 10.dp, vertical = 8.dp),
+                                        ) {
+                                            Text("•", color = TextDim, fontWeight = FontWeight.Bold)
+                                            Spacer(Modifier.width(8.dp))
+                                            Text(item, color = TextPrimary, fontSize = 13.sp)
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                     state.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }

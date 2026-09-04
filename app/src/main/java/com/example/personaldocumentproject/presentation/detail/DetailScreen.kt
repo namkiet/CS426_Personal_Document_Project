@@ -49,6 +49,7 @@ fun DetailRoute(documentId: String, viewModel: DetailViewModel, onBack: () -> Un
 @Composable
 fun DetailScreen(state: DetailUiState, onBack: () -> Unit, onDelete: () -> Unit) {
     var ocrExpanded by rememberSaveable { mutableStateOf(false) }
+    var detectedExpanded by rememberSaveable { mutableStateOf(false) }
     var showDeleteConfirmation by rememberSaveable { mutableStateOf(false) }
     var showFullImage by rememberSaveable { mutableStateOf(false) }
 
@@ -153,9 +154,6 @@ fun DetailScreen(state: DetailUiState, onBack: () -> Unit, onDelete: () -> Unit)
                                         document.tags.forEach { Tag(it) }
                                     }
                                 }
-                                if (document.detectedObjects.isNotEmpty()) Section("DETECTED OBJECTS") {
-                                    Text(document.detectedObjects.joinToString("  •  "), color = TextMuted, fontSize = 14.sp)
-                                }
                                 Column(Modifier.fillMaxWidth().background(SurfaceRaised, RoundedCornerShape(8.dp))
                                     .border(1.dp, AppBorder, RoundedCornerShape(8.dp))) {
                                     Row(Modifier.fillMaxWidth().clickable { ocrExpanded = !ocrExpanded }.padding(14.dp),
@@ -168,6 +166,30 @@ fun DetailScreen(state: DetailUiState, onBack: () -> Unit, onDelete: () -> Unit)
                                         Text(document.ocrText.ifBlank { "No text detected." }, color = TextMuted, fontSize = 12.sp,
                                             lineHeight = 20.sp, fontFamily = FontFamily.Monospace,
                                             modifier = Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp, bottom = 14.dp))
+                                    }
+                                }
+                                if (document.detectedObjects.isNotEmpty()) {
+                                    Column(Modifier.fillMaxWidth().background(SurfaceRaised, RoundedCornerShape(8.dp))
+                                        .border(1.dp, AppBorder, RoundedCornerShape(8.dp))) {
+                                        Row(Modifier.fillMaxWidth().clickable { detectedExpanded = !detectedExpanded }.padding(14.dp),
+                                            verticalAlignment = Alignment.CenterVertically) {
+                                            Text("Detected Objects", color = TextMuted, fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
+                                                modifier = Modifier.weight(1f))
+                                            Icon(Icons.Default.KeyboardArrowDown, null, tint = TextDim, modifier = Modifier.rotate(if (detectedExpanded) 180f else 0f))
+                                        }
+                                        AnimatedVisibility(detectedExpanded) {
+                                            Column(Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp, bottom = 14.dp),
+                                                verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                document.detectedObjects.forEach { item ->
+                                                    Row(verticalAlignment = Alignment.CenterVertically,
+                                                        modifier = Modifier.fillMaxWidth().background(SurfaceRaised, RoundedCornerShape(8.dp)).padding(horizontal = 10.dp, vertical = 8.dp)) {
+                                                        Text("•", color = TextDim, fontWeight = FontWeight.Bold)
+                                                        Spacer(Modifier.width(8.dp))
+                                                        Text(item, color = TextPrimary, fontSize = 13.sp)
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
