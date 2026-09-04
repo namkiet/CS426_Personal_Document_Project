@@ -13,7 +13,6 @@ import com.example.personaldocumentproject.ui.imageVector.FluentuiSystemIconsSet
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryTopBar(
-    onAccountClick: () -> Unit,
     onSettingClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -22,12 +21,6 @@ fun LibraryTopBar(
             Text(text = "Library")
         },
         actions = {
-            IconButton(onClick = onAccountClick) {
-                Icon(
-                    imageVector = FluentuiSystemIconsPerson,
-                    contentDescription = "account profile"
-                )
-            }
             IconButton(onClick = onSettingClick) {
                 Icon(
                     imageVector = FluentuiSystemIconsSettings,

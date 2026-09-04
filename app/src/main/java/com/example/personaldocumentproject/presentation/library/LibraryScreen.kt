@@ -34,14 +34,12 @@ fun LibraryScreen(
     onClearSelectedTags: () -> Unit,
     onToggleTagDropdown: () -> Unit,
     onDocumentClick: (String) -> Unit,
-    onAccountClick: () -> Unit,
     onSettingClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
         topBar = {
             LibraryTopBar(
-                onAccountClick = onAccountClick,
                 onSettingClick = onSettingClick
             )
         },

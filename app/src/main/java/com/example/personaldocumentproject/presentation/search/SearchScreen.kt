@@ -66,65 +66,74 @@ fun SearchScreen(
     onDocumentClick: (String) -> Unit,
     onSettingClick: () -> Unit
 ) {
-    Scaffold(
-        topBar = { TopAppBar(
-            title =  {Text(
-                text = "Search",
-                //style = MaterialTheme.typography.bodyLarge,
-            )},
-            navigationIcon = {
-                IconButton(
-                    onClick = onBack
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Navigate back"
-                    )
-                }
-            },
-            actions = {
-                IconButton(onClick = onSettingClick) {
-                    Icon(
-                        imageVector = FluentuiSystemIconsSettings,
-                        contentDescription = "setting"
-                    )
-                }
-            }
-        )}
-    ) { padding ->
-        Column(
-            Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            SearchBar(
-                state = state,
-                onQueryChanged = onQueryChanged,
-                onSearch = onSearch,
-                onClearQuery = onClearQuery
-            )
+    SearchBar(
+        state = state,
+        onQueryChanged = onQueryChanged,
+        onSearch = onSearch,
+        onClearQuery = onClearQuery
+    )
 
-            //Spacer(modifier = Modifier.height(24.dp))
 
-            // Results of search
-            Text(
-                text = "Results",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.SemiBold,
-                fontFamily = FontFamily.Serif
-            )
 
-            //Spacer(modifier = Modifier.height(12.dp))
-
-            DocumentGrid(
-                documents = searchResultConverter(state.results),
-                userSetting = userSetting,
-                onDocumentClick = onDocumentClick
-            )
-
-            //..
-            //search history text + back button
-        }
-    }
+//    Scaffold(
+//        topBar = { TopAppBar(
+//            title =  {Text(
+//                text = "Search",
+//                //style = MaterialTheme.typography.bodyLarge,
+//            )},
+//            navigationIcon = {
+//                IconButton(
+//                    onClick = onBack
+//                ) {
+//                    Icon(
+//                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+//                        contentDescription = "Navigate back"
+//                    )
+//                }
+//            },
+//            actions = {
+//                IconButton(onClick = onSettingClick) {
+//                    Icon(
+//                        imageVector = FluentuiSystemIconsSettings,
+//                        contentDescription = "setting"
+//                    )
+//                }
+//            }
+//        )}
+//    ) { padding ->
+//        Column(
+//            Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
+//            verticalArrangement = Arrangement.spacedBy(12.dp)
+//        ) {
+//            SearchBar(
+//                state = state,
+//                onQueryChanged = onQueryChanged,
+//                onSearch = onSearch,
+//                onClearQuery = onClearQuery
+//            )
+//
+//            //Spacer(modifier = Modifier.height(24.dp))
+//
+//            // Results of search
+//            Text(
+//                text = "Results",
+//                fontSize = 20.sp,
+//                fontWeight = FontWeight.SemiBold,
+//                fontFamily = FontFamily.Serif
+//            )
+//
+//            //Spacer(modifier = Modifier.height(12.dp))
+//
+//            DocumentGrid(
+//                documents = searchResultConverter(state.results),
+//                userSetting = userSetting,
+//                onDocumentClick = onDocumentClick
+//            )
+//
+//            //..
+//            //search history text + back button
+//        }
+//    }
 }
 
 

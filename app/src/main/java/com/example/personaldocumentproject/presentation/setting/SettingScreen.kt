@@ -210,47 +210,45 @@ fun SettingsScreen(
                                 activeColor = accentColor
                             )
                         }
-                    }
-                }
-            }
 
-            // Dynamic Preview Section
-            item {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Preview",
-                    fontSize = 22.sp,
-                    fontFamily = FontFamily.Serif,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
+                        Text(
+                            text = "Preview",
+                            fontSize = 22.sp,
+                            fontFamily = FontFamily.Serif,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                // Reactive Image Placeholder sizing driven by Sliders & Toggle
-                AnimatedVisibility(true) {
-                    Box(
-                        modifier = Modifier
-                            .size(width = (30 + (state.widthValue * 120)).dp, (30 + (state.heightValue * 120)).dp)
-                            .height(180.dp * (0.5f + state.heightValue * 0.5f))
-                            .clip(RoundedCornerShape(24.dp))
-                            .background(accentColor)
-                    ) {
-                        if (state.showImage) {
-                            Column() {
-                                Image(
-                                    painter = painterResource(id = R.drawable.chihuahuaandroidtest),
-                                    contentDescription = "Document Image",
-                                    modifier = Modifier
-                                        .fillMaxSize(),
-                                    contentScale = ContentScale.Crop
-                                )
-                            }
+                        // Reactive Image Placeholder sizing driven by Sliders & Toggle
+                        AnimatedVisibility(true,
+                            modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(width = (60 + (state.widthValue * 120)).dp, (60 + (state.heightValue * 120)).dp)
+                                    .height(180.dp * (0.5f + state.heightValue * 0.5f))
+                                    .clip(RoundedCornerShape(24.dp))
+                                    .background(accentColor).align(Alignment.CenterHorizontally)
+                            ) {
+                                if (state.showImage) {
+                                    Column() {
+                                        Image(
+                                            painter = painterResource(id = R.drawable.chihuahuaandroidtest),
+                                            contentDescription = "Document Image",
+                                            modifier = Modifier
+                                                .fillMaxSize(),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    }
 
-                        } else {
-                            Column(Modifier.padding(16.dp)) {
-                                Text("Title", style = MaterialTheme.typography.titleMedium)
-                                Text("Lorem ipsum", style = MaterialTheme.typography.bodyMedium)
+                                } else {
+                                    Column(Modifier.padding(16.dp)) {
+                                        Text("Title", style = MaterialTheme.typography.titleMedium)
+                                        Text("Lorem ipsum", style = MaterialTheme.typography.bodyMedium)
+                                    }
+                                }
                             }
                         }
                     }

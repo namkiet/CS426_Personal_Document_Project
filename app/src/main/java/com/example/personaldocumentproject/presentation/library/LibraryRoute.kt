@@ -11,7 +11,6 @@ fun LibraryRoute(
     viewModelLibrary: LibraryViewModel,
     userSetting: UserSetting,
     onDocumentClick: (String) -> Unit,
-    onAccountClick: () -> Unit,
     onSettingClick: () -> Unit,
     modifier: Modifier = Modifier,
     onSearch: (() -> Unit)? = null,
@@ -30,7 +29,6 @@ fun LibraryRoute(
         onClearSelectedTags = viewModelLibrary::onClearSelectedTags,
         onToggleTagDropdown = viewModelLibrary::onToggleTagDropdown,
         onDocumentClick = onDocumentClick,
-        onAccountClick = onAccountClick,
         onSettingClick = onSettingClick,
         modifier = modifier
     )

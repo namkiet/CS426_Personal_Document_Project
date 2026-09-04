@@ -13,7 +13,7 @@ data class DocumentCardLayoutConfig (
 fun UserSetting.toLayoutConfig() : DocumentCardLayoutConfig {
     return DocumentCardLayoutConfig(
         showImage = showImage,
-        cardWidth = (30 + (widthValue * 120)).dp,
-        cardHeight = (30 + (heightValue * 120)).dp,
+        cardWidth = (60 + (widthValue * 120)).dp,
+        cardHeight = (60 + (heightValue * 120)).dp,
     )
 }
