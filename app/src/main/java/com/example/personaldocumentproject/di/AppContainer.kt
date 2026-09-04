@@ -11,7 +11,7 @@ import com.example.personaldocumentproject.data.local.storage.LocalImageStorageS
 import com.example.personaldocumentproject.data.mapper.DocumentMapper
 import com.example.personaldocumentproject.data.ml.embedding.MediaPipeEmbeddingService
 import com.example.personaldocumentproject.data.ml.labeling.MlKitImageLabelingService
-import com.example.personaldocumentproject.data.ml.llm.ModelManagerRepository
+import com.example.personaldocumentproject.data.ml.llm.GeminiApiLlmService
 import com.example.personaldocumentproject.data.ml.metadata.SimpleMetadataService
 import com.example.personaldocumentproject.data.ml.ocr.MlKitOcrService
 import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
@@ -24,7 +24,7 @@ import com.example.personaldocumentproject.domain.usecase.SearchDocuments
 import com.example.personaldocumentproject.presentation.capture.CaptureViewModel
 import com.example.personaldocumentproject.presentation.detail.DetailViewModel
 import com.example.personaldocumentproject.presentation.library.LibraryViewModel
-import com.example.personaldocumentproject.presentation.modelmanager.ModelManagerViewModel
+
 import com.example.personaldocumentproject.presentation.review.ReviewViewModel
 import com.example.personaldocumentproject.presentation.search.SearchViewModel
 import com.example.personaldocumentproject.presentation.setting.SettingViewModel
@@ -42,20 +42,12 @@ class AppContainer(private val context: Context) {
     private val settingsLocalDataSource = SettingsLocalDataSource(context.dataStore)
     private val settingsRepository = SettingRepositoryImpl(settingsLocalDataSource)
 
-    // ── LLM / Model Manager ───────────────────────────────────────────────────
+    // ── LLM ───────────────────────────────────────────────────
 
-    /** Manages model files on disk and the user's active-model preference. */
-    val modelManagerRepository = ModelManagerRepository(
-        context      = context,
-        geminiApiKey = com.example.personaldocumentproject.BuildConfig.GEMINI_API_KEY,
+    private val llmService = GeminiApiLlmService(
+        apiKey = com.example.personaldocumentproject.BuildConfig.GEMINI_API_KEY,
+        model = GeminiApiLlmService.DEFAULT_MODEL
     )
-
-    /**
-     * Returns the active LiteRT-LM service if a valid model file is present on device,
-     * or null if no model has been downloaded yet. Re-evaluated each time [analyzeDocument]
-     * is invoked so that switching models in the UI takes effect on the next capture.
-     */
-    private fun activeLlmServiceOrNull() = modelManagerRepository.activeServiceOrNull()
 
     val observeDocuments = ObserveDocuments(repository)
     val getDocument = GetDocument(repository)
@@ -70,7 +62,7 @@ class AppContainer(private val context: Context) {
         ocrService = ocrService,
         objectDetectionService = objectDetectionService,
         metadataService = metadataService,
-        llmService = activeLlmServiceOrNull(),
+        llmService = llmService,
     )
 
     val saveDocument = SaveDocument(repository, imageStorageService, embeddingService)
@@ -85,7 +77,6 @@ class AppContainer(private val context: Context) {
     val detailViewModelFactory = factory { DetailViewModel(getDocument) }
     val mainViewModelFactory = factory { MainViewModel(settingsRepository) }
     val settingViewModelFactory = factory { SettingViewModel(repository = settingsRepository) }
-    val modelManagerViewModelFactory = factory { ModelManagerViewModel(modelManagerRepository) }
 
     private fun factory(create: () -> ViewModel): ViewModelProvider.Factory =
         object : ViewModelProvider.Factory {

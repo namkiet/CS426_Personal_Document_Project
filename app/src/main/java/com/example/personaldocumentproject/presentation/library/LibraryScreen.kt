@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Psychology
+
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -42,20 +42,18 @@ import com.example.personaldocumentproject.ui.imageVector.*
 @Composable
 fun LibraryRoute(viewModelLibrary: LibraryViewModel, userSetting: UserSetting,
                  onSearch: () -> Unit, onDocumentClick: (String) -> Unit,
-                 onAccountClick: () -> Unit, onSettingClick: () -> Unit,
-                 onManageModels: () -> Unit = {}) {
+                 onAccountClick: () -> Unit, onSettingClick: () -> Unit) {
     val stateLibrary by viewModelLibrary.uiState.collectAsState()
     LibraryScreen(stateLibrary, userSetting = userSetting, onSearch = onSearch,
         onDocumentClick = onDocumentClick, onAccountClick = onAccountClick,
-        onSettingClick = onSettingClick, onManageModels = onManageModels)
+        onSettingClick = onSettingClick)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(stateLibrary: LibraryUiState, userSetting: UserSetting,
                   onSearch: () -> Unit, onDocumentClick: (String) -> Unit,
-                  onAccountClick: () -> Unit, onSettingClick: () -> Unit,
-                  onManageModels: () -> Unit = {}) {
+                  onAccountClick: () -> Unit, onSettingClick: () -> Unit) {
     Scaffold(
         topBar = { TopAppBar(
             title =  {Text(
@@ -63,12 +61,6 @@ fun LibraryScreen(stateLibrary: LibraryUiState, userSetting: UserSetting,
                 //style = MaterialTheme.typography.bodyLarge,
             )},
             actions = {
-                IconButton(onClick = onManageModels) {
-                    Icon(
-                        imageVector = Icons.Filled.Psychology,
-                        contentDescription = "AI models"
-                    )
-                }
                 IconButton(onClick = onAccountClick) {
                     Icon(
                         imageVector = FluentuiSystemIconsPerson,

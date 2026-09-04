@@ -88,13 +88,10 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    // LiteRT-LM on-device LLM inference
-    implementation(libs.litertlm.android)
     implementation("androidx.datastore:datastore-preferences:1.2.1")
     implementation("com.google.dagger:dagger:2.60.1")
-    implementation("com.google.dagger:dagger-compiler:2.60.1")
+    ksp("com.google.dagger:dagger-compiler:2.60.1")
     implementation("com.google.dagger:hilt-android:2.60.1")
-
 
     testImplementation(libs.junit)
 
