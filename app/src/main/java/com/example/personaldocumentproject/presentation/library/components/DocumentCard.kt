@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@Composable
 fun categoryColor(category: DocumentCategory): Color = when (category) {
     DocumentCategory.STUDY -> StudyColor
     DocumentCategory.RECEIPT -> ReceiptColor
@@ -48,7 +49,9 @@ fun CategoryBadge(category: DocumentCategory) {
 @Composable
 fun DocumentArtwork(document: Document, modifier: Modifier = Modifier) {
     val accent = categoryColor(document.category)
-    Box(modifier.background(SurfaceRaised)) {
+    val mutedColor = TextMuted
+    val raisedColor = SurfaceRaised
+    Box(modifier.background(raisedColor)) {
         if (document.imageUri.isNotBlank()) AsyncImage(model = document.imageUri, contentDescription = null,
             contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
         else Canvas(Modifier.fillMaxSize()) {
@@ -56,7 +59,7 @@ fun DocumentArtwork(document: Document, modifier: Modifier = Modifier) {
             drawCircle(accent.copy(alpha = .09f), size.minDimension * .58f, Offset(0f, size.height))
             repeat(4) { index ->
                 val y = size.height * (.28f + index * .14f)
-                drawLine(if (index == 0) accent.copy(alpha = .75f) else TextMuted.copy(alpha = .38f),
+                drawLine(if (index == 0) accent.copy(alpha = .75f) else mutedColor.copy(alpha = .38f),
                     Offset(size.width * .16f, y), Offset(size.width * if (index == 0) .62f else .82f, y),
                     if (index == 0) 7f else 4f)
             }
@@ -83,12 +86,13 @@ fun DocumentCard(document: Document, searchResult: SearchResult? = null, onClick
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1A1A2E), RoundedCornerShape(6.dp))
+                        .background(SurfaceRaised, RoundedCornerShape(6.dp))
+                        .border(1.dp, AppBorder, RoundedCornerShape(6.dp))
                         .padding(6.dp)
                 ) {
-                    Text("⚡ %.3f".format(searchResult.score), color = Color(0xFF00E5FF), fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    Text("🔤 lex: %.3f".format(searchResult.lexicalScore), color = Color(0xFFB0BEC5), fontSize = 9.sp)
-                    Text("🧠 sem: %.3f".format(searchResult.semanticScore), color = Color(0xFFB0BEC5), fontSize = 9.sp)
+                    Text("⚡ %.3f".format(searchResult.score), color = AppPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text("🔤 lex: %.3f".format(searchResult.lexicalScore), color = TextMuted, fontSize = 9.sp)
+                    Text("🧠 sem: %.3f".format(searchResult.semanticScore), color = TextDim, fontSize = 9.sp)
                 }
             }
         }

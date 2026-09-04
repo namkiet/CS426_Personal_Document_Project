@@ -4,45 +4,18 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,22 +23,18 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import com.example.personaldocumentproject.R
-import com.example.personaldocumentproject.ui.imageVector.FluentuiSystemIconsPerson
-import com.example.personaldocumentproject.ui.imageVector.FluentuiSystemIconsSettings
+import com.example.personaldocumentproject.ui.theme.*
 
 @Composable
-fun SettingRoute(viewModel: SettingViewModel,
-                 onBack: () -> Unit) {
+fun SettingRoute(
+    viewModel: SettingViewModel,
+    onBack: () -> Unit,
+) {
     SettingsScreen(
         viewModel = viewModel,
         onBack = onBack,
@@ -76,66 +45,45 @@ fun SettingRoute(viewModel: SettingViewModel,
 @Composable
 fun SettingsScreen(
     viewModel: SettingViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    // --- Color Scheme Setup ---
-    val backgroundColor = MaterialTheme.colorScheme.secondary
-    val itemBackgroundColor = Color.White
-    val accentColor = MaterialTheme.colorScheme.tertiary
-
     Scaffold(
+        containerColor = AppBackground,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Search",
-                        //style = MaterialTheme.typography.bodyLarge,
+                        text = "Settings",
+                        color = TextPrimary,
+                        fontWeight = FontWeight.Bold,
                     )
                 },
                 navigationIcon = {
-                    IconButton(
-                        onClick = onBack
-                    ) {
+                    IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Navigate back"
+                            contentDescription = "Navigate back",
+                            tint = TextPrimary,
                         )
                     }
                 },
                 actions = {
-                    ApplyButton(
-                        onClick = viewModel::applySetting
-                    )
-                }
+                    ApplyButton(onClick = viewModel::applySetting)
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppBackground),
             )
         }
     ) { padding ->
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                //.background(backgroundColor)
                 .padding(padding)
-                .padding(horizontal = 24.dp, vertical = 32.dp),
+                .padding(horizontal = 24.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Screen Title
-            item {
-                Text(
-                    text = "Setting",
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Serif,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    textAlign = TextAlign.Center
-                )
-            }
-
             // General Section
             item {
                 SectionHeader(
@@ -149,9 +97,10 @@ fun SettingsScreen(
                         ToggleSettingItem(
                             label = "Dark mode",
                             checked = state.isDarkMode,
-                            onCheckedChange = viewModel::setDarkMode,
-                            containerColor = itemBackgroundColor,
-                            activeColor = accentColor
+                            onCheckedChange = {
+                                viewModel.setDarkMode(it)
+                                viewModel.applySetting()
+                            },
                         )
                     }
                 }
@@ -162,7 +111,7 @@ fun SettingsScreen(
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 8.dp),
                     thickness = 1.dp,
-                    color = Color.LightGray.copy(alpha = 0.6f)
+                    color = AppBorder,
                 )
             }
 
@@ -183,16 +132,15 @@ fun SettingsScreen(
                             label = "Show Image",
                             checked = state.showImage,
                             onCheckedChange = viewModel::setShowImage,
-                            containerColor = itemBackgroundColor,
-                            activeColor = accentColor
                         )
 
                         // Sliders Card Container
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(itemBackgroundColor)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(SurfaceRaised)
+                                .border(1.dp, AppBorder, RoundedCornerShape(16.dp))
                                 .padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
@@ -200,14 +148,12 @@ fun SettingsScreen(
                                 label = "Width",
                                 value = state.widthValue,
                                 onValueChange = viewModel::setWidthValue,
-                                activeColor = accentColor
                             )
 
                             SliderSettingRow(
                                 label = "Height",
                                 value = state.heightValue,
                                 onValueChange = viewModel::setHeightValue,
-                                activeColor = accentColor
                             )
                         }
                     }
@@ -219,38 +165,37 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "Preview",
-                    fontSize = 22.sp,
-                    fontFamily = FontFamily.Serif,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextPrimary,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Reactive Image Placeholder sizing driven by Sliders & Toggle
                 AnimatedVisibility(true) {
                     Box(
                         modifier = Modifier
-                            .size(width = (30 + (state.widthValue * 120)).dp, (30 + (state.heightValue * 120)).dp)
+                            .size(width = (40 + (state.widthValue * 140)).dp, (40 + (state.heightValue * 140)).dp)
                             .height(180.dp * (0.5f + state.heightValue * 0.5f))
-                            .clip(RoundedCornerShape(24.dp))
-                            .background(accentColor)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(SurfaceRaised)
+                            .border(1.dp, AppBorder, RoundedCornerShape(20.dp)),
+                        contentAlignment = Alignment.Center
                     ) {
                         if (state.showImage) {
-                            Column() {
-                                Image(
-                                    painter = painterResource(id = R.drawable.chihuahuaandroidtest),
-                                    contentDescription = "Document Image",
-                                    modifier = Modifier
-                                        .fillMaxSize(),
-                                    contentScale = ContentScale.Crop
-                                )
-                            }
-
+                            Image(
+                                painter = painterResource(id = R.drawable.chihuahuaandroidtest),
+                                contentDescription = "Document Image",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
                         } else {
                             Column(Modifier.padding(16.dp)) {
-                                Text("Title", style = MaterialTheme.typography.titleMedium)
-                                Text("Lorem ipsum", style = MaterialTheme.typography.bodyMedium)
+                                Text("Title", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Spacer(Modifier.height(4.dp))
+                                Text("Document preview text", color = TextMuted, fontSize = 12.sp)
                             }
                         }
                     }
@@ -283,17 +228,17 @@ private fun SectionHeader(
     ) {
         Text(
             text = title,
-            fontSize = 22.sp,
-            fontFamily = FontFamily.Serif,
-            fontWeight = FontWeight.Normal
+            fontSize = 18.sp,
+            color = TextPrimary,
+            fontWeight = FontWeight.SemiBold
         )
         Icon(
             imageVector = Icons.Default.ArrowDropDown,
             contentDescription = "Expand Section",
             modifier = Modifier
-                .size(36.dp)
+                .size(28.dp)
                 .rotate(rotationAngle),
-            tint = Color.Black
+            tint = TextMuted,
         )
     }
 }
@@ -303,31 +248,31 @@ private fun ToggleSettingItem(
     label: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    containerColor: Color,
-    activeColor: Color
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(containerColor)
+            .clip(RoundedCornerShape(16.dp))
+            .background(SurfaceRaised)
+            .border(1.dp, AppBorder, RoundedCornerShape(16.dp))
             .padding(horizontal = 20.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
-            fontSize = 18.sp,
-            fontFamily = FontFamily.Serif
+            fontSize = 15.sp,
+            color = TextPrimary,
+            fontWeight = FontWeight.Medium,
         )
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedTrackColor = activeColor,
+                checkedTrackColor = AppPrimary,
                 checkedThumbColor = Color.White,
-                uncheckedTrackColor = Color.LightGray,
-                uncheckedThumbColor = Color.White
+                uncheckedTrackColor = AppBorder,
+                uncheckedThumbColor = TextMuted,
             )
         )
     }
@@ -338,7 +283,6 @@ private fun SliderSettingRow(
     label: String,
     value: Float,
     onValueChange: (Float) -> Unit,
-    activeColor: Color
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -346,18 +290,19 @@ private fun SliderSettingRow(
     ) {
         Text(
             text = label,
-            fontSize = 18.sp,
-            fontFamily = FontFamily.Serif,
-            modifier = Modifier.width(72.dp)
+            fontSize = 14.sp,
+            color = TextMuted,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.width(60.dp)
         )
         Slider(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.weight(1f),
             colors = SliderDefaults.colors(
-                activeTrackColor = activeColor,
-                thumbColor = Color.White,
-                inactiveTrackColor = activeColor.copy(alpha = 0.4f)
+                activeTrackColor = AppPrimary,
+                thumbColor = AppPrimary,
+                inactiveTrackColor = AppBorder,
             )
         )
     }
@@ -370,17 +315,16 @@ fun ApplyButton(
 ) {
     Button(
         onClick = onClick,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = Color.White
+            containerColor = AppPrimary,
+            contentColor = Color.White,
         )
     ) {
         Text(
             text = "Apply",
-            fontSize = 18.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            fontFamily = FontFamily.Serif
         )
     }
 }

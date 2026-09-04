@@ -173,7 +173,7 @@ fun LibraryScreen(
 
 @Composable private fun FilterPill(label: String, value: DocumentCategory?, selected: DocumentCategory?, onClick: () -> Unit) {
     val active = value == selected
-    val accent = value?.let(::categoryColor) ?: AppPrimary
+    val accent = if (value != null) categoryColor(value) else AppPrimary
     Text(label, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = if (active) Color.White else if (value == null) TextMuted else accent,
         modifier = Modifier.background(if (active) accent else if (value == null) SurfaceRaised else accent.copy(alpha = .13f), RoundedCornerShape(100.dp))
             .border(1.dp, if (active || value != null) accent.copy(alpha = .8f) else AppBorder, RoundedCornerShape(100.dp))
