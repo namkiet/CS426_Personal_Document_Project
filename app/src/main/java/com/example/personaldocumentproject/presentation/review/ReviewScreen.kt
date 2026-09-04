@@ -13,6 +13,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -82,7 +83,7 @@ fun ReviewScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             TextButton(onClick = onBack, contentPadding = PaddingValues(4.dp)) {
-                Icon(Icons.Default.ArrowBack, null)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
                 Spacer(Modifier.width(6.dp))
                 Text("Review Document", fontWeight = FontWeight.SemiBold)
             }
@@ -98,6 +99,30 @@ fun ReviewScreen(
             draft != null -> Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                 DocumentArtwork(draft.asDocument(), Modifier.fillMaxWidth().aspectRatio(4f / 3f))
                 Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+                    draft.warning?.let { warningText ->
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = ReceiptColor.copy(alpha = 0.15f)),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .border(1.dp, ReceiptColor.copy(alpha = 0.4f), RoundedCornerShape(10.dp)),
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Icon(Icons.Default.Warning, null, tint = ReceiptColor, modifier = Modifier.size(18.dp))
+                                Text(
+                                    warningText,
+                                    color = TextPrimary,
+                                    fontSize = 12.sp,
+                                    lineHeight = 17.sp,
+                                    fontWeight = FontWeight.Medium,
+                                )
+                            }
+                        }
+                    }
                     ReviewField("TITLE") { AppTextField(draft.title, onTitleChanged, singleLine = true) }
                     ReviewField("DESCRIPTION") { AppTextField(draft.description, onDescriptionChanged, minLines = 3) }
                     ReviewField("CATEGORY") {

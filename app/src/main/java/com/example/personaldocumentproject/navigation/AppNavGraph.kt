@@ -10,6 +10,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.personaldocumentproject.di.AppContainer
 import com.example.personaldocumentproject.domain.model.UserSetting
+import com.example.personaldocumentproject.presentation.capture.CaptureRoute
+import com.example.personaldocumentproject.presentation.capture.CaptureViewModel
 import com.example.personaldocumentproject.presentation.detail.DetailRoute
 import com.example.personaldocumentproject.presentation.detail.DetailViewModel
 import com.example.personaldocumentproject.presentation.library.LibraryRoute
@@ -54,13 +56,20 @@ fun AppNavGraph(container: AppContainer, userSetting: UserSetting = UserSetting(
             val viewModel: LibraryViewModel = viewModel(factory = container.libraryViewModelFactory)
             LibraryRoute(
                 viewModel = viewModel,
-                onImageCaptured = { imageUri -> navigateTo(Routes.Review(imageUri)) },
+                onCapture = { navigateTo(Routes.Capture) },
                 onDocumentClick = { navigateTo(Routes.Detail(it)) },
                 onSettingClick = { navigateTo(Routes.Setting) },
             )
         }
         Routes.Capture -> {
-            // Handled directly via FAB launcher in LibraryRoute
+            val viewModel: CaptureViewModel = viewModel(factory = container.captureViewModelFactory)
+            CaptureRoute(
+                viewModel = viewModel,
+                onImageSelected = { imageUri ->
+                    backStack = backStack.dropLast(1) + Routes.Review(imageUri)
+                },
+                onBack = { navigateBack() },
+            )
         }
         is Routes.Review -> {
             val viewModel: ReviewViewModel = viewModel(

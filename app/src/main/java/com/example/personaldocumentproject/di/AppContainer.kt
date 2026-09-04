@@ -54,10 +54,8 @@ class AppContainer(private val context: Context) {
     private val settingsLocalDataSource = SettingsLocalDataSource(context.dataStore)
     val settingsRepository = SettingRepositoryImpl(settingsLocalDataSource)
 
-    // ── Gemini API Service (if key configured) ───────────────────────────────
     val geminiService: LlmService? = runCatching {
-        val apiKey = BuildConfig.GEMINI_API_KEY
-        if (apiKey.isNotBlank()) GeminiApiLlmService(apiKey) else null
+        GeminiApiLlmService(BuildConfig.GEMINI_API_KEY)
     }.getOrNull()
 
     suspend fun warmCaches() {

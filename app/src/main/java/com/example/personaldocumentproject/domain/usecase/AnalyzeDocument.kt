@@ -53,6 +53,8 @@ class AnalyzeDocument(
     suspend operator fun invoke(imageUri: String): DocumentDraft = coroutineScope {
         require(imageUri.isNotBlank()) { "An image URI is required" }
 
+        var fallbackWarning: String? = null
+
         // 01. If Gemini Vision API service is available, try extracting metadata directly from image.
         if (geminiService != null && geminiService.supportsVision && context != null) {
             val visionResult = runCatching {
@@ -78,14 +80,17 @@ class AnalyzeDocument(
                     detectedObjects = visionResult.detectedObjects?.takeIf { it.isNotEmpty() } ?: emptyList(),
                     warning         = null,
                 )
+            } else {
+                // Vision API call failed or timed out: set fallback warning
+                fallbackWarning = "Gemini Vision API call failed. Fell back to on-device analysis."
             }
         }
 
         // 02. Fallback: 100% original on-device pipeline from UI branch (no extra LLM rewriting).
-        runStandardPipeline(imageUri)
+        runStandardPipeline(imageUri, fallbackWarning)
     }
 
-    private suspend fun runStandardPipeline(imageUri: String): DocumentDraft = coroutineScope {
+    private suspend fun runStandardPipeline(imageUri: String, warning: String?): DocumentDraft = coroutineScope {
         // 01. Extract text and detect objects in parallel.
         val recognizedTextDeferred = async { ocrService.recognizeText(imageUri) }
         val detectedObjectsDeferred = async { objectDetectionService.detectObjects(imageUri) }
@@ -118,7 +123,7 @@ class AnalyzeDocument(
             category        = categoryDeferred.await(),
             tags            = tagsDeferred.await(),
             detectedObjects = detectedObjects,
-            warning         = null,
+            warning         = warning,
         )
     }
 }

@@ -1,11 +1,5 @@
 package com.example.personaldocumentproject.presentation.library
 
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.IntentSenderRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -26,7 +21,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,9 +32,6 @@ import com.example.personaldocumentproject.presentation.library.components.Docum
 import com.example.personaldocumentproject.presentation.library.components.categoryColor
 import com.example.personaldocumentproject.ui.components.AppTextField
 import com.example.personaldocumentproject.ui.theme.*
-import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
-import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
-import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 
 enum class DateFilter(val label: String) {
     ALL("All Time"),
@@ -62,25 +53,23 @@ enum class DateFilter(val label: String) {
 @Composable
 fun LibraryRoute(
     viewModel: LibraryViewModel,
-    onImageCaptured: (String) -> Unit,
+    onCapture: () -> Unit,
     onDocumentClick: (String) -> Unit,
     onSettingClick: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsState()
-    LibraryScreen(state, viewModel::updateQuery, onImageCaptured, onDocumentClick, onSettingClick)
+    LibraryScreen(state, viewModel::updateQuery, onCapture, onDocumentClick, onSettingClick)
 }
 
 @Composable
 fun LibraryScreen(
     state: LibraryUiState,
     onQueryChanged: (String) -> Unit,
-    onImageCaptured: (String) -> Unit,
+    onCapture: () -> Unit,
     onDocumentClick: (String) -> Unit,
     onSettingClick: () -> Unit = {},
 ) {
     val focusManager = LocalFocusManager.current
-    val context = LocalContext.current
-    val activity = context.findActivity()
 
     var selectedCategory by rememberSaveable { mutableStateOf<DocumentCategory?>(null) }
     var selectedDateFilter by rememberSaveable { mutableStateOf(DateFilter.ALL) }
@@ -95,48 +84,10 @@ fun LibraryScreen(
         }
     }
 
-    val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        if (uri != null) {
-            onImageCaptured(uri.toString())
-        }
-    }
-
-    val scannerLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartIntentSenderForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val scanResult = runCatching {
-                result.data?.let(GmsDocumentScanningResult::fromActivityResultIntent)
-            }.getOrNull()
-            val uri = scanResult?.pages?.firstOrNull()?.imageUri?.toString()
-            if (uri != null) {
-                onImageCaptured(uri)
-            }
-        }
-    }
-
-    fun launchScanner() {
-        val currentActivity = activity ?: run {
-            picker.launch("image/*")
-            return
-        }
-        val options = GmsDocumentScannerOptions.Builder()
-            .setGalleryImportAllowed(true)
-            .setPageLimit(1)
-            .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_JPEG)
-            .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_FULL)
-            .build()
-        GmsDocumentScanning.getClient(options).getStartScanIntent(currentActivity)
-            .addOnSuccessListener { sender ->
-                runCatching {
-                    scannerLauncher.launch(IntentSenderRequest.Builder(sender).build())
-                }.onFailure {
-                    picker.launch("image/*")
-                }
-            }
-            .addOnFailureListener {
-                picker.launch("image/*")
-            }
+    // Auto scroll to top when query changes
+    val gridState = rememberLazyGridState()
+    LaunchedEffect(state.query) {
+        gridState.scrollToItem(0)
     }
 
     Scaffold(
@@ -146,7 +97,7 @@ fun LibraryScreen(
         containerColor = AppBackground,
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { launchScanner() },
+                onClick = onCapture,
                 containerColor = AppPrimary,
                 contentColor = Color.White,
                 shape = RoundedCornerShape(18.dp),
@@ -293,6 +244,7 @@ fun LibraryScreen(
             } else {
                 LazyVerticalGrid(
                     GridCells.Fixed(2),
+                    state = gridState,
                     contentPadding = PaddingValues(20.dp, 6.dp, 20.dp, 100.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -368,7 +320,7 @@ private fun LibraryScreenPreview() {
         LibraryScreen(
             state = LibraryUiState(MockDocuments.items),
             onQueryChanged = {},
-            onImageCaptured = {},
+            onCapture = {},
             onDocumentClick = {},
             onSettingClick = {},
         )
@@ -382,15 +334,9 @@ private fun EmptyLibraryScreenPreview() {
         LibraryScreen(
             state = LibraryUiState(),
             onQueryChanged = {},
-            onImageCaptured = {},
+            onCapture = {},
             onDocumentClick = {},
             onSettingClick = {},
         )
     }
-}
-
-private tailrec fun Context.findActivity(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.findActivity()
-    else -> null
 }
