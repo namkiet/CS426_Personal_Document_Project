@@ -28,6 +28,7 @@ class LibraryViewModel(
 ) : ViewModel() {
     private val query = MutableStateFlow("")
     private val selectedIds = MutableStateFlow<Set<String>>(emptySet())
+    private val _isSelectionMode = MutableStateFlow(false)
 
     private val searchState = query.debounce(250).flatMapLatest { currentQuery ->
         if (currentQuery.isBlank()) {
@@ -43,8 +44,8 @@ class LibraryViewModel(
         }
     }
 
-    val uiState = combine(query, searchState, selectedIds) { currentQuery, result, selected ->
-        result.copy(query = currentQuery, selectedIds = selected)
+    val uiState = combine(query, searchState, selectedIds, _isSelectionMode) { currentQuery, result, selected, selMode ->
+        result.copy(query = currentQuery, selectedIds = selected, isSelectionMode = selMode)
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LibraryUiState())
 
@@ -53,6 +54,7 @@ class LibraryViewModel(
     }
 
     fun toggleSelect(id: String) {
+        _isSelectionMode.value = true
         selectedIds.update { current ->
             if (id in current) current - id else current + id
         }
@@ -65,6 +67,7 @@ class LibraryViewModel(
     }
 
     fun clearSelection() {
+        _isSelectionMode.value = false
         selectedIds.value = emptySet()
     }
 
@@ -79,3 +82,4 @@ class LibraryViewModel(
         }
     }
 }
+
