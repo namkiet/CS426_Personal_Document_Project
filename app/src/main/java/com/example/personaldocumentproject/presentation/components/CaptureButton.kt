@@ -47,9 +47,9 @@ fun CaptureButton(
     onLeftHalfClick: () -> Unit,
     onRightHalfClick: () -> Unit,
     onClick: () -> Unit,
+    isExpanded: Boolean,
     modifier: Modifier = Modifier
 ) {
-    var isExpanded by remember { mutableStateOf(false) }
 
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -61,11 +61,11 @@ fun CaptureButton(
 
     val leftHalfButtonBias = BiasAlignment(
         horizontalBias = if(!isLandscape) 0.2f else -0.5f,
-        verticalBias = if(!isLandscape) -0.5f else 0.2f,
+        verticalBias = if(!isLandscape) -0.5f else -0.2f,
     )
     val rightHalfButtonBias = BiasAlignment(
         horizontalBias = if(!isLandscape) -0.2f else -0.5f,
-        verticalBias = if(!isLandscape) -0.5f else -0.2f,
+        verticalBias = if(!isLandscape) -0.5f else 0.2f,
     )
 
     // Smoothly animate transition progress (0f = collapsed, 1f = expanded)
@@ -167,29 +167,6 @@ fun CaptureButton(
                         }
                     }else {
                         Column(modifier = Modifier.fillMaxSize()) {
-                            // Left Half Button
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxWidth()
-                                    .background(overlayColor)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = ripple(bounded = true)
-                                    ) {
-                                        onLeftHalfClick()
-                                    },
-                                contentAlignment = leftHalfButtonBias
-                            )
-                            {
-                                Icon(
-                                    imageVector = FluentuiSystemIconsCameraAddSolid,
-                                    contentDescription = "CameraHalf",
-                                    modifier = Modifier.size(iconSize),
-                                    tint = Color.Black
-                                )
-                            }
-
                             // Right Half Button
                             Box(
                                 modifier = Modifier
@@ -208,6 +185,28 @@ fun CaptureButton(
                                 Icon(
                                     imageVector = FluentuiSystemIconsAlbumAddSolid,
                                     contentDescription = "ImportHalf",
+                                    modifier = Modifier.size(iconSize),
+                                    tint = Color.Black
+                                )
+                            }
+                            // Left Half Button
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth()
+                                    .background(overlayColor)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = ripple(bounded = true)
+                                    ) {
+                                        onLeftHalfClick()
+                                    },
+                                contentAlignment = leftHalfButtonBias
+                            )
+                            {
+                                Icon(
+                                    imageVector = FluentuiSystemIconsCameraAddSolid,
+                                    contentDescription = "CameraHalf",
                                     modifier = Modifier.size(iconSize),
                                     tint = Color.Black
                                 )
@@ -244,7 +243,6 @@ fun CaptureButton(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
                 ) {
-                    isExpanded = !isExpanded
                     onClick()
                 },
             contentAlignment = Alignment.Center

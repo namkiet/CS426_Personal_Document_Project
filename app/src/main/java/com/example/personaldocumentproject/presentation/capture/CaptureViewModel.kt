@@ -9,4 +9,5 @@ class CaptureViewModel : ViewModel() {
     val uiState = mutableState.asStateFlow()
     fun selectImage(uri: String) { mutableState.value = CaptureUiState(uri) }
     fun onImageSelectionHandled() { mutableState.value = CaptureUiState(null) }
+    fun turnExpanded() { mutableState.value = CaptureUiState(isExpanded = !mutableState.value.isExpanded) }
 }

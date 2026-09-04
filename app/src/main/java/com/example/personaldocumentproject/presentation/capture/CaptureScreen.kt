@@ -42,11 +42,11 @@ fun CaptureRoute(viewModel: CaptureViewModel, onImageSelected: (String) -> Unit,
             viewModel.onImageSelectionHandled()
         }
     }
-    CaptureScreen(onImageSelected = viewModel::selectImage, onBack = onBack)
+    CaptureScreen(state = state, onClick = viewModel::turnExpanded, onImageSelected = viewModel::selectImage, onBack = onBack)
 }
 
 @Composable
-fun CaptureScreen(onImageSelected: (String) -> Unit, onBack: () -> Unit) {
+fun CaptureScreen(state: CaptureUiState ,onClick: ()->Unit ,onImageSelected: (String) -> Unit, onBack: () -> Unit) {
     val picker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
@@ -61,6 +61,7 @@ fun CaptureScreen(onImageSelected: (String) -> Unit, onBack: () -> Unit) {
     CaptureButton(
         onLeftHalfClick = { scanner.launch() },
         onRightHalfClick = { picker.launch("image/*") },
-        onClick = {}
+        onClick = onClick,
+        isExpanded = state.isExpanded
     )
 }
