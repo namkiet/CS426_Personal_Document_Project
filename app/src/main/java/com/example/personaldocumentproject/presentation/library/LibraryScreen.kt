@@ -42,16 +42,16 @@ import com.example.personaldocumentproject.ui.imageVector.*
 @Composable
 fun LibraryRoute(viewModelLibrary: LibraryViewModel, userSetting: UserSetting,
                  onSearch: () -> Unit, onDocumentClick: (String) -> Unit,
-                 onAccountClick: () -> Unit, onSettingClick: () -> Unit) {
+                 onSettingClick: () -> Unit) {
     val stateLibrary by viewModelLibrary.uiState.collectAsState()
-    LibraryScreen(stateLibrary, userSetting = userSetting, onSearch = onSearch,onDocumentClick, onAccountClick, onSettingClick )
+    LibraryScreen(stateLibrary, userSetting = userSetting, onSearch = onSearch,onDocumentClick, onSettingClick )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(stateLibrary: LibraryUiState, userSetting: UserSetting,
                   onSearch: () -> Unit, onDocumentClick: (String) -> Unit,
-                  onAccountClick: () -> Unit, onSettingClick: () -> Unit) {
+                  onSettingClick: () -> Unit) {
     Scaffold(
         topBar = { TopAppBar(
             title =  {Text(
@@ -59,12 +59,6 @@ fun LibraryScreen(stateLibrary: LibraryUiState, userSetting: UserSetting,
                 //style = MaterialTheme.typography.bodyLarge,
             )},
             actions = {
-                IconButton(onClick = onAccountClick) {
-                    Icon(
-                        imageVector = FluentuiSystemIconsPerson,
-                        contentDescription = "account profile"
-                    )
-                }
                 IconButton(onClick = onSettingClick) {
                     Icon(
                         imageVector = FluentuiSystemIconsSettings,

@@ -40,7 +40,7 @@ import com.example.personaldocumentproject.ui.imageVector.FluentuiSystemIconsSet
 @Composable
 fun SearchRoute(viewModelSearch: SearchViewModel, userSetting: UserSetting,
                 onBack: () -> Unit, onDocumentClick: (String) -> Unit,
-                onAccountClick: () -> Unit,onSettingClick: () -> Unit) {
+                onSettingClick: () -> Unit) {
     val stateSearch by viewModelSearch.uiState.collectAsState()
     SearchScreen(
         state = stateSearch,
@@ -50,7 +50,6 @@ fun SearchRoute(viewModelSearch: SearchViewModel, userSetting: UserSetting,
         onClearQuery = viewModelSearch::onClearQuery,
         onBack = onBack,
         onDocumentClick = onDocumentClick,
-        onAccountClick = onAccountClick,
         onSettingClick = onSettingClick
     )
 }
@@ -65,7 +64,6 @@ fun SearchScreen(
     onBack: () -> Unit,
     onClearQuery: () -> Unit,
     onDocumentClick: (String) -> Unit,
-    onAccountClick:() -> Unit,
     onSettingClick: () -> Unit
 ) {
     Scaffold(
@@ -85,12 +83,6 @@ fun SearchScreen(
                 }
             },
             actions = {
-                IconButton(onClick = onAccountClick) {
-                    Icon(
-                        imageVector = FluentuiSystemIconsPerson,
-                        contentDescription = "account profile"
-                    )
-                }
                 IconButton(onClick = onSettingClick) {
                     Icon(
                         imageVector = FluentuiSystemIconsSettings,

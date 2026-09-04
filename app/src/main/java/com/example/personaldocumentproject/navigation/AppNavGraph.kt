@@ -34,7 +34,6 @@ fun AppNavGraph(container: AppContainer, userSetting: UserSetting) {
                 userSetting = userSetting,
                 onSearch = { route = Routes.Search },
                 onDocumentClick = { route = Routes.Detail(it) },
-                onAccountClick = { route = Routes.Account },
                 onSettingClick = { route = Routes.Setting },
             )
             CaptureRoute(
@@ -68,7 +67,6 @@ fun AppNavGraph(container: AppContainer, userSetting: UserSetting) {
                 onBack = { route = Routes.Library },
                 onDocumentClick = { route = Routes.Detail(it) },
                 onSettingClick = { route = Routes.Setting },
-                onAccountClick = { route = Routes.Account },
             )
             CaptureRoute(
                 viewModel = viewModelCapture,
@@ -90,8 +88,6 @@ fun AppNavGraph(container: AppContainer, userSetting: UserSetting) {
         }
 
         Routes.ModelManager -> { /* reserved for future use */ }
-
-        Routes.Account -> {}
 
         Routes.Setting -> {
             val viewModel: SettingViewModel = viewModel(factory = container.settingViewModelFactory)
