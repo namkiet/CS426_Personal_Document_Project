@@ -45,7 +45,10 @@ class AppContainer(private val context: Context) {
     // ── LLM / Model Manager ───────────────────────────────────────────────────
 
     /** Manages model files on disk and the user's active-model preference. */
-    val modelManagerRepository = ModelManagerRepository(context)
+    val modelManagerRepository = ModelManagerRepository(
+        context      = context,
+        geminiApiKey = com.example.personaldocumentproject.BuildConfig.GEMINI_API_KEY,
+    )
 
     /**
      * Returns the active LiteRT-LM service if a valid model file is present on device,
