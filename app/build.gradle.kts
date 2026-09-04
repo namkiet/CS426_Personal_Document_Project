@@ -3,7 +3,6 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.google.services)
     alias(libs.plugins.ksp)
 }
 
@@ -85,8 +84,6 @@ dependencies {
     implementation(libs.mlkit.translate)
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.mediapipe.tasks.text)
-
-    implementation(platform(libs.firebase.bom))
 
     // Room
     implementation(libs.androidx.room.runtime)

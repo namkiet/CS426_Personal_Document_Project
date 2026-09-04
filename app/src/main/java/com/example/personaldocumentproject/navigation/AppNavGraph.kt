@@ -111,8 +111,5 @@ fun AppNavGraph(container: AppContainer, userSetting: UserSetting = UserSetting(
                 onBack = { navigateBack() },
             )
         }
-        Routes.Account -> {
-            // Placeholder
-        }
     }
 }

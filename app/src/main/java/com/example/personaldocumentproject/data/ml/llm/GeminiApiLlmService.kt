@@ -162,11 +162,6 @@ class GeminiApiLlmService(
     companion object {
         const val DEFAULT_MODEL = "gemini-3.1-flash-lite"
 
-        /** All Gemini models selectable in the Model Manager. */
-        val SUPPORTED_MODELS = listOf(
-            "gemini-3.1-flash",
-            "gemini-3.1-flash-lite",
-        )
     }
 }
 

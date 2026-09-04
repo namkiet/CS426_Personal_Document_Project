@@ -51,6 +51,4 @@ object MockDocuments {
             createdAt = 1_785_340_800_000,
         ),
     )
-
-    fun find(id: String): Document? = items.firstOrNull { it.id == id }
 }

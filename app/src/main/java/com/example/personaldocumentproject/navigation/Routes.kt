@@ -8,7 +8,6 @@ sealed interface Routes {
     data class Review(val imageUri: String) : Routes
     data class Detail(val documentId: String) : Routes
     data object Setting : Routes
-    data object Account : Routes
 
     companion object {
         val BackStackSaver = listSaver<List<Routes>, String>(
@@ -20,7 +19,6 @@ sealed interface Routes {
                         is Review -> "review:${route.imageUri}"
                         is Detail -> "detail:${route.documentId}"
                         Setting -> "setting"
-                        Account -> "account"
                     }
                 }
             },
@@ -32,7 +30,6 @@ sealed interface Routes {
                         str.startsWith("review:") -> Review(str.removePrefix("review:"))
                         str.startsWith("detail:") -> Detail(str.removePrefix("detail:"))
                         str == "setting" -> Setting
-                        str == "account" -> Account
                         else -> Library
                     }
                 }
