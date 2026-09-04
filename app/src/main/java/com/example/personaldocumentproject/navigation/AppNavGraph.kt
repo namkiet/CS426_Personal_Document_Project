@@ -14,8 +14,6 @@ import com.example.personaldocumentproject.presentation.detail.DetailRoute
 import com.example.personaldocumentproject.presentation.detail.DetailViewModel
 import com.example.personaldocumentproject.presentation.library.LibraryRoute
 import com.example.personaldocumentproject.presentation.library.LibraryViewModel
-import com.example.personaldocumentproject.presentation.modelmanager.ModelManagerRoute
-import com.example.personaldocumentproject.presentation.modelmanager.ModelManagerViewModel
 import com.example.personaldocumentproject.presentation.review.ReviewRoute
 import com.example.personaldocumentproject.presentation.review.ReviewViewModel
 import com.example.personaldocumentproject.presentation.search.SearchRoute
@@ -36,25 +34,18 @@ fun AppNavGraph(container: AppContainer, userSetting: UserSetting) {
                 userSetting = userSetting,
                 onSearch = { route = Routes.Search },
                 onDocumentClick = { route = Routes.Detail(it) },
-                onManageModels = { route = Routes.ModelManager },
-                onAccountClick = { route = Routes.Account},
-                onSettingClick = { route = Routes.Setting},
+                onAccountClick = { route = Routes.Account },
+                onSettingClick = { route = Routes.Setting },
             )
             CaptureRoute(
                 viewModel = viewModelCapture,
-                onImageSelected = {route = Routes.Review(it)},
-                onBack = {}
+                onImageSelected = { route = Routes.Review(it) },
+                onBack = {},
             )
         }
+
         Routes.Capture -> {}
-//        Routes.Capture -> {
-//            val viewModel: CaptureViewModel = viewModel(factory = container.captureViewModelFactory)
-//            CaptureRoute(
-//                viewModel = viewModel,
-//                onImageSelected = { route = Routes.Review(it) },
-//                onBack = { route = Routes.Library },
-//            )
-//        }
+
         is Routes.Review -> {
             val viewModel: ReviewViewModel = viewModel(
                 key = "review:${current.imageUri}",
@@ -64,9 +55,10 @@ fun AppNavGraph(container: AppContainer, userSetting: UserSetting) {
                 imageUri = current.imageUri,
                 viewModel = viewModel,
                 onSaved = { route = Routes.Library },
-                onBack = { route = Routes.Capture },
+                onBack = { route = Routes.Library },
             )
         }
+
         Routes.Search -> {
             val viewModelSearch: SearchViewModel = viewModel(factory = container.searchViewModelFactory)
             val viewModelCapture: CaptureViewModel = viewModel(factory = container.captureViewModelFactory)
@@ -76,14 +68,15 @@ fun AppNavGraph(container: AppContainer, userSetting: UserSetting) {
                 onBack = { route = Routes.Library },
                 onDocumentClick = { route = Routes.Detail(it) },
                 onSettingClick = { route = Routes.Setting },
-                onAccountClick = {route= Routes.Account},
+                onAccountClick = { route = Routes.Account },
             )
             CaptureRoute(
                 viewModel = viewModelCapture,
-                onImageSelected = {route = Routes.Review(it)},
-                onBack = {}
+                onImageSelected = { route = Routes.Review(it) },
+                onBack = {},
             )
         }
+
         is Routes.Detail -> {
             val viewModel: DetailViewModel = viewModel(
                 key = "detail:${current.documentId}",
@@ -95,15 +88,8 @@ fun AppNavGraph(container: AppContainer, userSetting: UserSetting) {
                 onBack = { route = Routes.Library },
             )
         }
-        Routes.ModelManager -> {
-            val viewModel: ModelManagerViewModel = viewModel(
-                factory = container.modelManagerViewModelFactory,
-            )
-            ModelManagerRoute(
-                viewModel = viewModel,
-                onBack = { route = Routes.Library },
-            )
-        }
+
+        Routes.ModelManager -> { /* reserved for future use */ }
 
         Routes.Account -> {}
 
@@ -111,7 +97,7 @@ fun AppNavGraph(container: AppContainer, userSetting: UserSetting) {
             val viewModel: SettingViewModel = viewModel(factory = container.settingViewModelFactory)
             SettingRoute(
                 viewModel = viewModel,
-                onBack = { route = Routes.Library}
+                onBack = { route = Routes.Library },
             )
         }
     }

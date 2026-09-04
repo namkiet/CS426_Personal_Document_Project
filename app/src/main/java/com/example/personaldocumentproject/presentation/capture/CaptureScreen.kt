@@ -41,35 +41,11 @@ fun CaptureRoute(viewModel: CaptureViewModel, onImageSelected: (String) -> Unit,
             viewModel.onImageSelectionHandled()
         }
     }
-    CaptureScreen2(onImageSelected = viewModel::selectImage, onBack = onBack)
+    CaptureScreen(onImageSelected = viewModel::selectImage, onBack = onBack)
 }
-//
-//
-////change this to capture button + animation
-//@Composable
-//fun CaptureScreen(onImageSelected: (String) -> Unit, onBack: () -> Unit) {
-//    val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-//        uri?.toString()?.let(onImageSelected)
-//    }
-//    Surface(modifier = Modifier.fillMaxHeight(0.3f), color = Color.Black) {
-//        Column(
-//            Modifier.fillMaxSize().padding(16.dp),
-//            verticalArrangement = Arrangement.spacedBy(12.dp),
-//        ) {
-//            Text("Capture or import a document", color = Color.White)
-//            ImageSourceButton { picker.launch("image/*") }
-//            OutlinedButton(onClick = onBack) { Text("Back", color = Color.White) }
-//        }
-//    }
-//}
-
 
 @Composable
 fun CaptureScreen(onImageSelected: (String) -> Unit, onBack: () -> Unit) {
-    val context = LocalContext.current
-    val activity = context.findActivity()
-
-fun CaptureScreen2(onImageSelected: (String) -> Unit, onBack: () -> Unit) {
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.toString()?.let(onImageSelected)
     }

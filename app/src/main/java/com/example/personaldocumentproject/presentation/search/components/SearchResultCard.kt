@@ -13,8 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.personaldocumentproject.domain.model.SearchResult
-import androidx.compose.ui.unit.dp
-import com.example.personaldocumentproject.domain.model.SearchResult
 import com.example.personaldocumentproject.presentation.components.DocumentCard
 import com.example.personaldocumentproject.presentation.components.DocumentCardLayoutConfig
 
