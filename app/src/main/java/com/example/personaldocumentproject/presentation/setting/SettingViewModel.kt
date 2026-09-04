@@ -3,21 +3,15 @@ package com.example.personaldocumentproject.presentation.setting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.personaldocumentproject.domain.model.UserSetting
-import com.example.personaldocumentproject.domain.repository.DocumentRepository
 import com.example.personaldocumentproject.domain.repository.SettingRepository
-import com.example.personaldocumentproject.domain.service.ImageStorageService
-import dagger.hilt.android.lifecycle.HiltViewModel
+import com.example.personaldocumentproject.domain.usecase.ResetApplicationData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-
-@HiltViewModel
-class SettingViewModel @Inject constructor(
+class SettingViewModel(
     private val repository: SettingRepository,
-    private val documentRepository: DocumentRepository? = null,
-    private val imageStorageService: ImageStorageService? = null,
+    private val resetApplicationData: ResetApplicationData,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingUiState())
@@ -60,9 +54,7 @@ class SettingViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isResetting = true, showResetDialog = false) }
             try {
-                documentRepository?.deleteAll()
-                imageStorageService?.clearAllImages()
-                repository.clearSettings()
+                resetApplicationData()
                 _uiState.update {
                     it.copy(
                         isResetting = false,
@@ -99,5 +91,3 @@ class SettingViewModel @Inject constructor(
         }
     }
 }
-
-

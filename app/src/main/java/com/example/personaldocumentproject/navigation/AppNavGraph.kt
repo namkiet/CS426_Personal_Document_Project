@@ -54,11 +54,6 @@ fun AppNavGraph(container: AppContainer, userSetting: UserSetting = UserSetting(
         }
     }
 
-    LaunchedEffect(Unit) {
-        container.seedDebugDocuments()
-        container.warmCaches()
-    }
-
     when (current) {
         Routes.Library -> {
             val viewModel: LibraryViewModel = viewModel(factory = container.libraryViewModelFactory)

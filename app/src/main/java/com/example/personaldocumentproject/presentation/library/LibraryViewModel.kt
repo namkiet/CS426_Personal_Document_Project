@@ -24,11 +24,12 @@ import kotlinx.coroutines.launch
 class LibraryViewModel(
     observeDocuments: ObserveDocuments,
     searchDocuments: SearchDocuments,
-    private val deleteDocument: DeleteDocument? = null,
+    private val deleteDocument: DeleteDocument,
 ) : ViewModel() {
     private val query = MutableStateFlow("")
     private val selectedIds = MutableStateFlow<Set<String>>(emptySet())
     private val _isSelectionMode = MutableStateFlow(false)
+    private val deletionError = MutableStateFlow<String?>(null)
 
     private val searchState = query.debounce(250).flatMapLatest { currentQuery ->
         if (currentQuery.isBlank()) {
@@ -44,8 +45,14 @@ class LibraryViewModel(
         }
     }
 
-    val uiState = combine(query, searchState, selectedIds, _isSelectionMode) { currentQuery, result, selected, selMode ->
-        result.copy(query = currentQuery, selectedIds = selected, isSelectionMode = selMode)
+    val uiState = combine(query, searchState, selectedIds, _isSelectionMode, deletionError) {
+            currentQuery, result, selected, selMode, error ->
+        result.copy(
+            query = currentQuery,
+            selectedIds = selected,
+            isSelectionMode = selMode,
+            errorMessage = error ?: result.errorMessage,
+        )
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LibraryUiState())
 
@@ -75,11 +82,16 @@ class LibraryViewModel(
         val idsToDelete = selectedIds.value
         if (idsToDelete.isEmpty()) return
         viewModelScope.launch {
-            idsToDelete.forEach { id ->
-                deleteDocument?.invoke(id)
+            deletionError.value = null
+            try {
+                idsToDelete.forEach { id ->
+                    deleteDocument(id)
+                }
+                clearSelection()
+            } catch (error: Exception) {
+                _isSelectionMode.value = true
+                deletionError.value = error.message ?: "Could not delete selected documents"
             }
-            clearSelection()
         }
     }
 }
-
