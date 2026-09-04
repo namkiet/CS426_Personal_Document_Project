@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.personaldocumentproject.presentation.capture.components.ImportImageButton
 import com.example.personaldocumentproject.presentation.capture.components.ScanDocumentButton
+import com.example.personaldocumentproject.presentation.capture.components.rememberDocumentScanner
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.RESULT_FORMAT_JPEG
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.RESULT_FORMAT_PDF
@@ -46,12 +47,19 @@ fun CaptureRoute(viewModel: CaptureViewModel, onImageSelected: (String) -> Unit,
 
 @Composable
 fun CaptureScreen(onImageSelected: (String) -> Unit, onBack: () -> Unit) {
-    val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+    val picker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
         uri?.toString()?.let(onImageSelected)
     }
 
+    val scanner = rememberDocumentScanner(
+        onScanSuccess = onImageSelected,
+        onFallback = { picker.launch("image/*") }
+    )
+
     CaptureButton(
-        onLeftHalfClick = {},
+        onLeftHalfClick = { scanner.launch() },
         onRightHalfClick = { picker.launch("image/*") },
         onClick = {}
     )
