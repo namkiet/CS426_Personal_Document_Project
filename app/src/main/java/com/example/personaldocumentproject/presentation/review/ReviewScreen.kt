@@ -69,16 +69,58 @@ fun ReviewScreen(
     val focusManager = LocalFocusManager.current
     val draft = state.draft
     var newTag by remember { mutableStateOf("") }
+    var isAddingTag by rememberSaveable { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
     var detectedExpanded by remember { mutableStateOf(false) }
     var categoryMenu by remember { mutableStateOf(false) }
     var showDiscardConfirmation by rememberSaveable { mutableStateOf(false) }
+    var showDiscardTagConfirmation by rememberSaveable { mutableStateOf(false) }
     var showFullImage by rememberSaveable { mutableStateOf(false) }
 
     val hasUnsavedChanges = draft != null && !state.isSaved
 
     BackHandler(enabled = hasUnsavedChanges) {
-        showDiscardConfirmation = true
+        if (isAddingTag) {
+            showDiscardTagConfirmation = true
+        } else {
+            showDiscardConfirmation = true
+        }
+    }
+
+    if (showDiscardTagConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDiscardTagConfirmation = false },
+            title = {
+                Text("Discard Tag?", color = TextPrimary, fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Text(
+                    "Your new tag hasn't been added and will be lost if you leave.",
+                    color = TextMuted,
+                    fontSize = 14.sp,
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDiscardTagConfirmation = false
+                        isAddingTag = false
+                        newTag = ""
+                        focusManager.clearFocus()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = DeleteColor),
+                ) {
+                    Text("Discard", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDiscardTagConfirmation = false }) {
+                    Text("Keep Editing", color = TextDim)
+                }
+            },
+            containerColor = SurfaceRaised,
+            shape = RoundedCornerShape(14.dp),
+        )
     }
 
     if (showDiscardConfirmation) {
@@ -117,14 +159,23 @@ fun ReviewScreen(
 
     val addTag = {
         if (newTag.isNotBlank()) {
-            onTagsChanged(draft?.tags.orEmpty() + newTag.trim())
+            onTagsChanged(listOf(newTag.trim()) + draft?.tags.orEmpty())
             newTag = ""
+            isAddingTag = false
+            focusManager.clearFocus()
         }
     }
 
     Column(
         Modifier.fillMaxSize().background(AppBackground).statusBarsPadding().navigationBarsPadding()
-            .pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) }
+            .pointerInput(isAddingTag) {
+                detectTapGestures(
+                    onTap = {
+                        focusManager.clearFocus()
+                        if (isAddingTag) showDiscardTagConfirmation = true
+                    },
+                )
+            }
     ) {
         if (showFullImage && draft != null && draft.imageUri.isNotBlank()) {
             FullScreenImageViewer(
@@ -221,10 +272,22 @@ fun ReviewScreen(
                     }
                     ReviewField("TAGS") {
                         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Box(
+                                modifier = Modifier
+                                    .height(30.dp)
+                                    .aspectRatio(1f)
+                                    .background(AppPrimary, RoundedCornerShape(100.dp))
+                                    .clickable { isAddingTag = true },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(Icons.Default.Add, "Add tag", tint = Color.White, modifier = Modifier.size(16.dp))
+                            }
                             draft.tags.forEach { tag ->
                                 Row(
-                                    Modifier.background(SurfaceRaised, RoundedCornerShape(100.dp))
-                                        .border(1.dp, AppBorder, RoundedCornerShape(100.dp)).padding(9.dp, 6.dp),
+                                    Modifier.height(30.dp)
+                                        .background(SurfaceRaised, RoundedCornerShape(100.dp))
+                                        .border(1.dp, AppBorder, RoundedCornerShape(100.dp))
+                                        .padding(horizontal = 9.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     Text(tag, color = TextMuted, fontSize = 12.sp)
@@ -235,23 +298,25 @@ fun ReviewScreen(
                                 }
                             }
                         }
-                        Spacer(Modifier.height(8.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            AppTextField(
-                                value = newTag,
-                                onValueChange = { newTag = it },
-                                modifier = Modifier.weight(1f),
-                                placeholder = "Add a tag",
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(onDone = { addTag(); focusManager.clearFocus() }),
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            IconButton(
-                                onClick = addTag,
-                                modifier = Modifier.background(AppPrimary, RoundedCornerShape(8.dp)),
-                            ) {
-                                Icon(Icons.Default.Add, "Add tag", tint = Color.White)
+                        if (isAddingTag) {
+                            Spacer(Modifier.height(8.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                AppTextField(
+                                    value = newTag,
+                                    onValueChange = { newTag = it },
+                                    modifier = Modifier.weight(1f),
+                                    placeholder = "Add a tag",
+                                    singleLine = true,
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                    keyboardActions = KeyboardActions(onDone = { addTag() }),
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                IconButton(
+                                    onClick = addTag,
+                                    modifier = Modifier.background(AppPrimary, RoundedCornerShape(8.dp)),
+                                ) {
+                                    Icon(Icons.Default.Check, "Add tag", tint = Color.White)
+                                }
                             }
                         }
                     }
