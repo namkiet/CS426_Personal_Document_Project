@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -36,7 +37,7 @@ import java.util.Locale
 
 @Composable
 fun DetailRoute(documentId: String, viewModel: DetailViewModel, onBack: () -> Unit) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(documentId) { viewModel.loadDocument(documentId) }
     LaunchedEffect(state.isDeleted) { if (state.isDeleted) onBack() }
     DetailScreen(state, onBack, viewModel::delete)
