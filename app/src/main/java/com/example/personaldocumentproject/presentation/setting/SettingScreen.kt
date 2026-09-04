@@ -1,5 +1,6 @@
 package com.example.personaldocumentproject.presentation.setting
 
+import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -55,6 +57,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -80,6 +83,9 @@ fun SettingsScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
 
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     // --- Color Scheme Setup ---
     val backgroundColor = MaterialTheme.colorScheme.secondary
     val itemBackgroundColor = Color.White
@@ -90,8 +96,7 @@ fun SettingsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Search",
-                        //style = MaterialTheme.typography.bodyLarge,
+                        text = "Setting",
                     )
                 },
                 navigationIcon = {
@@ -112,147 +117,290 @@ fun SettingsScreen(
             )
         }
     ) { padding ->
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                //.background(backgroundColor)
-                .padding(padding)
-                .padding(horizontal = 24.dp, vertical = 32.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Screen Title
-            item {
-                Text(
-                    text = "Setting",
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Serif,
+        if (isLandscape) {
+            // Landscape: Controls on left, Live Card Preview on right
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 24.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                // Left pane: Controls
+                LazyColumn(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    textAlign = TextAlign.Center
-                )
-            }
-
-            // General Section
-            item {
-                SectionHeader(
-                    title = "General",
-                    isExpanded = state.isGeneralExpanded,
-                    onToggleExpand = viewModel::toggleGeneralExpanded
-                )
-
-                AnimatedVisibility(visible = state.isGeneralExpanded) {
-                    Column(modifier = Modifier.padding(top = 12.dp)) {
-                        ToggleSettingItem(
-                            label = "Dark mode",
-                            checked = state.isDarkMode,
-                            onCheckedChange = viewModel::setDarkMode,
-                            containerColor = itemBackgroundColor,
-                            activeColor = accentColor
+                        .weight(1.2f)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item {
+                        Text(
+                            text = "Setting",
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Serif,
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                            textAlign = TextAlign.Start
                         )
                     }
-                }
-            }
 
-            // Section Divider
-            item {
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp),
-                    thickness = 1.dp,
-                    color = Color.LightGray.copy(alpha = 0.6f)
-                )
-            }
-
-            // Document Section
-            item {
-                SectionHeader(
-                    title = "Document",
-                    isExpanded = state.isDocumentExpanded,
-                    onToggleExpand = viewModel::toggleDocumentExpanded
-                )
-
-                AnimatedVisibility(visible = state.isDocumentExpanded) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.padding(top = 12.dp)
-                    ) {
-                        ToggleSettingItem(
-                            label = "Show Image",
-                            checked = state.showImage,
-                            onCheckedChange = viewModel::setShowImage,
-                            containerColor = itemBackgroundColor,
-                            activeColor = accentColor
+                    // General Section
+                    item {
+                        SectionHeader(
+                            title = "General",
+                            isExpanded = state.isGeneralExpanded,
+                            onToggleExpand = viewModel::toggleGeneralExpanded
                         )
 
-                        // Sliders Card Container
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(itemBackgroundColor)
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            SliderSettingRow(
-                                label = "Width",
-                                value = state.widthValue,
-                                onValueChange = viewModel::setWidthValue,
-                                activeColor = accentColor
-                            )
-
-                            SliderSettingRow(
-                                label = "Height",
-                                value = state.heightValue,
-                                onValueChange = viewModel::setHeightValue,
-                                activeColor = accentColor
-                            )
+                        AnimatedVisibility(visible = state.isGeneralExpanded) {
+                            Column(modifier = Modifier.padding(top = 12.dp)) {
+                                ToggleSettingItem(
+                                    label = "Dark mode",
+                                    checked = state.isDarkMode,
+                                    onCheckedChange = viewModel::setDarkMode,
+                                    containerColor = itemBackgroundColor,
+                                    activeColor = accentColor
+                                )
+                            }
                         }
+                    }
 
-                        Text(
-                            text = "Preview",
-                            fontSize = 22.sp,
-                            fontFamily = FontFamily.Serif,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center
+                    // Section Divider
+                    item {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            thickness = 1.dp,
+                            color = Color.LightGray.copy(alpha = 0.6f)
+                        )
+                    }
+
+                    // Document Section
+                    item {
+                        SectionHeader(
+                            title = "Document",
+                            isExpanded = state.isDocumentExpanded,
+                            onToggleExpand = viewModel::toggleDocumentExpanded
                         )
 
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // Reactive Image Placeholder sizing driven by Sliders & Toggle
-                        AnimatedVisibility(true,
-                            modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(width = (60 + (state.widthValue * 120)).dp, (60 + (state.heightValue * 120)).dp)
-                                    .height(180.dp * (0.5f + state.heightValue * 0.5f))
-                                    .clip(RoundedCornerShape(24.dp))
-                                    .background(accentColor).align(Alignment.CenterHorizontally)
+                        AnimatedVisibility(visible = state.isDocumentExpanded) {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = Modifier.padding(top = 12.dp)
                             ) {
-                                if (state.showImage) {
-                                    Column() {
-                                        Image(
-                                            painter = painterResource(id = R.drawable.chihuahuaandroidtest),
-                                            contentDescription = "Document Image",
-                                            modifier = Modifier
-                                                .fillMaxSize(),
-                                            contentScale = ContentScale.Crop
-                                        )
-                                    }
+                                ToggleSettingItem(
+                                    label = "Show Image",
+                                    checked = state.showImage,
+                                    onCheckedChange = viewModel::setShowImage,
+                                    containerColor = itemBackgroundColor,
+                                    activeColor = accentColor
+                                )
 
-                                } else {
-                                    Column(Modifier.padding(16.dp)) {
-                                        Text("Title", style = MaterialTheme.typography.titleMedium)
-                                        Text("Lorem ipsum", style = MaterialTheme.typography.bodyMedium)
-                                    }
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(20.dp))
+                                        .background(itemBackgroundColor)
+                                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    SliderSettingRow(
+                                        label = "Width",
+                                        value = state.widthValue,
+                                        onValueChange = viewModel::setWidthValue,
+                                        activeColor = accentColor
+                                    )
+
+                                    SliderSettingRow(
+                                        label = "Height",
+                                        value = state.heightValue,
+                                        onValueChange = viewModel::setHeightValue,
+                                        activeColor = accentColor
+                                    )
                                 }
                             }
                         }
                     }
                 }
+
+                // Right pane: Live Preview Card
+                Column(
+                    modifier = Modifier
+                        .weight(0.8f)
+                        .fillMaxHeight(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Preview",
+                        fontSize = 22.sp,
+                        fontFamily = FontFamily.Serif,
+                        modifier = Modifier.padding(bottom = 12.dp),
+                        textAlign = TextAlign.Center
+                    )
+
+                    CardPreview(
+                        showImage = state.showImage,
+                        widthValue = state.widthValue,
+                        heightValue = state.heightValue,
+                        accentColor = accentColor
+                    )
+                }
+            }
+        } else {
+            // Portrait: Single scrollable column
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 24.dp, vertical = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Screen Title
+                item {
+                    Text(
+                        text = "Setting",
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Serif,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                // General Section
+                item {
+                    SectionHeader(
+                        title = "General",
+                        isExpanded = state.isGeneralExpanded,
+                        onToggleExpand = viewModel::toggleGeneralExpanded
+                    )
+
+                    AnimatedVisibility(visible = state.isGeneralExpanded) {
+                        Column(modifier = Modifier.padding(top = 12.dp)) {
+                            ToggleSettingItem(
+                                label = "Dark mode",
+                                checked = state.isDarkMode,
+                                onCheckedChange = viewModel::setDarkMode,
+                                containerColor = itemBackgroundColor,
+                                activeColor = accentColor
+                            )
+                        }
+                    }
+                }
+
+                // Section Divider
+                item {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        thickness = 1.dp,
+                        color = Color.LightGray.copy(alpha = 0.6f)
+                    )
+                }
+
+                // Document Section
+                item {
+                    SectionHeader(
+                        title = "Document",
+                        isExpanded = state.isDocumentExpanded,
+                        onToggleExpand = viewModel::toggleDocumentExpanded
+                    )
+
+                    AnimatedVisibility(visible = state.isDocumentExpanded) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.padding(top = 12.dp)
+                        ) {
+                            ToggleSettingItem(
+                                label = "Show Image",
+                                checked = state.showImage,
+                                onCheckedChange = viewModel::setShowImage,
+                                containerColor = itemBackgroundColor,
+                                activeColor = accentColor
+                            )
+
+                            // Sliders Card Container
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(itemBackgroundColor)
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                SliderSettingRow(
+                                    label = "Width",
+                                    value = state.widthValue,
+                                    onValueChange = viewModel::setWidthValue,
+                                    activeColor = accentColor
+                                )
+
+                                SliderSettingRow(
+                                    label = "Height",
+                                    value = state.heightValue,
+                                    onValueChange = viewModel::setHeightValue,
+                                    activeColor = accentColor
+                                )
+                            }
+
+                            Text(
+                                text = "Preview",
+                                fontSize = 22.sp,
+                                fontFamily = FontFamily.Serif,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            // Reactive Image Placeholder sizing driven by Sliders & Toggle
+                            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                CardPreview(
+                                    showImage = state.showImage,
+                                    widthValue = state.widthValue,
+                                    heightValue = state.heightValue,
+                                    accentColor = accentColor
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CardPreview(
+    showImage: Boolean,
+    widthValue: Float,
+    heightValue: Float,
+    accentColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(
+                width = (60 + (widthValue * 120)).dp,
+                height = (60 + (heightValue * 120)).dp
+            )
+            .height(180.dp * (0.5f + heightValue * 0.5f))
+            .clip(RoundedCornerShape(24.dp))
+            .background(accentColor)
+    ) {
+        if (showImage) {
+            Image(
+                painter = painterResource(id = R.drawable.chihuahuaandroidtest),
+                contentDescription = "Document Image",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Column(Modifier.padding(16.dp)) {
+                Text("Title", style = MaterialTheme.typography.titleMedium)
+                Text("Lorem ipsum", style = MaterialTheme.typography.bodyMedium)
             }
         }
     }

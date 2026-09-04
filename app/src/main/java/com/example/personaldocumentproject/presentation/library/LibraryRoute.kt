@@ -3,6 +3,7 @@ package com.example.personaldocumentproject.presentation.library
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.example.personaldocumentproject.domain.model.UserSetting
 
@@ -10,26 +11,33 @@ import com.example.personaldocumentproject.domain.model.UserSetting
 fun LibraryRoute(
     viewModelLibrary: LibraryViewModel,
     userSetting: UserSetting,
-    onDocumentClick: (String) -> Unit,
-    onSettingClick: () -> Unit,
+    navigationActions: LibraryNavigationActions,
     modifier: Modifier = Modifier,
-    onSearch: (() -> Unit)? = null,
 ) {
     val stateLibrary by viewModelLibrary.uiState.collectAsState()
+
+    val actions = remember(viewModelLibrary, navigationActions) {
+        LibraryActions(
+            search = LibrarySearchActions(
+                onQueryChanged = viewModelLibrary::onSearchQueryChanged,
+                onSearch = viewModelLibrary::performSearch,
+                onClearQuery = viewModelLibrary::onClearSearchQuery,
+            ),
+            tag = LibraryTagActions(
+                onQueryChanged = viewModelLibrary::onTagQueryChanged,
+                onClearQuery = viewModelLibrary::onClearTagQuery,
+                onTagToggle = viewModelLibrary::onTagToggle,
+                onClearSelectedTags = viewModelLibrary::onClearSelectedTags,
+                onToggleDropdown = viewModelLibrary::onToggleTagDropdown,
+            ),
+            navigation = navigationActions,
+        )
+    }
 
     LibraryScreen(
         state = stateLibrary,
         userSetting = userSetting,
-        onSearchQueryChanged = viewModelLibrary::onSearchQueryChanged,
-        onPerformSearch = viewModelLibrary::performSearch,
-        onClearSearchQuery = viewModelLibrary::onClearSearchQuery,
-        onTagQueryChanged = viewModelLibrary::onTagQueryChanged,
-        onClearTagQuery = viewModelLibrary::onClearTagQuery,
-        onTagToggle = viewModelLibrary::onTagToggle,
-        onClearSelectedTags = viewModelLibrary::onClearSelectedTags,
-        onToggleTagDropdown = viewModelLibrary::onToggleTagDropdown,
-        onDocumentClick = onDocumentClick,
-        onSettingClick = onSettingClick,
-        modifier = modifier
+        actions = actions,
+        modifier = modifier,
     )
 }

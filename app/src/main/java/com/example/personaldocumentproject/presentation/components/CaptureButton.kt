@@ -1,5 +1,6 @@
 package com.example.personaldocumentproject.presentation.components
 
+import android.content.res.Configuration
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -48,6 +49,12 @@ fun CaptureButton(
 ) {
     var isExpanded by remember { mutableStateOf(false) }
 
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val buttonBottomPadding = if (isLandscape) 16.dp else 52.dp
+    val centerFromBottom = buttonBottomPadding + 52.dp
+    val iconSize = if (isLandscape) 56.dp else 84.dp
+
     // Smoothly animate transition progress (0f = collapsed, 1f = expanded)
     val animationProgress by animateFloatAsState(
         targetValue = if (isExpanded) 1f else 0f,
@@ -81,17 +88,15 @@ fun CaptureButton(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.BottomCenter
             ) {
-                // Button center coordinates
-
-                // Target radius calculation relative to screen size
-                val screenwidth = LocalConfiguration.current.screenWidthDp.dp
-                val maxRadius =  screenwidth * 0.60f
+                // Target radius calculation relative to screen size (uses min dimension in landscape)
+                val baseDimension = if (isLandscape) configuration.screenHeightDp.dp else configuration.screenWidthDp.dp
+                val maxRadius = baseDimension * 0.55f
                 val currentRadius = maxRadius * animationProgress
                 val currentSize = currentRadius * 2
 
                 Box(
                     modifier = Modifier
-                        .offset(y = -(104.dp) + currentRadius)
+                        .offset(y = -centerFromBottom + currentRadius)
                         .wrapContentSize(unbounded = true)
                         .size(width = currentSize, height = currentSize)
                         .clip(CircleShape)
@@ -115,7 +120,7 @@ fun CaptureButton(
                             Icon(
                                 imageVector = FluentuiSystemIconsCameraAddSolid,
                                 contentDescription = "CameraHalf",
-                                modifier = Modifier.size(84.dp),
+                                modifier = Modifier.size(iconSize),
                                 tint = Color.Black
                             )
                         }
@@ -138,7 +143,7 @@ fun CaptureButton(
                             Icon(
                                 imageVector = FluentuiSystemIconsAlbumAddSolid,
                                 contentDescription = "ImportHalf",
-                                modifier = Modifier.size(84.dp),
+                                modifier = Modifier.size(iconSize),
                                 tint = Color.Black
                             )
                         }
@@ -163,7 +168,7 @@ fun CaptureButton(
         // 2. Main Circle Button
         Box(
             modifier = Modifier
-                .padding(bottom = 52.dp)
+                .padding(bottom = buttonBottomPadding)
                 .size(84.dp)
                 .clip(CircleShape)
                 .drawBehind { drawCircle(buttonColor) }

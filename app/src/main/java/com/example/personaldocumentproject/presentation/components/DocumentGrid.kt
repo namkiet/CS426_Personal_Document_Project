@@ -22,7 +22,15 @@ fun DocumentGrid(
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val layoutConfig = userSetting.toLayoutConfig()
 
-    if (documents.isEmpty()) Text("Your document library is empty.")
+    if (documents.isEmpty()) {
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = androidx.compose.ui.Alignment.Center
+        ) {
+            Text("Your document library is empty.")
+        }
+        return
+    }
 
     if (isLandscape) {
         // LANDSCAPE: Horizontal Scrolling Grid
@@ -30,7 +38,7 @@ fun DocumentGrid(
             rows = GridCells.Adaptive(minSize = layoutConfig.cardHeight),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
             modifier = modifier.fillMaxSize()
         ) {
             items(
