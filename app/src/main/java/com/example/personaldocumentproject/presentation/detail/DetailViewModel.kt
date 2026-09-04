@@ -3,6 +3,7 @@ package com.example.personaldocumentproject.presentation.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.personaldocumentproject.domain.usecase.GetDocument
+import com.example.personaldocumentproject.domain.model.MockDocuments
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -19,7 +20,7 @@ class DetailViewModel(
         viewModelScope.launch {
             mutableState.value = DetailUiState(isLoading = true)
             try {
-                val document = getDocument(documentId)
+                val document = getDocument(documentId) ?: MockDocuments.find(documentId)
                 if (document != null) {
                     mutableState.value = DetailUiState(document = document, isLoading = false)
                 } else {

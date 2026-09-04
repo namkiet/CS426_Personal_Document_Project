@@ -1,89 +1,124 @@
 package com.example.personaldocumentproject.presentation.detail
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import androidx.compose.ui.unit.sp
+import com.example.personaldocumentproject.presentation.library.components.CategoryBadge
+import com.example.personaldocumentproject.presentation.library.components.DocumentArtwork
+import com.example.personaldocumentproject.ui.theme.*
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
-fun DetailRoute(
-    documentId: String,
-    viewModel: DetailViewModel,
-    onBack: () -> Unit,
-) {
+fun DetailRoute(documentId: String, viewModel: DetailViewModel, onBack: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
-    LaunchedEffect(documentId) {
-        viewModel.loadDocument(documentId)
-    }
-    DetailScreen(state = state, onBack = onBack)
+    LaunchedEffect(documentId) { viewModel.loadDocument(documentId) }
+    DetailScreen(state, onBack)
 }
 
 @Composable
-fun DetailScreen(
-    state: DetailUiState,
-    onBack: () -> Unit
-) {
-    Surface(modifier = Modifier.fillMaxSize(), color = Color.Black) {
-        Column(
-            Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            if (state.isLoading) {
-                CircularProgressIndicator()
+fun DetailScreen(state: DetailUiState, onBack: () -> Unit) {
+    var ocrExpanded by remember { mutableStateOf(false) }
+    Surface(Modifier.fillMaxSize(), color = AppBackground) {
+        when {
+            state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = AppPrimary)
             }
-
-            state.errorMessage?.let { error ->
-                Text("Error: $error", color = MaterialTheme.colorScheme.error)
-            }
-
-            state.document?.let { document ->
-                AsyncImage(
-                    model = document.imageUri,
-                    contentDescription = "Document Image",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp),
-                    contentScale = ContentScale.Fit
-                )
-
-                Text(document.title, style = MaterialTheme.typography.headlineMedium, color = Color.White)
-
-                Text("Description", style = MaterialTheme.typography.titleMedium, color = Color.White)
-                Text(document.description, style = MaterialTheme.typography.bodyMedium, color = Color.White)
-
-                if (document.tags.isNotEmpty()) {
-                    Text("Tags", style = MaterialTheme.typography.titleMedium, color = Color.White)
-                    Text(document.tags.joinToString(", "), style = MaterialTheme.typography.bodyMedium, color = Color.White)
+            state.document != null -> {
+                val document = state.document
+                Column(Modifier.fillMaxSize()) {
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        TextButton(onClick = onBack, contentPadding = PaddingValues(horizontal = 4.dp)) {
+                            Icon(Icons.Default.ArrowBack, null); Spacer(Modifier.width(6.dp))
+                            Text(document.title, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.SemiBold)
+                        }
+                        Spacer(Modifier.weight(1f))
+                        Box(Modifier.size(38.dp).background(SurfaceRaised, RoundedCornerShape(12.dp))
+                            .border(1.dp, AppBorder, RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
+                            Icon(Icons.Default.MoreVert, "More options", tint = TextMuted)
+                        }
+                    }
+                    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                        DocumentArtwork(document, Modifier.fillMaxWidth().aspectRatio(4f / 3f))
+                        Column(Modifier.padding(20.dp)) {
+                            Text(document.title, color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            Spacer(Modifier.height(10.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                CategoryBadge(document.category); Text("  •  ", color = TextDim)
+                                Text(SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(document.createdAt)),
+                                    color = TextDim, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
+                            }
+                        }
+                        HorizontalDivider(color = AppBorder)
+                        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                            Text(document.description, color = TextMuted, fontSize = 14.sp, lineHeight = 24.sp)
+                            if (document.tags.isNotEmpty()) Section("TAGS") {
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { document.tags.forEach { Tag(it) } }
+                            }
+                            if (document.detectedObjects.isNotEmpty()) Section("DETECTED OBJECTS") {
+                                Text(document.detectedObjects.joinToString("  •  "), color = TextMuted, fontSize = 14.sp)
+                            }
+                            Column(Modifier.fillMaxWidth().background(SurfaceRaised, RoundedCornerShape(8.dp))
+                                .border(1.dp, AppBorder, RoundedCornerShape(8.dp))) {
+                                Row(Modifier.fillMaxWidth().clickable { ocrExpanded = !ocrExpanded }.padding(14.dp),
+                                    verticalAlignment = Alignment.CenterVertically) {
+                                    Text("OCR Text", color = TextMuted, fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
+                                        modifier = Modifier.weight(1f))
+                                    Icon(Icons.Default.ExpandMore, null, tint = TextDim, modifier = Modifier.rotate(if (ocrExpanded) 180f else 0f))
+                                }
+                                AnimatedVisibility(ocrExpanded) {
+                                    Text(document.ocrText.ifBlank { "No text detected." }, color = TextMuted, fontSize = 12.sp,
+                                        lineHeight = 20.sp, fontFamily = FontFamily.Monospace,
+                                        modifier = Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp, bottom = 14.dp))
+                                }
+                            }
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                OutlinedButton(onClick = onBack, shape = RoundedCornerShape(8.dp),
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, DeleteColor.copy(alpha = .3f)),
+                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = DeleteColor)) {
+                                    Icon(Icons.Default.Delete, null, Modifier.size(16.dp)); Spacer(Modifier.width(7.dp)); Text("Delete")
+                                }
+                            }
+                            Spacer(Modifier.height(20.dp))
+                        }
+                    }
                 }
-
-                Text("Extracted Text", style = MaterialTheme.typography.titleMedium, color = Color.White)
-                Text(document.ocrText.ifBlank { "No text detected." }, style = MaterialTheme.typography.bodyMedium, color = Color.White)
             }
-
-            OutlinedButton(onClick = onBack) {
-                Text("Back", color = Color.White)
+            else -> Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center) {
+                Text(state.errorMessage ?: "Document not found", color = TextMuted)
+                TextButton(onClick = onBack) { Text("Back to library") }
             }
         }
     }
+}
+
+@Composable private fun Section(label: String, content: @Composable () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(label, color = TextMuted, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, letterSpacing = .8.sp)
+        content()
+    }
+}
+
+@Composable private fun Tag(text: String) {
+    Text(text, color = TextMuted, fontSize = 12.sp, modifier = Modifier.background(SurfaceRaised, RoundedCornerShape(100.dp))
+        .border(1.dp, AppBorder, RoundedCornerShape(100.dp)).padding(horizontal = 10.dp, vertical = 6.dp))
 }
