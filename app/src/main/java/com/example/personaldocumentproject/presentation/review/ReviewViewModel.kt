@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.personaldocumentproject.domain.usecase.AnalyzeDocument
 import com.example.personaldocumentproject.domain.usecase.SaveDocument
+import com.example.personaldocumentproject.domain.model.DocumentDraft
+import com.example.personaldocumentproject.domain.model.MockDocuments
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -17,6 +19,21 @@ class ReviewViewModel(
 
     fun analyze(imageUri: String) {
         if (mutableState.value.draft?.imageUri == imageUri || mutableState.value.isAnalyzing) return
+        if (imageUri.startsWith("mock://")) {
+            val document = MockDocuments.items.first()
+            mutableState.value = ReviewUiState(
+                draft = DocumentDraft(
+                    imageUri = imageUri,
+                    title = document.title,
+                    description = document.description,
+                    ocrText = document.ocrText,
+                    category = document.category,
+                    tags = document.tags,
+                    detectedObjects = document.detectedObjects,
+                )
+            )
+            return
+        }
         viewModelScope.launch {
             mutableState.value = ReviewUiState(isAnalyzing = true)
             mutableState.value = runCatching { analyzeDocument(imageUri) }

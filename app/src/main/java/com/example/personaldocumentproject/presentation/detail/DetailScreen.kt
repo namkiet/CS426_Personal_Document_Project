@@ -39,7 +39,13 @@ fun DetailRoute(documentId: String, viewModel: DetailViewModel, onBack: () -> Un
 @Composable
 fun DetailScreen(state: DetailUiState, onBack: () -> Unit) {
     var ocrExpanded by remember { mutableStateOf(false) }
-    Surface(Modifier.fillMaxSize(), color = AppBackground) {
+    Surface(
+        Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding(),
+        color = AppBackground,
+    ) {
         when {
             state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = AppPrimary)

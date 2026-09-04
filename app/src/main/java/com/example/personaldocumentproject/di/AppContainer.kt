@@ -20,7 +20,6 @@ import com.example.personaldocumentproject.presentation.capture.CaptureViewModel
 import com.example.personaldocumentproject.presentation.detail.DetailViewModel
 import com.example.personaldocumentproject.presentation.library.LibraryViewModel
 import com.example.personaldocumentproject.presentation.review.ReviewViewModel
-import com.example.personaldocumentproject.presentation.search.SearchViewModel
 
 /** Composition root. Replace adapters here without leaking infrastructure into domain or UI. */
 class AppContainer(private val context: Context) {
@@ -45,7 +44,6 @@ class AppContainer(private val context: Context) {
     val libraryViewModelFactory = factory { LibraryViewModel(observeDocuments) }
     val captureViewModelFactory = factory { CaptureViewModel() }
     val reviewViewModelFactory = factory { ReviewViewModel(analyzeDocument, saveDocument) }
-    val searchViewModelFactory = factory { SearchViewModel(searchDocuments) }
     val detailViewModelFactory = factory { DetailViewModel(getDocument) }
 
     private fun factory(create: () -> ViewModel): ViewModelProvider.Factory =

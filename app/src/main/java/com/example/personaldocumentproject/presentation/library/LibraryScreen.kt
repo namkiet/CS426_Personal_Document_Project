@@ -17,6 +17,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,25 +29,33 @@ import com.example.personaldocumentproject.domain.model.MockDocuments
 import com.example.personaldocumentproject.presentation.library.components.DocumentCard
 import com.example.personaldocumentproject.presentation.library.components.categoryColor
 import com.example.personaldocumentproject.ui.theme.*
+import com.example.personaldocumentproject.ui.components.AppTextField
 
 @Composable
-fun LibraryRoute(viewModel: LibraryViewModel, onCapture: () -> Unit, onSearch: () -> Unit, onDocumentClick: (String) -> Unit) {
+fun LibraryRoute(viewModel: LibraryViewModel, onCapture: () -> Unit, onDocumentClick: (String) -> Unit) {
     val state by viewModel.uiState.collectAsState()
     LibraryScreen(state, onCapture, onDocumentClick)
 }
 
 @Composable
 fun LibraryScreen(state: LibraryUiState, onCapture: () -> Unit, onDocumentClick: (String) -> Unit) {
+    val focusManager = LocalFocusManager.current
     var query by remember { mutableStateOf("") }
     var category by remember { mutableStateOf<DocumentCategory?>(null) }
     val visible = remember(state.documents, query, category) { state.documents.filter { doc ->
         (category == null || doc.category == category) && (query.isBlank() ||
             listOf(doc.title, doc.description, doc.ocrText, doc.tags.joinToString(" ")).any { it.contains(query, true) })
     } }
-    Scaffold(containerColor = AppBackground, floatingActionButton = {
+    Scaffold(
+        modifier = Modifier.pointerInput(Unit) {
+            detectTapGestures(onTap = { focusManager.clearFocus() })
+        },
+        containerColor = AppBackground,
+        floatingActionButton = {
         FloatingActionButton(onClick = onCapture, containerColor = AppPrimary, contentColor = Color.White,
             shape = RoundedCornerShape(18.dp), modifier = Modifier.size(56.dp)) { Icon(Icons.Default.Add, "Add document") }
-    }) { insets ->
+        },
+    ) { insets ->
         Column(Modifier.fillMaxSize().padding(insets)) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
@@ -56,12 +67,10 @@ fun LibraryScreen(state: LibraryUiState, onCapture: () -> Unit, onDocumentClick:
                     Icon(Icons.Default.MoreVert, "More options", tint = TextMuted)
                 }
             }
-            OutlinedTextField(value = query, onValueChange = { query = it }, singleLine = true,
-                placeholder = { Text("Search your documents...", color = TextDim, fontSize = 14.sp) },
+            AppTextField(value = query, onValueChange = { query = it }, singleLine = true,
+                placeholder = "Search your documents...",
                 leadingIcon = { Icon(Icons.Default.Search, null, tint = TextDim) },
                 trailingIcon = if (query.isNotEmpty()) {{ IconButton({ query = "" }) { Icon(Icons.Default.Close, "Clear", tint = TextMuted) } }} else null,
-                colors = OutlinedTextFieldDefaults.colors(focusedContainerColor = SurfaceRaised, unfocusedContainerColor = SurfaceRaised,
-                    focusedBorderColor = AppPrimary, unfocusedBorderColor = AppBorder, focusedTextColor = TextPrimary, unfocusedTextColor = TextPrimary),
                 shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp))
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 14.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)) {

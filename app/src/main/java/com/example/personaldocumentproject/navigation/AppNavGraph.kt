@@ -15,8 +15,6 @@ import com.example.personaldocumentproject.presentation.library.LibraryRoute
 import com.example.personaldocumentproject.presentation.library.LibraryViewModel
 import com.example.personaldocumentproject.presentation.review.ReviewRoute
 import com.example.personaldocumentproject.presentation.review.ReviewViewModel
-import com.example.personaldocumentproject.presentation.search.SearchRoute
-import com.example.personaldocumentproject.presentation.search.SearchViewModel
 
 @Composable
 fun AppNavGraph(container: AppContainer) {
@@ -27,7 +25,6 @@ fun AppNavGraph(container: AppContainer) {
             LibraryRoute(
                 viewModel = viewModel,
                 onCapture = { route = Routes.Capture },
-                onSearch = { route = Routes.Search },
                 onDocumentClick = { route = Routes.Detail(it) }
             )
         }
@@ -49,14 +46,6 @@ fun AppNavGraph(container: AppContainer) {
                 viewModel = viewModel,
                 onSaved = { route = Routes.Library },
                 onBack = { route = Routes.Capture },
-            )
-        }
-        Routes.Search -> {
-            val viewModel: SearchViewModel = viewModel(factory = container.searchViewModelFactory)
-            SearchRoute(
-                viewModel = viewModel,
-                onBack = { route = Routes.Library },
-                onDocumentClick = { route = Routes.Detail(it) }
             )
         }
         is Routes.Detail -> {
