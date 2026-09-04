@@ -16,6 +16,8 @@ import com.example.personaldocumentproject.data.ml.ocr.MlKitOcrService
 import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
 import com.example.personaldocumentproject.data.repository.SettingRepositoryImpl
 import com.example.personaldocumentproject.domain.usecase.AnalyzeDocument
+import com.example.personaldocumentproject.domain.usecase.ExtractTagsFromDocuments
+import com.example.personaldocumentproject.domain.usecase.FilterDocumentsByTags
 import com.example.personaldocumentproject.domain.usecase.GetDocument
 import com.example.personaldocumentproject.domain.usecase.ObserveDocuments
 import com.example.personaldocumentproject.domain.usecase.SaveDocument
@@ -49,10 +51,19 @@ class AppContainer(private val context: Context) {
     )
     val saveDocument = SaveDocument(repository, imageStorageService, embeddingService)
     val searchDocuments = SearchDocuments(repository, embeddingService)
+    val extractTagsFromDocuments = ExtractTagsFromDocuments()
+    val filterDocumentsByTags = FilterDocumentsByTags()
 
     // ── ViewModel factories ───────────────────────────────────────────────────
 
-    val libraryViewModelFactory = factory { LibraryViewModel(observeDocuments) }
+    val libraryViewModelFactory = factory {
+        LibraryViewModel(
+            observeDocuments = observeDocuments,
+            searchDocuments = searchDocuments,
+            extractTagsFromDocuments = extractTagsFromDocuments,
+            filterDocumentsByTags = filterDocumentsByTags,
+        )
+    }
     val captureViewModelFactory = factory { CaptureViewModel() }
     val reviewViewModelFactory = factory { ReviewViewModel(analyzeDocument, saveDocument) }
     val searchViewModelFactory = factory { SearchViewModel(searchDocuments) }
