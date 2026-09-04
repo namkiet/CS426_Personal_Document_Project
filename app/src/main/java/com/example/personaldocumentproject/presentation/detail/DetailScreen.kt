@@ -15,15 +15,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.personaldocumentproject.domain.model.MockDocuments
 import com.example.personaldocumentproject.presentation.library.components.CategoryBadge
 import com.example.personaldocumentproject.presentation.library.components.DocumentArtwork
@@ -40,6 +40,7 @@ fun DetailRoute(documentId: String, viewModel: DetailViewModel, onBack: () -> Un
     DetailScreen(state, onBack, viewModel::delete)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(state: DetailUiState, onBack: () -> Unit, onDelete: () -> Unit) {
     var ocrExpanded by rememberSaveable { mutableStateOf(false) }
@@ -166,8 +167,8 @@ fun DetailScreen(state: DetailUiState, onBack: () -> Unit, onDelete: () -> Unit)
 }
 
 @Composable private fun Section(label: String, content: @Composable () -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text(label, color = TextMuted, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, letterSpacing = .8.sp)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(label, color = TextDim, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, letterSpacing = .6.sp)
         content()
     }
 }

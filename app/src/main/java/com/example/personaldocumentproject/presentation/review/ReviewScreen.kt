@@ -45,7 +45,6 @@ fun ReviewRoute(imageUri: String, viewModel: ReviewViewModel, onSaved: () -> Uni
         onCategoryChanged = viewModel::updateCategory,
         onTagsChanged = viewModel::updateTags,
         onDetectedObjectsChanged = viewModel::updateDetectedObjects,
-        onEnhanceWithAi = viewModel::enhanceWithAi,
         onSave = viewModel::save,
         onBack = onBack,
     )
@@ -59,7 +58,6 @@ fun ReviewScreen(
     onCategoryChanged: (DocumentCategory) -> Unit,
     onTagsChanged: (List<String>) -> Unit,
     onDetectedObjectsChanged: (List<String>) -> Unit,
-    onEnhanceWithAi: () -> Unit,
     onSave: () -> Unit,
     onBack: () -> Unit,
 ) {
@@ -207,25 +205,10 @@ fun ReviewScreen(
                             )
                         }
                     }
-                    OutlinedButton(
-                        onClick = onEnhanceWithAi,
-                        enabled = draft.ocrText.isNotBlank() && !state.isEnhancing,
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
-                        shape = RoundedCornerShape(12.dp),
-                    ) {
-                        if (state.isEnhancing) {
-                            CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                            Spacer(Modifier.width(9.dp))
-                        } else {
-                            Icon(Icons.Default.AutoAwesome, null, Modifier.size(18.dp))
-                            Spacer(Modifier.width(9.dp))
-                        }
-                        Text(if (state.isEnhancing) "Enhancing..." else "Enhance with AI")
-                    }
                     state.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                     Button(
                         onClick = onSave,
-                        enabled = !state.isSaving && !state.isEnhancing,
+                        enabled = !state.isSaving,
                         modifier = Modifier.fillMaxWidth().height(54.dp),
                         shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = AppPrimary),
@@ -245,32 +228,33 @@ fun ReviewScreen(
     }
 }
 
-@Composable
-private fun ReviewField(label: String, content: @Composable () -> Unit) =
+@Composable private fun ReviewField(label: String, content: @Composable () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(label, color = TextMuted, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, letterSpacing = .8.sp)
+        Text(label, color = TextDim, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, letterSpacing = .5.sp)
         content()
     }
+}
 
-private fun DocumentDraft.asDocument() =
+private fun DocumentDraft.asDocument(): Document =
     Document("preview", imageUri, title, description, ocrText, category, tags, detectedObjects, emptyList(), 0L)
 
-private fun mockState(saving: Boolean = false) = ReviewUiState(
-    draft = MockDocuments.items.first().let {
-        DocumentDraft(it.imageUri, it.title, it.description, it.ocrText, it.category, it.tags, it.detectedObjects)
-    },
-    isSaving = saving,
-)
-
-@Preview(name = "Review - Filled", showBackground = true, widthDp = 390, heightDp = 844)
+@Preview(name = "Review - Dark", showBackground = true, backgroundColor = 0xFF0D0D12, widthDp = 390, heightDp = 844)
 @Composable
-private fun ReviewPreview() = PersonalDocumentProjectTheme { ReviewScreen(mockState(), {}, {}, {}, {}, {}, {}, {}, {}) }
-
-@Preview(name = "Review - Analyzing", showBackground = true, widthDp = 390, heightDp = 844)
-@Composable
-private fun AnalyzingPreview() =
-    PersonalDocumentProjectTheme { ReviewScreen(ReviewUiState(isAnalyzing = true), {}, {}, {}, {}, {}, {}, {}, {}) }
-
-@Preview(name = "Review - Saving", showBackground = true, widthDp = 390, heightDp = 844)
-@Composable
-private fun SavingPreview() = PersonalDocumentProjectTheme { ReviewScreen(mockState(true), {}, {}, {}, {}, {}, {}, {}, {}) }
+private fun ReviewScreenPreview() {
+    PersonalDocumentProjectTheme {
+        ReviewScreen(
+            state = ReviewUiState(
+                draft = MockDocuments.items.first().let {
+                    DocumentDraft(it.imageUri, it.title, it.description, it.ocrText, it.category, it.tags, it.detectedObjects)
+                }
+            ),
+            onTitleChanged = {},
+            onDescriptionChanged = {},
+            onCategoryChanged = {},
+            onTagsChanged = {},
+            onDetectedObjectsChanged = {},
+            onSave = {},
+            onBack = {},
+        )
+    }
+}

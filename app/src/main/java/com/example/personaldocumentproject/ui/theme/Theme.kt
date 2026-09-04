@@ -19,6 +19,7 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun PersonalDocumentProjectTheme(
+    darkTheme: Boolean = true,
     content: @Composable () -> Unit
 ) {
     MaterialTheme(

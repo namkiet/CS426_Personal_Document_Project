@@ -4,34 +4,37 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.personaldocumentproject.data.debug.DebugDocumentSeeder
+import com.example.personaldocumentproject.BuildConfig
+import com.example.personaldocumentproject.MainViewModel
 import com.example.personaldocumentproject.data.local.AppDatabase
-import com.example.personaldocumentproject.data.local.storage.LocalImageStorageService
+import com.example.personaldocumentproject.data.local.SettingsLocalDataSource
+import com.example.personaldocumentproject.data.local.dataStore
 import com.example.personaldocumentproject.data.mapper.DocumentMapper
 import com.example.personaldocumentproject.data.ml.embedding.MediaPipeEmbeddingService
 import com.example.personaldocumentproject.data.ml.labeling.MlKitImageLabelingService
-import com.example.personaldocumentproject.data.ml.llm.ModelCatalog
-import com.example.personaldocumentproject.data.ml.llm.ModelManagerRepository
-import com.example.personaldocumentproject.data.ml.llm.LiteRtLmService
-import com.example.personaldocumentproject.data.ml.metadata.MediaPipeDescriptionGenerationService
+import com.example.personaldocumentproject.data.ml.llm.GeminiApiLlmService
 import com.example.personaldocumentproject.data.ml.metadata.EmbeddingCategoryClassificationService
+import com.example.personaldocumentproject.data.ml.metadata.MediaPipeDescriptionGenerationService
 import com.example.personaldocumentproject.data.ml.metadata.SimpleTagGenerationService
 import com.example.personaldocumentproject.data.ml.metadata.SimpleTitleGenerationService
 import com.example.personaldocumentproject.data.ml.ocr.MlKitOcrService
 import com.example.personaldocumentproject.data.ml.translation.MlKitEnglishTranslationService
 import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
+import com.example.personaldocumentproject.data.debug.DebugDocumentSeeder
+import com.example.personaldocumentproject.data.local.storage.LocalImageStorageService
+import com.example.personaldocumentproject.data.repository.SettingRepositoryImpl
 import com.example.personaldocumentproject.domain.service.LlmService
 import com.example.personaldocumentproject.domain.usecase.AnalyzeDocument
-import com.example.personaldocumentproject.domain.usecase.GetDocument
 import com.example.personaldocumentproject.domain.usecase.DeleteDocument
+import com.example.personaldocumentproject.domain.usecase.GetDocument
 import com.example.personaldocumentproject.domain.usecase.ObserveDocuments
 import com.example.personaldocumentproject.domain.usecase.SaveDocument
 import com.example.personaldocumentproject.domain.usecase.SearchDocuments
 import com.example.personaldocumentproject.presentation.capture.CaptureViewModel
 import com.example.personaldocumentproject.presentation.detail.DetailViewModel
 import com.example.personaldocumentproject.presentation.library.LibraryViewModel
-import com.example.personaldocumentproject.presentation.modelmanager.ModelManagerViewModel
 import com.example.personaldocumentproject.presentation.review.ReviewViewModel
+import com.example.personaldocumentproject.presentation.setting.SettingViewModel
 
 /** Composition root. Replace adapters here without leaking infrastructure into domain or UI. */
 class AppContainer(private val context: Context) {
@@ -48,8 +51,14 @@ class AppContainer(private val context: Context) {
     private val textTranslationService = MlKitEnglishTranslationService()
     private val debugDocumentSeeder = DebugDocumentSeeder(context, repository)
 
-    // ── Model Manager ─────────────────────────────────────────────────────────
-    val modelManagerRepository = ModelManagerRepository(context)
+    private val settingsLocalDataSource = SettingsLocalDataSource(context.dataStore)
+    val settingsRepository = SettingRepositoryImpl(settingsLocalDataSource)
+
+    // ── Gemini API Service (if key configured) ───────────────────────────────
+    val geminiService: LlmService? = runCatching {
+        val apiKey = BuildConfig.GEMINI_API_KEY
+        if (apiKey.isNotBlank()) GeminiApiLlmService(apiKey) else null
+    }.getOrNull()
 
     suspend fun warmCaches() {
         runCatching {
@@ -65,31 +74,24 @@ class AppContainer(private val context: Context) {
         if (isDebuggable) debugDocumentSeeder.seed()
     }
 
-    /**
-     * Returns the active [LlmService] for the model the user selected in Model Manager.
-     * If no model file is present on disk, falls back to a no-op stub so the rest of the
-     * app doesn't crash — the Review screen will show a clear error message instead.
-     *
-     * This is evaluated fresh on each call, so switching the active model in Model Manager
-     * takes effect the next time the Review screen requests an enhancement.
-     */
-    fun activeLlmService(): LlmService =
-        modelManagerRepository.activeServiceOrNull() ?: NoModelLlmService
-
     // ── Use-cases ─────────────────────────────────────────────────────────────
 
     val observeDocuments = ObserveDocuments(repository)
     val getDocument = GetDocument(repository)
     val deleteDocument = DeleteDocument(repository, imageStorageService)
-    val analyzeDocument = AnalyzeDocument(
-        ocrService,
-        objectDetectionService,
-        titleGenerationService,
-        descriptionGenerationService,
-        categoryClassificationService,
-        tagGenerationService,
-        textTranslationService,
+
+    val analyzeDocument get() = AnalyzeDocument(
+        context = context,
+        ocrService = ocrService,
+        objectDetectionService = objectDetectionService,
+        titleGenerationService = titleGenerationService,
+        descriptionGenerationService = descriptionGenerationService,
+        categoryClassificationService = categoryClassificationService,
+        tagGenerationService = tagGenerationService,
+        textTranslationService = textTranslationService,
+        geminiService = geminiService,
     )
+
     val saveDocument = SaveDocument(repository, imageStorageService, embeddingService)
     val searchDocuments = SearchDocuments(repository, embeddingService)
 
@@ -97,9 +99,11 @@ class AppContainer(private val context: Context) {
 
     val libraryViewModelFactory = factory { LibraryViewModel(observeDocuments, searchDocuments) }
     val captureViewModelFactory = factory { CaptureViewModel() }
-    val reviewViewModelFactory = factory { ReviewViewModel(analyzeDocument, saveDocument, activeLlmService()) }
+    val reviewViewModelFactory get() = factory { ReviewViewModel(analyzeDocument, saveDocument) }
     val detailViewModelFactory = factory { DetailViewModel(getDocument, deleteDocument) }
-    val modelManagerViewModelFactory = factory { ModelManagerViewModel(modelManagerRepository) }
+    val mainViewModelFactory = factory { MainViewModel(settingsRepository) }
+    val settingViewModelFactory = factory { SettingViewModel(settingsRepository) }
+
     private fun factory(create: () -> ViewModel): ViewModelProvider.Factory =
         object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")

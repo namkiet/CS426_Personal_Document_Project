@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -27,17 +28,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.personaldocumentproject.domain.model.DocumentCategory
 import com.example.personaldocumentproject.domain.model.MockDocuments
 import com.example.personaldocumentproject.presentation.library.components.DocumentCard
 import com.example.personaldocumentproject.presentation.library.components.categoryColor
-import com.example.personaldocumentproject.ui.theme.*
 import com.example.personaldocumentproject.ui.components.AppTextField
+import com.example.personaldocumentproject.ui.theme.*
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
@@ -47,10 +47,10 @@ fun LibraryRoute(
     viewModel: LibraryViewModel,
     onImageCaptured: (String) -> Unit,
     onDocumentClick: (String) -> Unit,
-    onManageModels: () -> Unit,
+    onSettingClick: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsState()
-    LibraryScreen(state, viewModel::updateQuery, onImageCaptured, onDocumentClick, onManageModels)
+    LibraryScreen(state, viewModel::updateQuery, onImageCaptured, onDocumentClick, onSettingClick)
 }
 
 @Composable
@@ -59,7 +59,7 @@ fun LibraryScreen(
     onQueryChanged: (String) -> Unit,
     onImageCaptured: (String) -> Unit,
     onDocumentClick: (String) -> Unit,
-    onManageModels: () -> Unit,
+    onSettingClick: () -> Unit = {},
 ) {
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
@@ -136,8 +136,8 @@ fun LibraryScreen(
                 }
                 Box(Modifier.size(38.dp).background(SurfaceRaised, RoundedCornerShape(12.dp))
                     .border(1.dp, AppBorder, RoundedCornerShape(12.dp))
-                    .clickable(onClick = onManageModels), contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.MoreVert, "More options", tint = TextMuted)
+                    .clickable(onClick = onSettingClick), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Default.Settings, "Settings", tint = TextMuted)
                 }
             }
             AppTextField(value = state.query, onValueChange = onQueryChanged, singleLine = true,
@@ -189,7 +189,7 @@ private fun LibraryScreenPreview() {
             onQueryChanged = {},
             onImageCaptured = {},
             onDocumentClick = {},
-            onManageModels = {},
+            onSettingClick = {},
         )
     }
 }
@@ -203,7 +203,7 @@ private fun EmptyLibraryScreenPreview() {
             onQueryChanged = {},
             onImageCaptured = {},
             onDocumentClick = {},
-            onManageModels = {},
+            onSettingClick = {},
         )
     }
 }

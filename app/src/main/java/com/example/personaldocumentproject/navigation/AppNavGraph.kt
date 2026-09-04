@@ -9,19 +9,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.personaldocumentproject.di.AppContainer
-import com.example.personaldocumentproject.presentation.capture.CaptureRoute
-import com.example.personaldocumentproject.presentation.capture.CaptureViewModel
+import com.example.personaldocumentproject.domain.model.UserSetting
 import com.example.personaldocumentproject.presentation.detail.DetailRoute
 import com.example.personaldocumentproject.presentation.detail.DetailViewModel
 import com.example.personaldocumentproject.presentation.library.LibraryRoute
 import com.example.personaldocumentproject.presentation.library.LibraryViewModel
-import com.example.personaldocumentproject.presentation.modelmanager.ModelManagerRoute
-import com.example.personaldocumentproject.presentation.modelmanager.ModelManagerViewModel
 import com.example.personaldocumentproject.presentation.review.ReviewRoute
 import com.example.personaldocumentproject.presentation.review.ReviewViewModel
+import com.example.personaldocumentproject.presentation.setting.SettingRoute
+import com.example.personaldocumentproject.presentation.setting.SettingViewModel
 
 @Composable
-fun AppNavGraph(container: AppContainer) {
+fun AppNavGraph(container: AppContainer, userSetting: UserSetting = UserSetting()) {
     var backStack: List<Routes> by rememberSaveable(stateSaver = Routes.BackStackSaver) {
         mutableStateOf(listOf<Routes>(Routes.Library))
     }
@@ -57,18 +56,11 @@ fun AppNavGraph(container: AppContainer) {
                 viewModel = viewModel,
                 onImageCaptured = { imageUri -> navigateTo(Routes.Review(imageUri)) },
                 onDocumentClick = { navigateTo(Routes.Detail(it)) },
-                onManageModels = { navigateTo(Routes.ModelManager) },
+                onSettingClick = { navigateTo(Routes.Setting) },
             )
         }
         Routes.Capture -> {
-            val viewModel: CaptureViewModel = viewModel(factory = container.captureViewModelFactory)
-            CaptureRoute(
-                viewModel = viewModel,
-                onImageSelected = { imageUri ->
-                    backStack = backStack.dropLast(1) + Routes.Review(imageUri)
-                },
-                onBack = { navigateBack() },
-            )
+            // Handled directly via FAB launcher in LibraryRoute
         }
         is Routes.Review -> {
             val viewModel: ReviewViewModel = viewModel(
@@ -93,14 +85,17 @@ fun AppNavGraph(container: AppContainer) {
                 onBack = { navigateBack() },
             )
         }
-        Routes.ModelManager -> {
-            val viewModel: ModelManagerViewModel = viewModel(
-                factory = container.modelManagerViewModelFactory,
+        Routes.Setting -> {
+            val viewModel: SettingViewModel = viewModel(
+                factory = container.settingViewModelFactory,
             )
-            ModelManagerRoute(
+            SettingRoute(
                 viewModel = viewModel,
                 onBack = { navigateBack() },
             )
+        }
+        Routes.Account -> {
+            // Placeholder
         }
     }
 }

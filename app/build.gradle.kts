@@ -1,9 +1,20 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
     alias(libs.plugins.ksp)
 }
+
+// Read local.properties safely so CI can override via env vars
+val localProps = Properties().also { props ->
+    val f = rootProject.file("local.properties")
+    if (f.exists()) f.inputStream().use { props.load(it) }
+}
+fun localProp(key: String) = localProps.getProperty(key)
+    ?: System.getenv(key)
+    ?: ""
 
 android {
     namespace = "com.example.personaldocumentproject"
@@ -23,6 +34,8 @@ android {
         ndk {
             abiFilters += listOf("arm64-v8a", "x86_64")
         }
+
+        buildConfigField("String", "GEMINI_API_KEY", "\"${localProp("GEMINI_API_KEY")}\"")
     }
 
     buildTypes {
@@ -38,6 +51,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     androidResources {
         noCompress += listOf("litertlm", "tflite")
@@ -52,6 +66,7 @@ android {
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.core)
     implementation(libs.androidx.compose.material.icons.extended)
@@ -80,6 +95,11 @@ dependencies {
 
     // LiteRT-LM on-device LLM inference
     implementation(libs.litertlm.android)
+    implementation("androidx.datastore:datastore-preferences:1.2.1")
+    implementation("com.google.dagger:dagger:2.60.1")
+    implementation("com.google.dagger:dagger-compiler:2.60.1")
+    implementation("com.google.dagger:hilt-android:2.60.1")
+
 
     testImplementation(libs.junit)
 
