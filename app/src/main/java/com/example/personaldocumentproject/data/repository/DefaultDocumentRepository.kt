@@ -24,7 +24,7 @@ class DefaultDocumentRepository(
         val queryTerms = query.lowercase().split(termSeparator).filter(String::isNotBlank).toSet()
 
         return observeAll().map { documents ->
-            documents.mapNotNull { document ->
+            documents.map { document ->
                 val searchableText = buildString {
                     append(document.title).append(' ')
                     append(document.description).append(' ')
@@ -40,10 +40,7 @@ class DefaultDocumentRepository(
                 val semanticScore = cosineSimilarity(queryEmbedding, document.embedding)
                 val score = semanticScore * 0.8f + lexicalScore * 0.2f
 
-                // Adjust threshold depending on similarity
-                if (score > 0.1f || lexicalScore > 0f) {
-                    SearchResult(document, semanticScore, lexicalScore, score)
-                } else null
+                SearchResult(document, semanticScore, lexicalScore, score)
             }.sortedByDescending(SearchResult::score)
         }
     }

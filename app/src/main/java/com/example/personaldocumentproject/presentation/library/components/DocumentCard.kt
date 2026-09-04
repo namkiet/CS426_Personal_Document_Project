@@ -22,6 +22,7 @@ import coil.compose.AsyncImage
 import com.example.personaldocumentproject.domain.model.Document
 import com.example.personaldocumentproject.domain.model.DocumentCategory
 import com.example.personaldocumentproject.domain.model.MockDocuments
+import com.example.personaldocumentproject.domain.model.SearchResult
 import com.example.personaldocumentproject.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -64,7 +65,7 @@ fun DocumentArtwork(document: Document, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun DocumentCard(document: Document, onClick: () -> Unit = {}) {
+fun DocumentCard(document: Document, searchResult: SearchResult? = null, onClick: () -> Unit = {}) {
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(AppSurface)
         .border(1.dp, AppBorder, RoundedCornerShape(14.dp)).clickable(onClick = onClick)) {
         DocumentArtwork(document, Modifier.fillMaxWidth().aspectRatio(4f / 3f))
@@ -76,6 +77,20 @@ fun DocumentCard(document: Document, onClick: () -> Unit = {}) {
             Spacer(Modifier.height(4.dp))
             Text(SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(document.createdAt)),
                 color = TextDim, fontSize = 11.sp)
+            // Debug: show search scores
+            if (searchResult != null) {
+                Spacer(Modifier.height(6.dp))
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF1A1A2E), RoundedCornerShape(6.dp))
+                        .padding(6.dp)
+                ) {
+                    Text("⚡ %.3f".format(searchResult.score), color = Color(0xFF00E5FF), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text("🔤 lex: %.3f".format(searchResult.lexicalScore), color = Color(0xFFB0BEC5), fontSize = 9.sp)
+                    Text("🧠 sem: %.3f".format(searchResult.semanticScore), color = Color(0xFFB0BEC5), fontSize = 9.sp)
+                }
+            }
         }
     }
 }

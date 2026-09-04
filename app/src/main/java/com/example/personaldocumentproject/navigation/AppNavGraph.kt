@@ -55,7 +55,7 @@ fun AppNavGraph(container: AppContainer) {
             val viewModel: LibraryViewModel = viewModel(factory = container.libraryViewModelFactory)
             LibraryRoute(
                 viewModel = viewModel,
-                onCapture = { navigateTo(Routes.Capture) },
+                onImageCaptured = { imageUri -> navigateTo(Routes.Review(imageUri)) },
                 onDocumentClick = { navigateTo(Routes.Detail(it)) },
                 onManageModels = { navigateTo(Routes.ModelManager) },
             )

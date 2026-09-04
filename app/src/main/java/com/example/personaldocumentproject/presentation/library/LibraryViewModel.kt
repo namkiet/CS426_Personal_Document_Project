@@ -29,7 +29,11 @@ class LibraryViewModel(
             observeDocuments().map { LibraryUiState(documents = it) }
         } else {
             flow { emitAll(searchDocuments(currentQuery)) }
-                .map { results -> LibraryUiState(results.map { it.document }, currentQuery) }
+                .map { results -> LibraryUiState(
+                    documents = results.map { it.document },
+                    query = currentQuery,
+                    searchResults = results.associateBy { it.document.id },
+                ) }
                 .catch { error -> emit(LibraryUiState(query = currentQuery, errorMessage = error.message)) }
         }
     }
