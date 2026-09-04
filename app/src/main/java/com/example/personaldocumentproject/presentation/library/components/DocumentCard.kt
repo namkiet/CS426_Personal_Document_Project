@@ -17,9 +17,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import coil.compose.AsyncImage
 import com.example.personaldocumentproject.domain.model.Document
 import com.example.personaldocumentproject.domain.model.DocumentCategory
+import com.example.personaldocumentproject.domain.model.MockDocuments
 import com.example.personaldocumentproject.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -72,6 +74,16 @@ fun DocumentCard(document: Document, onClick: () -> Unit = {}) {
             Spacer(Modifier.height(4.dp))
             Text(SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(document.createdAt)),
                 color = TextDim, fontSize = 11.sp)
+        }
+    }
+}
+
+@Preview(name = "Study document card", showBackground = true, backgroundColor = 0xFF0D0D12, widthDp = 180)
+@Composable
+private fun DocumentCardPreview() {
+    PersonalDocumentProjectTheme {
+        Box(Modifier.padding(8.dp)) {
+            DocumentCard(MockDocuments.items.first())
         }
     }
 }

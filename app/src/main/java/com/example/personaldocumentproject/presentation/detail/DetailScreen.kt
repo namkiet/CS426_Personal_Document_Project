@@ -20,6 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.personaldocumentproject.domain.model.MockDocuments
 import com.example.personaldocumentproject.presentation.library.components.CategoryBadge
 import com.example.personaldocumentproject.presentation.library.components.DocumentArtwork
 import com.example.personaldocumentproject.ui.theme.*
@@ -82,7 +84,7 @@ fun DetailScreen(state: DetailUiState, onBack: () -> Unit) {
                                     verticalAlignment = Alignment.CenterVertically) {
                                     Text("OCR Text", color = TextMuted, fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
                                         modifier = Modifier.weight(1f))
-                                    Icon(Icons.Default.ExpandMore, null, tint = TextDim, modifier = Modifier.rotate(if (ocrExpanded) 180f else 0f))
+                                    Icon(Icons.Default.KeyboardArrowDown, null, tint = TextDim, modifier = Modifier.rotate(if (ocrExpanded) 180f else 0f))
                                 }
                                 AnimatedVisibility(ocrExpanded) {
                                     Text(document.ocrText.ifBlank { "No text detected." }, color = TextMuted, fontSize = 12.sp,
@@ -121,4 +123,15 @@ fun DetailScreen(state: DetailUiState, onBack: () -> Unit) {
 @Composable private fun Tag(text: String) {
     Text(text, color = TextMuted, fontSize = 12.sp, modifier = Modifier.background(SurfaceRaised, RoundedCornerShape(100.dp))
         .border(1.dp, AppBorder, RoundedCornerShape(100.dp)).padding(horizontal = 10.dp, vertical = 6.dp))
+}
+
+@Preview(name = "Document Detail - Dark", showBackground = true, backgroundColor = 0xFF0D0D12, widthDp = 390, heightDp = 844)
+@Composable
+private fun DetailScreenPreview() {
+    PersonalDocumentProjectTheme {
+        DetailScreen(
+            state = DetailUiState(document = MockDocuments.items.first(), isLoading = false),
+            onBack = {},
+        )
+    }
 }

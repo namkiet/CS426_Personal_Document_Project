@@ -20,7 +20,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.personaldocumentproject.domain.model.DocumentCategory
+import com.example.personaldocumentproject.domain.model.MockDocuments
 import com.example.personaldocumentproject.presentation.library.components.DocumentCard
 import com.example.personaldocumentproject.presentation.library.components.categoryColor
 import com.example.personaldocumentproject.ui.theme.*
@@ -91,4 +93,28 @@ fun LibraryScreen(state: LibraryUiState, onCapture: () -> Unit, onDocumentClick:
         modifier = Modifier.background(if (active) accent else if (value == null) SurfaceRaised else accent.copy(alpha = .13f), RoundedCornerShape(100.dp))
             .border(1.dp, if (active || value != null) accent.copy(alpha = .8f) else AppBorder, RoundedCornerShape(100.dp))
             .clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 7.dp))
+}
+
+@Preview(name = "Library - Dark", showBackground = true, backgroundColor = 0xFF0D0D12, widthDp = 390, heightDp = 844)
+@Composable
+private fun LibraryScreenPreview() {
+    PersonalDocumentProjectTheme {
+        LibraryScreen(
+            state = LibraryUiState(MockDocuments.items),
+            onCapture = {},
+            onDocumentClick = {},
+        )
+    }
+}
+
+@Preview(name = "Library - Empty", showBackground = true, backgroundColor = 0xFF0D0D12, widthDp = 390, heightDp = 844)
+@Composable
+private fun EmptyLibraryScreenPreview() {
+    PersonalDocumentProjectTheme {
+        LibraryScreen(
+            state = LibraryUiState(),
+            onCapture = {},
+            onDocumentClick = {},
+        )
+    }
 }
