@@ -19,10 +19,11 @@ import com.example.personaldocumentproject.data.ml.metadata.SimpleTagGenerationS
 import com.example.personaldocumentproject.data.ml.metadata.SimpleTitleGenerationService
 import com.example.personaldocumentproject.data.ml.ocr.MlKitOcrService
 import com.example.personaldocumentproject.data.ml.translation.MlKitEnglishTranslationService
-import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
 import com.example.personaldocumentproject.data.debug.DebugDocumentSeeder
 import com.example.personaldocumentproject.data.local.storage.LocalImageStorageService
+import com.example.personaldocumentproject.data.repository.DefaultDocumentRepository
 import com.example.personaldocumentproject.data.repository.SettingRepositoryImpl
+import com.example.personaldocumentproject.domain.model.UserSetting
 import com.example.personaldocumentproject.domain.service.LlmService
 import com.example.personaldocumentproject.domain.usecase.AnalyzeDocument
 import com.example.personaldocumentproject.domain.usecase.DeleteDocument
@@ -78,7 +79,7 @@ class AppContainer(private val context: Context) {
     val getDocument = GetDocument(repository)
     val deleteDocument = DeleteDocument(repository, imageStorageService)
 
-    val analyzeDocument get() = AnalyzeDocument(
+    fun getAnalyzeDocument(disableApiMode: Boolean = false) = AnalyzeDocument(
         context = context,
         ocrService = ocrService,
         objectDetectionService = objectDetectionService,
@@ -87,8 +88,10 @@ class AppContainer(private val context: Context) {
         categoryClassificationService = categoryClassificationService,
         tagGenerationService = tagGenerationService,
         textTranslationService = textTranslationService,
-        geminiService = geminiService,
+        geminiService = if (disableApiMode) null else geminiService,
     )
+
+    val analyzeDocument get() = getAnalyzeDocument()
 
     val saveDocument = SaveDocument(repository, imageStorageService, embeddingService)
     val searchDocuments = SearchDocuments(repository, embeddingService)
@@ -97,10 +100,19 @@ class AppContainer(private val context: Context) {
 
     val libraryViewModelFactory = factory { LibraryViewModel(observeDocuments, searchDocuments, deleteDocument) }
     val captureViewModelFactory = factory { CaptureViewModel() }
-    val reviewViewModelFactory get() = factory { ReviewViewModel(analyzeDocument, saveDocument) }
+    fun getReviewViewModelFactory(userSetting: UserSetting = UserSetting()) = factory {
+        ReviewViewModel(getAnalyzeDocument(userSetting.disableApiMode), saveDocument)
+    }
+    val reviewViewModelFactory get() = getReviewViewModelFactory()
     val detailViewModelFactory = factory { DetailViewModel(getDocument, deleteDocument) }
     val mainViewModelFactory = factory { MainViewModel(settingsRepository) }
-    val settingViewModelFactory = factory { SettingViewModel(settingsRepository) }
+    val settingViewModelFactory = factory {
+        SettingViewModel(
+            repository = settingsRepository,
+            documentRepository = repository,
+            imageStorageService = imageStorageService,
+        )
+    }
 
     private fun factory(create: () -> ViewModel): ViewModelProvider.Factory =
         object : ViewModelProvider.Factory {

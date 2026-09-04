@@ -195,7 +195,7 @@ fun CaptureScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Text(
-                    text = "Add a document to extract text with on-device OCR, generate tags, and enable private semantic search.",
+                    text = "Add a document to extract text with metadata and enable private semantic search.",
                     color = TextMuted,
                     fontSize = 14.sp,
                     lineHeight = 20.sp,

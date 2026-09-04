@@ -50,6 +50,8 @@ class DefaultDocumentRepository(
 
     override suspend fun delete(id: String) = documentDao.deleteById(id)
 
+    override suspend fun deleteAll() = documentDao.deleteAll()
+
     companion object {
         const val SEARCH_THRESHOLD = 0.25f
     }

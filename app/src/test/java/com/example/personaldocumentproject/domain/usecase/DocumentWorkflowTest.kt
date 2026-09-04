@@ -130,4 +130,8 @@ private class FakeDao : DocumentDao {
     override suspend fun deleteById(id: String) {
         store.update { current -> current.filterNot { it.id == id } }
     }
+
+    override suspend fun deleteAll() {
+        store.value = emptyList()
+    }
 }

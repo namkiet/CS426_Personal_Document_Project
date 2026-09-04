@@ -46,6 +46,14 @@ fun AppNavGraph(container: AppContainer, userSetting: UserSetting = UserSetting(
         navigateBack()
     }
 
+    var hasHandledStartCamera by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(userSetting.startCameraMode) {
+        if (userSetting.startCameraMode && !hasHandledStartCamera && backStack.size == 1 && backStack.first() == Routes.Library) {
+            hasHandledStartCamera = true
+            backStack = listOf(Routes.Library, Routes.Capture)
+        }
+    }
+
     LaunchedEffect(Unit) {
         container.seedDebugDocuments()
         container.warmCaches()
@@ -74,7 +82,7 @@ fun AppNavGraph(container: AppContainer, userSetting: UserSetting = UserSetting(
         is Routes.Review -> {
             val viewModel: ReviewViewModel = viewModel(
                 key = "review:${current.imageUri}",
-                factory = container.reviewViewModelFactory,
+                factory = container.getReviewViewModelFactory(userSetting),
             )
             ReviewRoute(
                 imageUri = current.imageUri,

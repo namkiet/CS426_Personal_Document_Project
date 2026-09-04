@@ -6,4 +6,5 @@ import kotlinx.coroutines.flow.Flow
 interface SettingRepository {
     val settingFlow: Flow<UserSetting>
     suspend fun saveSetting(setting: UserSetting)
+    suspend fun clearSettings()
 }

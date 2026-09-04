@@ -14,4 +14,8 @@ class SettingRepositoryImpl(
     override suspend fun saveSetting(setting: UserSetting) {
         localDataSource.saveUserSettings(setting)
     }
+
+    override suspend fun clearSettings() {
+        localDataSource.clearSettings()
+    }
 }

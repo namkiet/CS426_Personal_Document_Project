@@ -1,33 +1,34 @@
 package com.example.personaldocumentproject.presentation.setting
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.personaldocumentproject.R
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.personaldocumentproject.ui.theme.*
 
 @Composable
@@ -48,9 +49,18 @@ fun SettingsScreen(
     onBack: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(state.resetMessage) {
+        state.resetMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            viewModel.clearResetMessage()
+        }
+    }
 
     Scaffold(
         containerColor = AppBackground,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -58,6 +68,7 @@ fun SettingsScreen(
                         text = "Settings",
                         color = TextPrimary,
                         fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
                     )
                 },
                 navigationIcon = {
@@ -69,9 +80,6 @@ fun SettingsScreen(
                         )
                     }
                 },
-                actions = {
-                    ApplyButton(onClick = viewModel::applySetting)
-                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = AppBackground),
             )
         }
@@ -80,251 +88,269 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 24.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(horizontal = 20.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
-            // General Section
+            // ── Section 1: Preferences ───────────────────────────────────────
             item {
-                SectionHeader(
-                    title = "General",
-                    isExpanded = state.isGeneralExpanded,
-                    onToggleExpand = viewModel::toggleGeneralExpanded
-                )
+                SectionTitle(title = "App Preferences")
+                Spacer(modifier = Modifier.height(10.dp))
 
-                AnimatedVisibility(visible = state.isGeneralExpanded) {
-                    Column(modifier = Modifier.padding(top = 12.dp)) {
-                        ToggleSettingItem(
-                            label = "Dark mode",
-                            checked = state.isDarkMode,
-                            onCheckedChange = {
-                                viewModel.setDarkMode(it)
-                                viewModel.applySetting()
-                            },
-                        )
-                    }
+                CardContainer {
+                    SettingSwitchRow(
+                        icon = Icons.Default.DarkMode,
+                        iconTint = AppPrimary,
+                        title = "Dark Mode",
+                        subtitle = "Enable dark theme for the interface",
+                        checked = state.isDarkMode,
+                        onCheckedChange = viewModel::setDarkMode,
+                    )
+
+                    SettingDivider()
+
+                    SettingSwitchRow(
+                        icon = Icons.Default.CameraAlt,
+                        iconTint = StudyColor,
+                        title = "Start Camera Mode",
+                        subtitle = "Open document scanner directly on app launch",
+                        checked = state.startCameraMode,
+                        onCheckedChange = viewModel::setStartCameraMode,
+                    )
+
+                    SettingDivider()
+
+                    SettingSwitchRow(
+                        icon = Icons.Default.CloudOff,
+                        iconTint = ReceiptColor,
+                        title = "Disable Cloud API",
+                        subtitle = "Run 100% on-device (ML Kit OCR & heuristics)",
+                        checked = state.disableApiMode,
+                        onCheckedChange = viewModel::setDisableApiMode,
+                    )
                 }
             }
 
-            // Section Divider
+            // ── Section 2: Data & Storage ────────────────────────────────────
             item {
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp),
-                    thickness = 1.dp,
-                    color = AppBorder,
-                )
-            }
+                SectionTitle(title = "Data & Storage")
+                Spacer(modifier = Modifier.height(10.dp))
 
-            // Document Section
-            item {
-                SectionHeader(
-                    title = "Document",
-                    isExpanded = state.isDocumentExpanded,
-                    onToggleExpand = viewModel::toggleDocumentExpanded
-                )
-
-                AnimatedVisibility(visible = state.isDocumentExpanded) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.padding(top = 12.dp)
-                    ) {
-                        ToggleSettingItem(
-                            label = "Show Image",
-                            checked = state.showImage,
-                            onCheckedChange = viewModel::setShowImage,
-                        )
-
-                        // Sliders Card Container
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(SurfaceRaised)
-                                .border(1.dp, AppBorder, RoundedCornerShape(16.dp))
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            SliderSettingRow(
-                                label = "Width",
-                                value = state.widthValue,
-                                onValueChange = viewModel::setWidthValue,
-                            )
-
-                            SliderSettingRow(
-                                label = "Height",
-                                value = state.heightValue,
-                                onValueChange = viewModel::setHeightValue,
-                            )
-                        }
-                    }
+                CardContainer {
+                    SettingActionRow(
+                        icon = Icons.Default.DeleteForever,
+                        iconTint = DeleteColor,
+                        title = "Factory Reset",
+                        titleColor = DeleteColor,
+                        subtitle = "Delete all documents, images and reset settings",
+                        onClick = { viewModel.showResetDialog(true) },
+                    )
                 }
             }
 
-            // Dynamic Preview Section
+            // Bottom Spacing
             item {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Preview",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = TextPrimary,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                AnimatedVisibility(true) {
-                    Box(
-                        modifier = Modifier
-                            .size(width = (40 + (state.widthValue * 140)).dp, (40 + (state.heightValue * 140)).dp)
-                            .height(180.dp * (0.5f + state.heightValue * 0.5f))
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(SurfaceRaised)
-                            .border(1.dp, AppBorder, RoundedCornerShape(20.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (state.showImage) {
-                            Image(
-                                painter = painterResource(id = R.drawable.chihuahuaandroidtest),
-                                contentDescription = "Document Image",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else {
-                            Column(Modifier.padding(16.dp)) {
-                                Text("Title", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Spacer(Modifier.height(4.dp))
-                                Text("Document preview text", color = TextMuted, fontSize = 12.sp)
-                            }
-                        }
-                    }
-                }
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
-}
 
-// --- Helper Composables ---
-
-@Composable
-private fun SectionHeader(
-    title: String,
-    isExpanded: Boolean,
-    onToggleExpand: () -> Unit
-) {
-    val rotationAngle by animateFloatAsState(
-        targetValue = if (isExpanded) 0f else -90f,
-        label = "ChevronRotation"
-    )
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onToggleExpand() }
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = title,
-            fontSize = 18.sp,
-            color = TextPrimary,
-            fontWeight = FontWeight.SemiBold
-        )
-        Icon(
-            imageVector = Icons.Default.ArrowDropDown,
-            contentDescription = "Expand Section",
-            modifier = Modifier
-                .size(28.dp)
-                .rotate(rotationAngle),
-            tint = TextMuted,
+    // ── Factory Reset Confirmation Dialog ────────────────────────────────────
+    if (state.showResetDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.showResetDialog(false) },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.WarningAmber,
+                    contentDescription = null,
+                    tint = DeleteColor,
+                    modifier = Modifier.size(36.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Factory Reset",
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary,
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to permanently erase all scanned documents, files, and reset all app settings? This action cannot be undone.",
+                    color = TextMuted,
+                    fontSize = 14.sp,
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = viewModel::performFactoryReset,
+                    colors = ButtonDefaults.buttonColors(containerColor = DeleteColor),
+                ) {
+                    Text("Delete Everything", color = Color.White, fontWeight = FontWeight.SemiBold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.showResetDialog(false) }) {
+                    Text("Cancel", color = TextPrimary)
+                }
+            },
+            containerColor = SurfaceRaised,
+            shape = RoundedCornerShape(20.dp),
         )
     }
 }
 
+// ── UI Helper Components ──────────────────────────────────────────────────────
+
 @Composable
-private fun ToggleSettingItem(
-    label: String,
+private fun SectionTitle(title: String) {
+    Text(
+        text = title,
+        fontSize = 14.sp,
+        fontWeight = FontWeight.SemiBold,
+        color = TextDim,
+        modifier = Modifier.padding(start = 4.dp),
+    )
+}
+
+@Composable
+private fun CardContainer(content: @Composable ColumnScope.() -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(SurfaceRaised)
+            .border(1.dp, AppBorder, RoundedCornerShape(20.dp))
+            .padding(vertical = 4.dp),
+        content = content,
+    )
+}
+
+@Composable
+private fun SettingDivider() {
+    HorizontalDivider(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        thickness = 1.dp,
+        color = AppBorder,
+    )
+}
+
+@Composable
+private fun SettingSwitchRow(
+    icon: ImageVector,
+    iconTint: Color,
+    title: String,
+    subtitle: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(SurfaceRaised)
-            .border(1.dp, AppBorder, RoundedCornerShape(16.dp))
-            .padding(horizontal = 20.dp, vertical = 8.dp),
+            .clickable { onCheckedChange(!checked) }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = label,
-            fontSize = 15.sp,
-            color = TextPrimary,
-            fontWeight = FontWeight.Medium,
-        )
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(iconTint.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(22.dp),
+                )
+            }
+
+            Spacer(modifier = Modifier.width(14.dp))
+
+            Column {
+                Text(
+                    text = title,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextPrimary,
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = subtitle,
+                    fontSize = 13.sp,
+                    color = TextMuted,
+                    lineHeight = 18.sp,
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedTrackColor = AppPrimary,
                 checkedThumbColor = Color.White,
-                uncheckedTrackColor = AppBorder,
+                checkedTrackColor = AppPrimary,
                 uncheckedThumbColor = TextMuted,
+                uncheckedTrackColor = AppBorder,
             )
         )
     }
 }
 
 @Composable
-private fun SliderSettingRow(
-    label: String,
-    value: Float,
-    onValueChange: (Float) -> Unit,
+private fun SettingActionRow(
+    icon: ImageVector,
+    iconTint: Color,
+    title: String,
+    titleColor: Color = TextPrimary,
+    subtitle: String,
+    onClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = label,
-            fontSize = 14.sp,
-            color = TextMuted,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.width(60.dp)
-        )
-        Slider(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = Modifier.weight(1f),
-            colors = SliderDefaults.colors(
-                activeTrackColor = AppPrimary,
-                thumbColor = AppPrimary,
-                inactiveTrackColor = AppBorder,
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .clip(CircleShape)
+                .background(iconTint.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(22.dp),
             )
-        )
-    }
-}
+        }
 
-@Composable
-fun ApplyButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Button(
-        onClick = onClick,
-        shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = AppPrimary,
-            contentColor = Color.White,
-        )
-    ) {
-        Text(
-            text = "Apply",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-        )
+        Spacer(modifier = Modifier.width(14.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = titleColor,
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = subtitle,
+                fontSize = 13.sp,
+                color = TextMuted,
+                lineHeight = 18.sp,
+            )
+        }
     }
 }

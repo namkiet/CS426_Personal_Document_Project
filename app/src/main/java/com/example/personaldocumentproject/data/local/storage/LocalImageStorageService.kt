@@ -47,4 +47,13 @@ class LocalImageStorageService(private val context: Context) : ImageStorageServi
             target.delete()
         }
     }
+
+    override suspend fun clearAllImages() = withContext(Dispatchers.IO) {
+        val documentsDirectory = File(context.filesDir, "documents")
+        if (documentsDirectory.exists()) {
+            documentsDirectory.listFiles()?.forEach { file ->
+                file.delete()
+            }
+        }
+    }
 }

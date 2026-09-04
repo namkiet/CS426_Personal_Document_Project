@@ -17,9 +17,9 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "us
 // Preference Keys
 object SettingsKeys {
     val IS_DARK_MODE = booleanPreferencesKey("is_dark_mode")
-    val SHOW_IMAGE = booleanPreferencesKey("show_image")
-    val WIDTH_VALUE = floatPreferencesKey("width_value")
-    val HEIGHT_VALUE = floatPreferencesKey("height_value")
+    val DISABLE_API_MODE = booleanPreferencesKey("disable_api_mode")
+    val START_CAMERA_MODE = booleanPreferencesKey("start_camera_mode")
+    val IS_AUTO_CAPTURE = booleanPreferencesKey("is_auto_capture")
 }
 
 class SettingsLocalDataSource(private val dataStore: DataStore<Preferences>) {
@@ -27,18 +27,24 @@ class SettingsLocalDataSource(private val dataStore: DataStore<Preferences>) {
     val userSettingFlow: Flow<UserSetting> = dataStore.data.map { preferences ->
         UserSetting(
             isDarkMode = preferences[SettingsKeys.IS_DARK_MODE] ?: false,
-            showImage = preferences[SettingsKeys.SHOW_IMAGE] ?: true,
-            widthValue = preferences[SettingsKeys.WIDTH_VALUE] ?: 0.1f,
-            heightValue = preferences[SettingsKeys.HEIGHT_VALUE] ?: 0.1f
+            disableApiMode = preferences[SettingsKeys.DISABLE_API_MODE] ?: false,
+            startCameraMode = preferences[SettingsKeys.START_CAMERA_MODE] ?: false,
+            isAutoCapture = preferences[SettingsKeys.IS_AUTO_CAPTURE] ?: true,
         )
     }
 
     suspend fun saveUserSettings(settings: UserSetting) {
         dataStore.edit { preferences ->
             preferences[SettingsKeys.IS_DARK_MODE] = settings.isDarkMode
-            preferences[SettingsKeys.SHOW_IMAGE] = settings.showImage
-            preferences[SettingsKeys.WIDTH_VALUE] = settings.widthValue
-            preferences[SettingsKeys.HEIGHT_VALUE] = settings.heightValue
+            preferences[SettingsKeys.DISABLE_API_MODE] = settings.disableApiMode
+            preferences[SettingsKeys.START_CAMERA_MODE] = settings.startCameraMode
+            preferences[SettingsKeys.IS_AUTO_CAPTURE] = settings.isAutoCapture
+        }
+    }
+
+    suspend fun clearSettings() {
+        dataStore.edit { preferences ->
+            preferences.clear()
         }
     }
 }

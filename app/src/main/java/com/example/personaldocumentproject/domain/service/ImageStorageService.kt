@@ -6,4 +6,7 @@ interface ImageStorageService {
 
     /** Removes an image owned by the app. External content is left untouched. */
     suspend fun deleteImage(localUri: String) = Unit
+
+    /** Deletes all images owned by the app. */
+    suspend fun clearAllImages() = Unit
 }
