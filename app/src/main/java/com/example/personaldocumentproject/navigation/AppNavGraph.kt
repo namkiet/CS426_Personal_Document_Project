@@ -32,7 +32,6 @@ fun AppNavGraph(container: AppContainer, userSetting: UserSetting) {
             LibraryRoute(
                 viewModelLibrary = viewModelLibrary,
                 userSetting = userSetting,
-                onSearch = { route = Routes.Search },
                 onDocumentClick = { route = Routes.Detail(it) },
                 onSettingClick = { route = Routes.Setting },
             )
