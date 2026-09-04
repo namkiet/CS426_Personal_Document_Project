@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,7 +13,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.font.FontFamily
@@ -39,7 +42,43 @@ fun DetailRoute(documentId: String, viewModel: DetailViewModel, onBack: () -> Un
 
 @Composable
 fun DetailScreen(state: DetailUiState, onBack: () -> Unit, onDelete: () -> Unit) {
-    var ocrExpanded by remember { mutableStateOf(false) }
+    var ocrExpanded by rememberSaveable { mutableStateOf(false) }
+    var showDeleteConfirmation by rememberSaveable { mutableStateOf(false) }
+
+    if (showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = {
+                Text("Delete Document", color = TextPrimary, fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Text(
+                    "Are you sure you want to delete this document? This action will permanently remove the document and its image.",
+                    color = TextMuted,
+                    fontSize = 14.sp,
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteConfirmation = false
+                        onDelete()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = DeleteColor),
+                ) {
+                    Text("Delete", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = false }) {
+                    Text("Cancel", color = TextDim)
+                }
+            },
+            containerColor = SurfaceRaised,
+            shape = RoundedCornerShape(14.dp),
+        )
+    }
+
     Surface(
         Modifier
             .fillMaxSize()
@@ -75,7 +114,12 @@ fun DetailScreen(state: DetailUiState, onBack: () -> Unit, onDelete: () -> Unit)
                         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
                             Text(document.description, color = TextMuted, fontSize = 14.sp, lineHeight = 24.sp)
                             if (document.tags.isNotEmpty()) Section("TAGS") {
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { document.tags.forEach { Tag(it) } }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    document.tags.forEach { Tag(it) }
+                                }
                             }
                             if (document.detectedObjects.isNotEmpty()) Section("DETECTED OBJECTS") {
                                 Text(document.detectedObjects.joinToString("  •  "), color = TextMuted, fontSize = 14.sp)
@@ -95,7 +139,7 @@ fun DetailScreen(state: DetailUiState, onBack: () -> Unit, onDelete: () -> Unit)
                                 }
                             }
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                                OutlinedButton(onClick = onDelete, enabled = !state.isDeleting, shape = RoundedCornerShape(8.dp),
+                                OutlinedButton(onClick = { showDeleteConfirmation = true }, enabled = !state.isDeleting, shape = RoundedCornerShape(8.dp),
                                     border = androidx.compose.foundation.BorderStroke(1.dp, DeleteColor.copy(alpha = .3f)),
                                     colors = ButtonDefaults.outlinedButtonColors(contentColor = DeleteColor)) {
                                     if (state.isDeleting) {

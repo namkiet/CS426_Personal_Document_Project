@@ -16,3 +16,6 @@ val DeleteColor = Color(0xFFFF6675)
 val StudyColor = Color(0xFF8B9FFF)
 val ReceiptColor = Color(0xFFFFB066)
 val NoteColor = Color(0xFF66FFB2)
+val IdentityColor = Color(0xFF4DD0E1)
+val WorkColor = Color(0xFFBA68C8)
+

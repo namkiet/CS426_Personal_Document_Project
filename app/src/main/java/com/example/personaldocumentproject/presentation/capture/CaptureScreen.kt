@@ -15,7 +15,6 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.personaldocumentproject.ui.theme.*
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.RESULT_FORMAT_JPEG
-import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.RESULT_FORMAT_PDF
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.SCANNER_MODE_FULL
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
@@ -47,7 +46,6 @@ fun CaptureScreen(onImageSelected: (String) -> Unit, onBack: () -> Unit) {
                 result.data?.let(GmsDocumentScanningResult::fromActivityResultIntent)
             }.getOrNull()
             val uri = scanResult?.pages?.firstOrNull()?.imageUri?.toString()
-                ?: scanResult?.pdf?.uri?.toString()
             if (uri != null) onImageSelected(uri) else onBack()
         } else onBack()
     }
@@ -60,7 +58,7 @@ fun CaptureScreen(onImageSelected: (String) -> Unit, onBack: () -> Unit) {
         val options = GmsDocumentScannerOptions.Builder()
             .setGalleryImportAllowed(true)
             .setPageLimit(1)
-            .setResultFormats(RESULT_FORMAT_JPEG, RESULT_FORMAT_PDF)
+            .setResultFormats(RESULT_FORMAT_JPEG)
             .setScannerMode(SCANNER_MODE_FULL)
             .build()
         GmsDocumentScanning.getClient(options).getStartScanIntent(currentActivity)

@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,7 +52,7 @@ fun LibraryScreen(
     onManageModels: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
-    var category by remember { mutableStateOf<DocumentCategory?>(null) }
+    var category by rememberSaveable { mutableStateOf<DocumentCategory?>(null) }
     val visible = remember(state.documents, category) {
         state.documents.filter { category == null || it.category == category }
     }
@@ -61,8 +62,13 @@ fun LibraryScreen(
         },
         containerColor = AppBackground,
         floatingActionButton = {
-        FloatingActionButton(onClick = onCapture, containerColor = AppPrimary, contentColor = Color.White,
-            shape = RoundedCornerShape(18.dp), modifier = Modifier.size(56.dp)) { Icon(Icons.Default.Add, "Add document") }
+            FloatingActionButton(
+                onClick = onCapture,
+                containerColor = AppPrimary,
+                contentColor = Color.White,
+                shape = RoundedCornerShape(18.dp),
+                modifier = Modifier.size(56.dp)
+            ) { Icon(Icons.Default.Add, "Add document") }
         },
     ) { insets ->
         Column(Modifier.fillMaxSize().padding(insets)) {
@@ -85,7 +91,7 @@ fun LibraryScreen(
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 14.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterPill("All", null, category) { category = null }
-                listOf(DocumentCategory.STUDY, DocumentCategory.RECEIPT, DocumentCategory.NOTE).forEach { item ->
+                DocumentCategory.entries.forEach { item ->
                     FilterPill(item.name.lowercase().replaceFirstChar { it.uppercase() }, item, category) { category = item }
                 }
             }

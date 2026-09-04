@@ -31,7 +31,9 @@ fun categoryColor(category: DocumentCategory): Color = when (category) {
     DocumentCategory.STUDY -> StudyColor
     DocumentCategory.RECEIPT -> ReceiptColor
     DocumentCategory.NOTE -> NoteColor
-    else -> TextMuted
+    DocumentCategory.IDENTITY -> IdentityColor
+    DocumentCategory.WORK -> WorkColor
+    DocumentCategory.OTHER -> TextMuted
 }
 
 @Composable
