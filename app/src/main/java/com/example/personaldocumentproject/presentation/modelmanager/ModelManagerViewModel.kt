@@ -32,7 +32,8 @@ class ModelManagerViewModel(
                 ModelRowState(
                     entry         = entry,
                     isDownloaded  = when (entry.backend) {
-                        is ModelBackend.GeminiApi -> true   // always "ready"
+                        is ModelBackend.GeminiApi,
+                        is ModelBackend.NoModel -> true   // always "ready"
                         is ModelBackend.OnDevice  -> repository.isDownloaded(entry)
                     },
                     isActive      = entry.id == activeId,
@@ -44,8 +45,8 @@ class ModelManagerViewModel(
     }
 
     fun download(entry: ModelEntry) {
-        // API models need no download — just select
-        if (entry.backend is ModelBackend.GeminiApi) { selectModel(entry); return }
+        // API / NoModel models need no download — just select
+        if (entry.backend is ModelBackend.GeminiApi || entry.backend is ModelBackend.NoModel) { selectModel(entry); return }
         if (downloadJobs[entry.id]?.isActive == true) return
 
         updateRow(entry.id) { it.copy(isDownloading = true, downloadPercent = 0, errorMessage = null) }

@@ -95,6 +95,7 @@ class ModelManagerRepository(
                 if (!isDownloaded(entry)) return null
                 LiteRtLmService.forEntry(entry, modelFile(entry).absolutePath)
             }
+            is ModelBackend.NoModel -> com.example.personaldocumentproject.di.NoModelLlmService
         }
     }
 

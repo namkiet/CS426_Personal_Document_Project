@@ -66,9 +66,10 @@ class AppContainer(private val context: Context) {
      * currently-active model without rebuilding AppContainer.
      */
     val analyzeDocument get() = AnalyzeDocument(
-        ocrService,
-        objectDetectionService,
-        metadataService,
+        context = context,
+        ocrService = ocrService,
+        objectDetectionService = objectDetectionService,
+        metadataService = metadataService,
         llmService = activeLlmServiceOrNull(),
     )
 

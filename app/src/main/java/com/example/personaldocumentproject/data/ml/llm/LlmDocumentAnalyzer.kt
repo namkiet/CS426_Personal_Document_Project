@@ -75,6 +75,22 @@ Respond with ONLY the JSON object, nothing else.
         """.trimIndent()
     }
 
+    // ── Vision prompt ─────────────────────────────────────────────────────────
+
+    fun buildVisionPrompt(): String = """
+You are an advanced multimodal document analysis assistant. Analyze the document image and respond with ONLY a valid JSON object — no markdown, no code fences, no explanation.
+
+The JSON must have exactly these keys:
+  "title"          – a short human-readable title for the document (max 60 characters)
+  "description"    – one concise sentence summarising what the document contains
+  "ocrText"        – the full plain text read or extracted from the document image
+  "category"       – one of: NOTE, RECEIPT, IDENTITY, STUDY, WORK, OTHER
+  "tags"           – a JSON array of keyword strings for the document
+  "detectedObjects"– a JSON array of strings listing physical objects or elements visible in the image
+
+Respond with ONLY the JSON object, nothing else.
+    """.trimIndent()
+
     // ── Response parsing ──────────────────────────────────────────────────────
 
     data class ParsedResult(
@@ -83,6 +99,29 @@ Respond with ONLY the JSON object, nothing else.
         val category: DocumentCategory?,
         val detectedObjects: List<String>?,
     )
+
+    data class VisionParsedResult(
+        val title: String?,
+        val description: String?,
+        val ocrText: String?,
+        val category: DocumentCategory?,
+        val tags: List<String>?,
+        val detectedObjects: List<String>?,
+    )
+
+    fun parseVision(raw: String): VisionParsedResult {
+        val jsonBlock = extractJsonBlock(raw)
+            ?: return VisionParsedResult(null, null, null, null, null, null)
+
+        return VisionParsedResult(
+            title           = extractString(jsonBlock, "title"),
+            description     = extractString(jsonBlock, "description"),
+            ocrText         = extractString(jsonBlock, "ocrText"),
+            category        = extractCategory(jsonBlock),
+            tags            = extractStringArray(jsonBlock, "tags"),
+            detectedObjects = extractStringArray(jsonBlock, "detectedObjects"),
+        )
+    }
 
     /**
      * Collect all streamed tokens into one string and extract the first valid JSON object.

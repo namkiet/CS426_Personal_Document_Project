@@ -1,8 +1,8 @@
 package com.example.personaldocumentproject.data.ml.llm
 
 /**
- * Discriminates between a model file downloaded to device storage
- * and a cloud model accessed via an API key.
+ * Discriminates between a model file downloaded to device storage,
+ * a cloud model accessed via an API key, or no model (disabled).
  */
 sealed interface ModelBackend {
     /** `.litertlm` file stored on device. Download required before use. */
@@ -14,6 +14,9 @@ sealed interface ModelBackend {
      * No download required; availability depends on network + API key.
      */
     data class GeminiApi(val geminiModel: String) : ModelBackend
+
+    /** No AI model active; uses OCR and metadata heuristics only. */
+    data object NoModel : ModelBackend
 }
 
 /**
@@ -22,20 +25,20 @@ sealed interface ModelBackend {
  * @param id            Stable identifier stored in SharedPreferences.
  * @param displayName   Human-readable name shown in the UI.
  * @param description   One-line capability summary.
- * @param backend       How the model is accessed ([ModelBackend.OnDevice] or [ModelBackend.GeminiApi]).
+ * @param backend       How the model is accessed ([ModelBackend.OnDevice], [ModelBackend.GeminiApi], or [ModelBackend.NoModel]).
  *
  * On-device only:
- * @param fileName      Filename under the models directory. Empty for API models.
- * @param downloadUrl   URL to the `.litertlm` file. Empty for API models.
- * @param sizeBytes     Approximate download size. 0 for API models.
- * @param ramRequiredMb Approximate RAM at inference time. 0 for API models.
+ * @param fileName      Filename under the models directory. Empty for API/NoModel models.
+ * @param downloadUrl   URL to the `.litertlm` file. Empty for API/NoModel models.
+ * @param sizeBytes     Approximate download size. 0 for API/NoModel models.
+ * @param ramRequiredMb Approximate RAM at inference time. 0 for API/NoModel models.
  */
 data class ModelEntry(
     val id: String,
     val displayName: String,
     val description: String,
     val backend: ModelBackend,
-    // On-device fields (unused for API models)
+    // On-device fields (unused for API/NoModel models)
     val fileName: String = "",
     val downloadUrl: String = "",
     val sizeBytes: Long = 0L,
@@ -48,6 +51,14 @@ data class ModelEntry(
  */
 object ModelCatalog {
     val models: List<ModelEntry> = listOf(
+
+        // ── No Model option ───────────────────────────────────────────────
+        ModelEntry(
+            id          = "no_model",
+            displayName = "No Model (OCR & Heuristics Only)",
+            description = "Disable AI features; use ML Kit OCR and metadata heuristics.",
+            backend     = ModelBackend.NoModel,
+        ),
 
         // ── Cloud / API models (no download required) ─────────────────────
         ModelEntry(

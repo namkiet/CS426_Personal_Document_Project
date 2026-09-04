@@ -149,6 +149,12 @@ fun ReviewScreen(
                 }
             }
 
+            state.draft?.warning?.let { warningText ->
+                FieldBox(label = "Warning") {
+                    Text(warningText, color = Color(0xFFFFB300), style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+
             state.draft?.let { draft ->
                 DraftContent(
                     draft                = draft,

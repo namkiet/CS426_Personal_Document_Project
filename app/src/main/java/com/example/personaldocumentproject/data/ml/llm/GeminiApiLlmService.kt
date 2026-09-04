@@ -30,6 +30,64 @@ class GeminiApiLlmService(
 ) : LlmService {
 
     override val modelName: String = "Gemini ($model)"
+    override val supportsVision: Boolean = true
+
+    override suspend fun generateVision(prompt: String, imageBytes: ByteArray, mimeType: String): Flow<String> = flow {
+        val base64Image = android.util.Base64.encodeToString(imageBytes, android.util.Base64.NO_WRAP)
+        val url = URL(
+            "https://generativelanguage.googleapis.com/v1beta/models/$model" +
+            ":streamGenerateContent?alt=sse&key=$apiKey"
+        )
+
+        val body = JSONObject().apply {
+            put("contents", JSONArray().apply {
+                put(JSONObject().apply {
+                    put("role", "user")
+                    put("parts", JSONArray().apply {
+                        put(JSONObject().apply { put("text", prompt) })
+                        put(JSONObject().apply {
+                            put("inlineData", JSONObject().apply {
+                                put("mimeType", mimeType)
+                                put("data", base64Image)
+                            })
+                        })
+                    })
+                })
+            })
+            put("generationConfig", JSONObject().apply {
+                put("temperature", 0.2)
+                put("maxOutputTokens", 2048)
+            })
+        }.toString()
+
+        val conn = (url.openConnection() as HttpURLConnection).apply {
+            requestMethod = "POST"
+            doOutput = true
+            connectTimeout = 20_000
+            readTimeout = 60_000
+            setRequestProperty("Content-Type", "application/json")
+            setRequestProperty("Accept", "text/event-stream")
+            outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
+        }
+
+        val code = conn.responseCode
+        if (code !in 200..299) {
+            val err = conn.errorStream?.bufferedReader()?.readText() ?: "HTTP $code"
+            conn.disconnect()
+            throw GeminiApiException("Gemini API error $code: $err")
+        }
+
+        BufferedReader(InputStreamReader(conn.inputStream, Charsets.UTF_8)).use { reader ->
+            for (line in reader.lineSequence()) {
+                if (!line.startsWith("data:")) continue
+                val json = line.removePrefix("data:").trim()
+                if (json == "[DONE]" || json.isBlank()) continue
+                val token = extractToken(json) ?: continue
+                if (token.isNotEmpty()) emit(token)
+            }
+        }
+        conn.disconnect()
+    }.flowOn(Dispatchers.IO)
 
     // ── generate — single-turn, streaming ────────────────────────────────────
 
