@@ -9,9 +9,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -51,9 +53,20 @@ fun CaptureButton(
 
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val buttonBottomPadding = if (isLandscape) 16.dp else 52.dp
+    val buttonBottomPadding = if(!isLandscape) 52.dp else 0.dp
+    val buttonEndPadding = if(isLandscape) 52.dp else 0.dp
     val centerFromBottom = buttonBottomPadding + 52.dp
-    val iconSize = if (isLandscape) 56.dp else 84.dp
+    val centerFromEnd = buttonEndPadding + 52.dp
+    val iconSize = 84.dp
+
+    val leftHalfButtonBias = BiasAlignment(
+        horizontalBias = if(!isLandscape) 0.2f else -0.5f,
+        verticalBias = if(!isLandscape) -0.5f else 0.2f,
+    )
+    val rightHalfButtonBias = BiasAlignment(
+        horizontalBias = if(!isLandscape) -0.2f else -0.5f,
+        verticalBias = if(!isLandscape) -0.5f else -0.2f,
+    )
 
     // Smoothly animate transition progress (0f = collapsed, 1f = expanded)
     val animationProgress by animateFloatAsState(
@@ -80,13 +93,13 @@ fun CaptureButton(
 
     Box(
         modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.BottomCenter
+        contentAlignment = if (!isLandscape) Alignment.BottomCenter else Alignment.CenterEnd
     ) {
         // 1. expanding big circle overlay
         if (animationProgress > 0f) {
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.BottomCenter
+                contentAlignment = if (!isLandscape) Alignment.BottomCenter else Alignment.CenterEnd
             ) {
                 // Target radius calculation relative to screen size (uses min dimension in landscape)
                 val baseDimension = if (isLandscape) configuration.screenHeightDp.dp else configuration.screenWidthDp.dp
@@ -96,64 +109,119 @@ fun CaptureButton(
 
                 Box(
                     modifier = Modifier
-                        .offset(y = -centerFromBottom + currentRadius)
+                        .offset(y = if(!isLandscape) -centerFromBottom + currentRadius else 0.dp,
+                            x = if(isLandscape) -centerFromEnd + currentRadius else 0.dp
+                        )
                         .wrapContentSize(unbounded = true)
                         .size(width = currentSize, height = currentSize)
                         .clip(CircleShape)
                 ) {
-                    Row(modifier = Modifier.fillMaxSize()) {
-                        // Left Half Button
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .background(overlayColor)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = ripple(bounded = true)
-                                ) {
-                                    onLeftHalfClick()
-                                },
-                            contentAlignment = BiasAlignment(horizontalBias = 0.2f, verticalBias = -0.5f)
-                        )
-                        {
-                            Icon(
-                                imageVector = FluentuiSystemIconsCameraAddSolid,
-                                contentDescription = "CameraHalf",
-                                modifier = Modifier.size(iconSize),
-                                tint = Color.Black
-                            )
-                        }
 
-                        // Right Half Button
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .background(overlayColor)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = ripple(bounded = true)
-                                ) {
-                                    onRightHalfClick()
-                                },
-                            contentAlignment = BiasAlignment(horizontalBias = -0.2f, verticalBias = -0.5f)
-                        )
-                        {
-                            Icon(
-                                imageVector = FluentuiSystemIconsAlbumAddSolid,
-                                contentDescription = "ImportHalf",
-                                modifier = Modifier.size(iconSize),
-                                tint = Color.Black
+                    if (!isLandscape){
+                        Row(modifier = Modifier.fillMaxSize()) {
+                            // Left Half Button
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                                    .background(overlayColor)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = ripple(bounded = true)
+                                    ) {
+                                        onLeftHalfClick()
+                                    },
+                                contentAlignment = leftHalfButtonBias
                             )
+                            {
+                                Icon(
+                                    imageVector = FluentuiSystemIconsCameraAddSolid,
+                                    contentDescription = "CameraHalf",
+                                    modifier = Modifier.size(iconSize),
+                                    tint = Color.Black
+                                )
+                            }
+
+                            // Right Half Button
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                                    .background(overlayColor)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = ripple(bounded = true)
+                                    ) {
+                                        onRightHalfClick()
+                                    },
+                                contentAlignment = rightHalfButtonBias
+                            )
+                            {
+                                Icon(
+                                    imageVector = FluentuiSystemIconsAlbumAddSolid,
+                                    contentDescription = "ImportHalf",
+                                    modifier = Modifier.size(iconSize),
+                                    tint = Color.Black
+                                )
+                            }
+                        }
+                    }else {
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            // Left Half Button
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth()
+                                    .background(overlayColor)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = ripple(bounded = true)
+                                    ) {
+                                        onLeftHalfClick()
+                                    },
+                                contentAlignment = leftHalfButtonBias
+                            )
+                            {
+                                Icon(
+                                    imageVector = FluentuiSystemIconsCameraAddSolid,
+                                    contentDescription = "CameraHalf",
+                                    modifier = Modifier.size(iconSize),
+                                    tint = Color.Black
+                                )
+                            }
+
+                            // Right Half Button
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth()
+                                    .background(overlayColor)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = ripple(bounded = true)
+                                    ) {
+                                        onRightHalfClick()
+                                    },
+                                contentAlignment = rightHalfButtonBias
+                            )
+                            {
+                                Icon(
+                                    imageVector = FluentuiSystemIconsAlbumAddSolid,
+                                    contentDescription = "ImportHalf",
+                                    modifier = Modifier.size(iconSize),
+                                    tint = Color.Black
+                                )
+                            }
                         }
                     }
+
                     Canvas(modifier = Modifier.fillMaxSize()) {
                         val centerX = size.width / 2f
+                        val centerY = size.height /2f
                         drawLine(
                             color = dividerColor,
-                            start = Offset(centerX, 0f),
-                            end = Offset(centerX, size.height),
+                            start = if (!isLandscape) Offset(centerX, 0f) else Offset(size.width, centerY),
+                            end = if (!isLandscape) Offset(centerX, size.height) else Offset(0f, centerY),
                             strokeWidth = 2.dp.toPx(),
                             pathEffect = PathEffect.dashPathEffect(
                                 intervals = floatArrayOf(12f, 8f),
@@ -168,7 +236,7 @@ fun CaptureButton(
         // 2. Main Circle Button
         Box(
             modifier = Modifier
-                .padding(bottom = buttonBottomPadding)
+                .padding(bottom = buttonBottomPadding, end = buttonEndPadding)
                 .size(84.dp)
                 .clip(CircleShape)
                 .drawBehind { drawCircle(buttonColor) }

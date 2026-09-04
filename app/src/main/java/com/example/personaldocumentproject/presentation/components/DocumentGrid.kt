@@ -1,10 +1,12 @@
 package com.example.personaldocumentproject.presentation.components
 
 import android.content.res.Configuration
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
@@ -25,7 +27,7 @@ fun DocumentGrid(
     if (documents.isEmpty()) {
         Box(
             modifier = modifier.fillMaxSize(),
-            contentAlignment = androidx.compose.ui.Alignment.Center
+            contentAlignment = Alignment.Center
         ) {
             Text("Your document library is empty.")
         }
@@ -38,8 +40,11 @@ fun DocumentGrid(
             rows = GridCells.Adaptive(minSize = layoutConfig.cardHeight),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
-            modifier = modifier.fillMaxSize()
+            contentPadding = PaddingValues(
+                start = 8.dp, end = 120.dp,
+                top = 8.dp, bottom = 8.dp
+            ),
+            modifier = modifier.fillMaxSize(),
         ) {
             items(
                 items = documents,

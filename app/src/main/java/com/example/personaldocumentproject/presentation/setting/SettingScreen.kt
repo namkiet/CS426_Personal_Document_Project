@@ -34,6 +34,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -44,6 +46,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,6 +68,7 @@ import coil.compose.AsyncImage
 import com.example.personaldocumentproject.R
 import com.example.personaldocumentproject.ui.imageVector.FluentuiSystemIconsPerson
 import com.example.personaldocumentproject.ui.imageVector.FluentuiSystemIconsSettings
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingRoute(viewModel: SettingViewModel,
@@ -91,7 +95,13 @@ fun SettingsScreen(
     val itemBackgroundColor = Color.White
     val accentColor = MaterialTheme.colorScheme.tertiary
 
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -111,7 +121,12 @@ fun SettingsScreen(
                 },
                 actions = {
                     ApplyButton(
-                        onClick = viewModel::applySetting
+                        onClick = {
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Setting Applied")
+                            }
+                            viewModel.applySetting()
+                        }
                     )
                 }
             )
