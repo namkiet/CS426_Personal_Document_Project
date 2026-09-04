@@ -38,6 +38,22 @@ fun LibraryScreen(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
+fun LibraryRoute(viewModelLibrary: LibraryViewModel, userSetting: UserSetting,
+                 onSearch: () -> Unit, onDocumentClick: (String) -> Unit,
+                 onAccountClick: () -> Unit, onSettingClick: () -> Unit,
+                 onManageModels: () -> Unit = {}) {
+    val stateLibrary by viewModelLibrary.uiState.collectAsState()
+    LibraryScreen(stateLibrary, userSetting = userSetting, onSearch = onSearch,
+        onDocumentClick = onDocumentClick, onAccountClick = onAccountClick,
+        onSettingClick = onSettingClick, onManageModels = onManageModels)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LibraryScreen(stateLibrary: LibraryUiState, userSetting: UserSetting,
+                  onSearch: () -> Unit, onDocumentClick: (String) -> Unit,
+                  onAccountClick: () -> Unit, onSettingClick: () -> Unit,
+                  onManageModels: () -> Unit = {}) {
     Scaffold(
         topBar = {
             LibraryTopBar(

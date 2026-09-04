@@ -8,4 +8,5 @@ data class DocumentDraft(
     val category: DocumentCategory,
     val tags: List<String>,
     val detectedObjects: List<String>,
+    val warning: String? = null,
 )

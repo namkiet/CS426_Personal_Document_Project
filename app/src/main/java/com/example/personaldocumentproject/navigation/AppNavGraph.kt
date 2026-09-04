@@ -12,6 +12,8 @@ import com.example.personaldocumentproject.presentation.detail.DetailViewModel
 import com.example.personaldocumentproject.presentation.library.LibraryNavigationActions
 import com.example.personaldocumentproject.presentation.library.LibraryRoute
 import com.example.personaldocumentproject.presentation.library.LibraryViewModel
+import com.example.personaldocumentproject.presentation.modelmanager.ModelManagerRoute
+import com.example.personaldocumentproject.presentation.modelmanager.ModelManagerViewModel
 import com.example.personaldocumentproject.presentation.review.ReviewRoute
 import com.example.personaldocumentproject.presentation.review.ReviewViewModel
 import com.example.personaldocumentproject.presentation.search.SearchRoute
@@ -40,6 +42,7 @@ fun AppNavGraph(
                 navigationActions = LibraryNavigationActions(
                     onDocumentClick = { navigator.navigateTo(Routes.Detail(it)) },
                     onSettingClick = { navigator.navigateTo(Routes.Setting) },
+                    onManageModels = { navigator.navigateTo(Routes.ModelManager) },
                 ),
             )
             CaptureRoute(
@@ -93,7 +96,14 @@ fun AppNavGraph(
             )
         }
 
-        Routes.ModelManager -> { /* reserved for future use */ }
+        Routes.ModelManager -> {
+            val viewModel: ModelManagerViewModel =
+                viewModel(factory = container.modelManagerViewModelFactory)
+            ModelManagerRoute(
+                viewModel = viewModel,
+                onBack = { route = Routes.Library },
+            )
+        }
 
         Routes.Setting -> {
             val viewModel: SettingViewModel = viewModel(factory = container.settingViewModelFactory)
