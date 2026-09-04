@@ -12,14 +12,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,14 +33,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,15 +53,17 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.personaldocumentproject.domain.model.DocumentCategory
 import com.example.personaldocumentproject.domain.model.DocumentDraft
 
 // ── Colour tokens ─────────────────────────────────────────────────────────────
-private val BackgroundColor  = Color(0xFF111318)
-private val SurfaceColor     = Color(0xFF1E2128)
-private val SurfaceBorder    = Color(0xFF2E3340)
-private val LabelColor       = Color(0xFF8B92A5)
-private val ContentColor     = Color.White
-private val AccentColor      = Color(0xFF6B8CFF)
+private val BackgroundColor = Color(0xFF111318)
+private val SurfaceColor    = Color(0xFF1E2128)
+private val SurfaceBorder   = Color(0xFF2E3340)
+private val LabelColor      = Color(0xFF8B92A5)
+private val ContentColor    = Color.White
+private val AccentColor     = Color(0xFF6B8CFF)
+private val ChipBackground  = Color(0xFF2A3050)
 
 // ── Route ─────────────────────────────────────────────────────────────────────
 
@@ -66,10 +78,15 @@ fun ReviewRoute(
     LaunchedEffect(imageUri) { viewModel.analyze(imageUri) }
     LaunchedEffect(state.isSaved) { if (state.isSaved) onSaved() }
     ReviewScreen(
-        state = state,
-        onTitleChanged = viewModel::updateTitle,
-        onSave = viewModel::save,
-        onBack = onBack,
+        state              = state,
+        onTitleChanged     = viewModel::updateTitle,
+        onDescriptionChanged = viewModel::updateDescription,
+        onOcrTextChanged   = viewModel::updateOcrText,
+        onCategoryChanged  = viewModel::updateCategory,
+        onTagsChanged      = viewModel::updateTags,
+        onObjectsChanged   = viewModel::updateDetectedObjects,
+        onSave             = viewModel::save,
+        onBack             = onBack,
     )
 }
 
@@ -80,6 +97,11 @@ fun ReviewRoute(
 fun ReviewScreen(
     state: ReviewUiState,
     onTitleChanged: (String) -> Unit,
+    onDescriptionChanged: (String) -> Unit,
+    onOcrTextChanged: (String) -> Unit,
+    onCategoryChanged: (DocumentCategory) -> Unit,
+    onTagsChanged: (List<String>) -> Unit,
+    onObjectsChanged: (List<String>) -> Unit,
     onSave: () -> Unit,
     onBack: () -> Unit,
 ) {
@@ -105,10 +127,16 @@ fun ReviewScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            // ── Loading / error ───────────────────────────────────────────────
+            // ── Loading ───────────────────────────────────────────────────────
             if (state.isAnalyzing) {
-                Box(Modifier.fillMaxWidth().height(160.dp), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(
+                    Modifier.fillMaxWidth().height(160.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
                         CircularProgressIndicator(color = AccentColor)
                         Text("Analysing document…", color = LabelColor, style = MaterialTheme.typography.bodyMedium)
                     }
@@ -123,10 +151,15 @@ fun ReviewScreen(
 
             state.draft?.let { draft ->
                 DraftContent(
-                    draft = draft,
-                    isSaving = state.isSaving,
-                    onTitleChanged = onTitleChanged,
-                    onSave = onSave,
+                    draft                = draft,
+                    isSaving             = state.isSaving,
+                    onTitleChanged       = onTitleChanged,
+                    onDescriptionChanged = onDescriptionChanged,
+                    onOcrTextChanged     = onOcrTextChanged,
+                    onCategoryChanged    = onCategoryChanged,
+                    onTagsChanged        = onTagsChanged,
+                    onObjectsChanged     = onObjectsChanged,
+                    onSave               = onSave,
                 )
             }
 
@@ -135,12 +168,19 @@ fun ReviewScreen(
     }
 }
 
+// ── Draft content ─────────────────────────────────────────────────────────────
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DraftContent(
     draft: DocumentDraft,
     isSaving: Boolean,
     onTitleChanged: (String) -> Unit,
+    onDescriptionChanged: (String) -> Unit,
+    onOcrTextChanged: (String) -> Unit,
+    onCategoryChanged: (DocumentCategory) -> Unit,
+    onTagsChanged: (List<String>) -> Unit,
+    onObjectsChanged: (List<String>) -> Unit,
     onSave: () -> Unit,
 ) {
     // ── Image preview ─────────────────────────────────────────────────────────
@@ -160,75 +200,58 @@ private fun DraftContent(
         )
     }
 
-    // ── Title (editable) ──────────────────────────────────────────────────────
+    // ── Title ─────────────────────────────────────────────────────────────────
     FieldBox(label = "Title") {
-        OutlinedTextField(
+        EditableTextField(
             value = draft.title,
             onValueChange = onTitleChanged,
-            modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = ContentColor,
-                unfocusedTextColor = ContentColor,
-                focusedBorderColor = AccentColor,
-                unfocusedBorderColor = SurfaceBorder,
-                cursorColor = AccentColor,
-            ),
         )
     }
 
     // ── Description ───────────────────────────────────────────────────────────
     FieldBox(label = "Description") {
-        Text(
-            text = draft.description.ifBlank { "—" },
-            color = ContentColor,
-            style = MaterialTheme.typography.bodyMedium,
+        EditableTextField(
+            value = draft.description,
+            onValueChange = onDescriptionChanged,
+            minLines = 2,
         )
     }
 
-    // ── Category ─────────────────────────────────────────────────────────────
+    // ── Category ──────────────────────────────────────────────────────────────
     FieldBox(label = "Category") {
-        Text(
-            text = draft.category.name,
-            color = AccentColor,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium,
-        )
+        CategoryDropdown(selected = draft.category, onSelected = onCategoryChanged)
     }
 
     // ── Detected objects ──────────────────────────────────────────────────────
-    if (draft.detectedObjects.isNotEmpty()) {
-        FieldBox(label = "Detected Objects") {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                draft.detectedObjects.forEach { obj ->
-                    Chip(obj)
-                }
-            }
-        }
+    FieldBox(label = "Detected Objects") {
+        ChipEditor(
+            items = draft.detectedObjects,
+            onItemsChanged = onObjectsChanged,
+            placeholder = "Add object…",
+        )
     }
 
     // ── Tags ─────────────────────────────────────────────────────────────────
-    if (draft.tags.isNotEmpty()) {
-        FieldBox(label = "Tags") {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                draft.tags.forEach { tag ->
-                    Chip(tag)
-                }
-            }
-        }
+    FieldBox(label = "Tags") {
+        ChipEditor(
+            items = draft.tags,
+            onItemsChanged = onTagsChanged,
+            placeholder = "Add tag…",
+        )
     }
 
     // ── OCR text ──────────────────────────────────────────────────────────────
     FieldBox(label = "Extracted Text") {
-        Text(
-            text = draft.ocrText.ifBlank { "No text detected." },
-            color = ContentColor,
-            style = MaterialTheme.typography.bodySmall,
-            lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+        EditableTextField(
+            value = draft.ocrText,
+            onValueChange = onOcrTextChanged,
+            minLines = 4,
+            placeholder = "No text detected.",
         )
     }
 
-    // ── Save button ───────────────────────────────────────────────────────────
+    // ── Save ──────────────────────────────────────────────────────────────────
     Button(
         onClick = onSave,
         enabled = !isSaving,
@@ -238,7 +261,148 @@ private fun DraftContent(
     }
 }
 
-// ── Shared components ─────────────────────────────────────────────────────────
+// ── Reusable field components ─────────────────────────────────────────────────
+
+@Composable
+private fun EditableTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    singleLine: Boolean = false,
+    minLines: Int = 1,
+    placeholder: String = "",
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = singleLine,
+        minLines = minLines,
+        placeholder = {
+            if (placeholder.isNotBlank())
+                Text(placeholder, color = LabelColor, style = MaterialTheme.typography.bodySmall)
+        },
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor   = ContentColor,
+            unfocusedTextColor = ContentColor,
+            focusedBorderColor   = AccentColor,
+            unfocusedBorderColor = SurfaceBorder,
+            cursorColor          = AccentColor,
+        ),
+        textStyle = MaterialTheme.typography.bodySmall,
+    )
+}
+
+@Composable
+private fun CategoryDropdown(
+    selected: DocumentCategory,
+    onSelected: (DocumentCategory) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        TextButton(onClick = { expanded = true }) {
+            Text(selected.name, color = AccentColor, fontWeight = FontWeight.Medium)
+            Spacer(Modifier.width(4.dp))
+            Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null, tint = AccentColor, modifier = Modifier.size(18.dp))
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            containerColor = SurfaceColor,
+        ) {
+            DocumentCategory.entries.forEach { cat ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            cat.name,
+                            color = if (cat == selected) AccentColor else ContentColor,
+                            fontWeight = if (cat == selected) FontWeight.Bold else FontWeight.Normal,
+                        )
+                    },
+                    onClick = {
+                        onSelected(cat)
+                        expanded = false
+                    },
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ChipEditor(
+    items: List<String>,
+    onItemsChanged: (List<String>) -> Unit,
+    placeholder: String,
+) {
+    var inputText by rememberSaveable { mutableStateOf("") }
+
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        items.forEach { item ->
+            RemovableChip(
+                text = item,
+                onRemove = { onItemsChanged(items - item) },
+            )
+        }
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier.padding(top = 6.dp),
+    ) {
+        OutlinedTextField(
+            value = inputText,
+            onValueChange = { inputText = it },
+            modifier = Modifier.weight(1f),
+            singleLine = true,
+            placeholder = {
+                Text(placeholder, color = LabelColor, style = MaterialTheme.typography.bodySmall)
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor   = ContentColor,
+                unfocusedTextColor = ContentColor,
+                focusedBorderColor   = AccentColor,
+                unfocusedBorderColor = SurfaceBorder,
+                cursorColor          = AccentColor,
+            ),
+            textStyle = MaterialTheme.typography.bodySmall,
+        )
+        IconButton(
+            onClick = {
+                val trimmed = inputText.trim()
+                if (trimmed.isNotBlank() && !items.contains(trimmed)) {
+                    onItemsChanged(items + trimmed)
+                }
+                inputText = ""
+            },
+        ) {
+            Icon(Icons.Filled.Add, contentDescription = "Add", tint = AccentColor)
+        }
+    }
+}
+
+@Composable
+private fun RemovableChip(text: String, onRemove: () -> Unit) {
+    Row(
+        Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(ChipBackground)
+            .padding(start = 10.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(text, color = AccentColor, style = MaterialTheme.typography.labelMedium)
+        Spacer(Modifier.width(2.dp))
+        IconButton(onClick = onRemove, modifier = Modifier.size(18.dp)) {
+            Icon(Icons.Filled.Close, contentDescription = "Remove $text", tint = LabelColor, modifier = Modifier.size(12.dp))
+        }
+    }
+}
+
+// ── FieldBox ──────────────────────────────────────────────────────────────────
 
 @Composable
 private fun FieldBox(label: String, content: @Composable () -> Unit) {
@@ -255,20 +419,7 @@ private fun FieldBox(label: String, content: @Composable () -> Unit) {
             color = LabelColor,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.SemiBold,
-            letterSpacing = MaterialTheme.typography.labelSmall.letterSpacing,
         )
         content()
-    }
-}
-
-@Composable
-private fun Chip(text: String) {
-    Box(
-        Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(Color(0xFF2A3050))
-            .padding(horizontal = 10.dp, vertical = 4.dp),
-    ) {
-        Text(text, color = AccentColor, style = MaterialTheme.typography.labelMedium)
     }
 }

@@ -21,7 +21,36 @@ import kotlinx.coroutines.flow.toList
  */
 object LlmDocumentAnalyzer {
 
-    // ── Prompt ────────────────────────────────────────────────────────────────
+    // ── OCR fix prompt ────────────────────────────────────────────────────────
+
+    /**
+     * Builds a prompt that asks the LLM to fix garbled OCR output.
+     * The model corrects typos, broken words, and formatting artefacts while
+     * preserving the original meaning. It returns ONLY the cleaned plain text.
+     */
+    fun buildOcrFixPrompt(rawOcr: String): String = """
+You are an OCR correction assistant. The text below was extracted by an OCR engine and may contain
+garbled characters, broken words, missing spaces, or formatting artefacts.
+
+Rewrite it as clean, readable plain text. Preserve all original meaning, numbers, and proper nouns.
+Do NOT add any explanation, markdown, or extra commentary — output ONLY the corrected text.
+
+--- RAW OCR ---
+${rawOcr.take(4000)}
+    """.trimIndent()
+
+    /**
+     * Sends [rawOcr] to the LLM for cleanup and returns the corrected text.
+     * Returns the original [rawOcr] unchanged if the LLM call fails or returns blank.
+     */
+    suspend fun fixOcr(llm: LlmService, rawOcr: String): String {
+        if (rawOcr.isBlank()) return rawOcr
+        val tokens = llm.generate(buildOcrFixPrompt(rawOcr)).toList()
+        val fixed = tokens.joinToString("").trim()
+        return fixed.ifBlank { rawOcr }
+    }
+
+    // ── Metadata prompt ───────────────────────────────────────────────────────
 
     fun buildPrompt(ocrText: String, detectedObjects: List<String>): String {
         val objectList = if (detectedObjects.isEmpty()) "none detected"
