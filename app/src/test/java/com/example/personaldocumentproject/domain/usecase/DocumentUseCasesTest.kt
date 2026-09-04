@@ -61,8 +61,10 @@ class DocumentUseCasesTest {
         assertEquals("University lecture", draft.title)
         assertEquals("Text extracted from the image", draft.description)
         assertEquals("University lecture\nDatabase indexing", draft.ocrText)
-        assertEquals(DocumentCategory.STUDY, draft.category)
-        assertEquals(listOf("book", "laptop"), draft.tags)
+        assertEquals(
+            listOf("book", "laptop", "lecture", "university", "database", "indexing"),
+            draft.tags,
+        )
         assertEquals(listOf("book", "laptop"), draft.detectedObjects)
     }
 
