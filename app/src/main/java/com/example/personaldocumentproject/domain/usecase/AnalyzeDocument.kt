@@ -76,7 +76,7 @@ class AnalyzeDocument(
                     description     = visionResult.description ?: "Document analyzed by Gemini Vision",
                     ocrText         = visionResult.ocrText ?: "",
                     category        = visionResult.category ?: DocumentCategory.OTHER,
-                    tags            = visionResult.tags?.takeIf { it.isNotEmpty() } ?: listOf("document"),
+                    tags            = visionResult.tags?.take(5)?.takeIf { it.isNotEmpty() } ?: listOf("document"),
                     detectedObjects = visionResult.detectedObjects?.takeIf { it.isNotEmpty() } ?: emptyList(),
                     warning         = null,
                 )

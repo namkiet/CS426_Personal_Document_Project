@@ -41,11 +41,16 @@ class DefaultDocumentRepository(
                 val score = semanticScore * 0.8f + lexicalScore * 0.2f
 
                 SearchResult(document, semanticScore, lexicalScore, score)
-            }.sortedByDescending(SearchResult::score)
+            }.filter { it.score >= SEARCH_THRESHOLD || it.lexicalScore > 0f }
+             .sortedByDescending(SearchResult::score)
         }
     }
 
     override suspend fun save(document: Document) = documentDao.upsert(mapper.toEntity(document))
 
     override suspend fun delete(id: String) = documentDao.deleteById(id)
+
+    companion object {
+        const val SEARCH_THRESHOLD = 0.25f
+    }
 }

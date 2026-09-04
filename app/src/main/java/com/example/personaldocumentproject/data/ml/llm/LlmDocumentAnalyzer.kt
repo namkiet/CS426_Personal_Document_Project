@@ -85,7 +85,7 @@ The JSON must have exactly these keys:
   "description"    – one concise sentence summarising what the document contains
   "ocrText"        – the full plain text read or extracted from the document image
   "category"       – one of: NOTE, RECEIPT, IDENTITY, STUDY, WORK, OTHER
-  "tags"           – a JSON array of keyword strings for the document
+  "tags"           – a JSON array of at most 5 relevant keyword strings for the document (maximum 5 tags)
   "detectedObjects"– a JSON array of strings listing physical objects or elements visible in the image
 
 Respond with ONLY the JSON object, nothing else.

@@ -62,7 +62,7 @@ class DocumentUseCasesTest {
         assertEquals("Text extracted from the image", draft.description)
         assertEquals("University lecture\nDatabase indexing", draft.ocrText)
         assertEquals(
-            listOf("book", "laptop", "lecture", "university", "database", "indexing"),
+            listOf("book", "laptop", "lecture", "university", "database"),
             draft.tags,
         )
         assertEquals(listOf("book", "laptop"), draft.detectedObjects)

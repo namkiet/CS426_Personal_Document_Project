@@ -16,7 +16,7 @@ class RoutesSaverTest {
             Routes.Capture,
             Routes.Review("content://media/external/images/media/42?foo=bar#baz"),
             Routes.Detail("doc-1234"),
-            Routes.ModelManager,
+            Routes.Setting,
         )
 
         val saved = with(Routes.BackStackSaver) { dummySaverScope.save(originalStack) }

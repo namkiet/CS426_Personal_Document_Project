@@ -52,5 +52,5 @@ object SimpleTagGenerationService : TagGenerationService {
             .take(MAX_TAGS)
     }
 
-    private const val MAX_TAGS = 8
+    private const val MAX_TAGS = 5
 }
