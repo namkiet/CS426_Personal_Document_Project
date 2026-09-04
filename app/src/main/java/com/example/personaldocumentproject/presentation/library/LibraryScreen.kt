@@ -32,13 +32,23 @@ import com.example.personaldocumentproject.ui.theme.*
 import com.example.personaldocumentproject.ui.components.AppTextField
 
 @Composable
-fun LibraryRoute(viewModel: LibraryViewModel, onCapture: () -> Unit, onDocumentClick: (String) -> Unit) {
+fun LibraryRoute(
+    viewModel: LibraryViewModel,
+    onCapture: () -> Unit,
+    onDocumentClick: (String) -> Unit,
+    onManageModels: () -> Unit,
+) {
     val state by viewModel.uiState.collectAsState()
-    LibraryScreen(state, onCapture, onDocumentClick)
+    LibraryScreen(state, onCapture, onDocumentClick, onManageModels)
 }
 
 @Composable
-fun LibraryScreen(state: LibraryUiState, onCapture: () -> Unit, onDocumentClick: (String) -> Unit) {
+fun LibraryScreen(
+    state: LibraryUiState,
+    onCapture: () -> Unit,
+    onDocumentClick: (String) -> Unit,
+    onManageModels: () -> Unit,
+) {
     val focusManager = LocalFocusManager.current
     var query by remember { mutableStateOf("") }
     var category by remember { mutableStateOf<DocumentCategory?>(null) }
@@ -63,7 +73,8 @@ fun LibraryScreen(state: LibraryUiState, onCapture: () -> Unit, onDocumentClick:
                     Text("Documents", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 }
                 Box(Modifier.size(38.dp).background(SurfaceRaised, RoundedCornerShape(12.dp))
-                    .border(1.dp, AppBorder, RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
+                    .border(1.dp, AppBorder, RoundedCornerShape(12.dp))
+                    .clickable(onClick = onManageModels), contentAlignment = Alignment.Center) {
                     Icon(Icons.Default.MoreVert, "More options", tint = TextMuted)
                 }
             }
@@ -112,6 +123,7 @@ private fun LibraryScreenPreview() {
             state = LibraryUiState(MockDocuments.items),
             onCapture = {},
             onDocumentClick = {},
+            onManageModels = {},
         )
     }
 }
@@ -124,6 +136,7 @@ private fun EmptyLibraryScreenPreview() {
             state = LibraryUiState(),
             onCapture = {},
             onDocumentClick = {},
+            onManageModels = {},
         )
     }
 }

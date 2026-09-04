@@ -9,4 +9,5 @@ interface DocumentRepository {
     suspend fun get(id: String): Document?
     fun search(query: String, queryEmbedding: List<Float>): Flow<List<SearchResult>>
     suspend fun save(document: Document)
+    suspend fun delete(id: String)
 }

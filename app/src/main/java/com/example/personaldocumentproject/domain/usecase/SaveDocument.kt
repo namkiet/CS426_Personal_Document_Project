@@ -22,11 +22,10 @@ class SaveDocument(
 
         // 02. Build the text representation and generate its embedding for semantic search.
         val embeddingText = """
-            Title: ${draft.title}
-            Description: ${draft.description}
-            OCR text: ${draft.ocrText}
-            Tags: ${draft.tags.joinToString(", ")}
-            Detected objects: ${draft.detectedObjects.joinToString(", ")}
+            ${draft.description}
+            ${draft.tags.joinToString(", ")}
+            ${draft.detectedObjects.joinToString(", ")}
+            ${draft.ocrText}
         """.trimIndent()
         val embedding = embeddingService.embed(embeddingText)
 

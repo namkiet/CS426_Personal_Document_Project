@@ -37,4 +37,14 @@ class LocalImageStorageService(private val context: Context) : ImageStorageServi
 
         Uri.fromFile(destinationFile).toString()
     }
+
+    override suspend fun deleteImage(localUri: String) = withContext(Dispatchers.IO) {
+        val path = Uri.parse(localUri).path ?: return@withContext
+        val file = File(path)
+        val documentsDirectory = File(context.filesDir, "documents").canonicalFile
+        val target = file.canonicalFile
+        if (target.path.startsWith(documentsDirectory.path + File.separator)) {
+            target.delete()
+        }
+    }
 }

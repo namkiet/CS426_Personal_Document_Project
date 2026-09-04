@@ -33,11 +33,12 @@ import java.util.Locale
 fun DetailRoute(documentId: String, viewModel: DetailViewModel, onBack: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
     LaunchedEffect(documentId) { viewModel.loadDocument(documentId) }
-    DetailScreen(state, onBack)
+    LaunchedEffect(state.isDeleted) { if (state.isDeleted) onBack() }
+    DetailScreen(state, onBack, viewModel::delete)
 }
 
 @Composable
-fun DetailScreen(state: DetailUiState, onBack: () -> Unit) {
+fun DetailScreen(state: DetailUiState, onBack: () -> Unit, onDelete: () -> Unit) {
     var ocrExpanded by remember { mutableStateOf(false) }
     Surface(
         Modifier
@@ -99,10 +100,16 @@ fun DetailScreen(state: DetailUiState, onBack: () -> Unit) {
                                 }
                             }
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                                OutlinedButton(onClick = onBack, shape = RoundedCornerShape(8.dp),
+                                OutlinedButton(onClick = onDelete, enabled = !state.isDeleting, shape = RoundedCornerShape(8.dp),
                                     border = androidx.compose.foundation.BorderStroke(1.dp, DeleteColor.copy(alpha = .3f)),
                                     colors = ButtonDefaults.outlinedButtonColors(contentColor = DeleteColor)) {
-                                    Icon(Icons.Default.Delete, null, Modifier.size(16.dp)); Spacer(Modifier.width(7.dp)); Text("Delete")
+                                    if (state.isDeleting) {
+                                        CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = DeleteColor)
+                                    } else {
+                                        Icon(Icons.Default.Delete, null, Modifier.size(16.dp))
+                                    }
+                                    Spacer(Modifier.width(7.dp))
+                                    Text(if (state.isDeleting) "Deleting..." else "Delete")
                                 }
                             }
                             Spacer(Modifier.height(20.dp))
@@ -138,6 +145,7 @@ private fun DetailScreenPreview() {
         DetailScreen(
             state = DetailUiState(document = MockDocuments.items.first(), isLoading = false),
             onBack = {},
+            onDelete = {},
         )
     }
 }

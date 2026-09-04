@@ -5,4 +5,5 @@ sealed interface Routes {
     data object Capture : Routes
     data class Review(val imageUri: String) : Routes
     data class Detail(val documentId: String) : Routes
+    data object ModelManager : Routes
 }

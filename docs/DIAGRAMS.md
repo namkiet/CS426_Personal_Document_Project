@@ -83,3 +83,48 @@ sequenceDiagram
     VM-->>Screen: Search results
     Screen-->>User: Display Top 5
 ```
+
+## Document Deletion
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Screen as Detail Screen
+    participant VM as Detail ViewModel
+    participant Delete as DeleteDocument UseCase
+    participant Repo as Document Repository
+    participant DB as Room Database
+    participant Images as Local Image Storage
+    participant Nav as App Navigation
+
+    User->>Screen: Tap Delete
+    Screen->>VM: delete()
+    VM->>VM: Set isDeleting = true
+    VM-->>Screen: Show "Deleting..."
+
+    VM->>Delete: Execute(documentId)
+    Delete->>Repo: Get document by ID
+    Repo->>DB: SELECT document
+    DB-->>Repo: Document
+    Repo-->>Delete: Document
+
+    alt Deletion succeeds
+        Delete->>Repo: Delete document by ID
+        Repo->>DB: DELETE document row
+        DB-->>Repo: Success
+        Repo-->>Delete: Success
+
+        Delete->>Images: Delete app-owned image
+        Images-->>Delete: Success
+        Delete-->>VM: Success
+
+        VM->>VM: Set isDeleted = true
+        VM-->>Screen: Deletion completed
+        Screen->>Nav: Navigate back
+        Nav-->>User: Show updated Library
+    else Deletion fails
+        Delete--xVM: Error
+        VM->>VM: Set isDeleting = false
+        VM-->>Screen: Show error message
+    end
+```

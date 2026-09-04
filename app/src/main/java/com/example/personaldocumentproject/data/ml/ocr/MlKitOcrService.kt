@@ -12,7 +12,11 @@ import androidx.core.net.toUri
 /** ML Kit integration point. Recognizes text from an image URI. */
 class MlKitOcrService(private val context: Context) : OcrService {
 
-    private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+    private val recognizer by lazy { TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS) }
+
+    fun prepare() {
+        recognizer
+    }
 
     override suspend fun recognizeText(imageUri: String): String {
         return try {
