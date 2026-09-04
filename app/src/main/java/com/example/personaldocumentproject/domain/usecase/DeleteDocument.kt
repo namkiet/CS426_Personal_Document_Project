@@ -9,7 +9,13 @@ class DeleteDocument(
 ) {
     suspend operator fun invoke(id: String) {
         val document = repository.get(id) ?: return
-        repository.delete(id)
-        imageStorageService.deleteImage(document.imageUri)
+
+        try {
+            repository.delete(id)
+            imageStorageService.deleteImage(document.imageUri)
+        } catch (error: Throwable) {
+            runCatching { repository.save(document) }
+            throw error
+        }
     }
 }
