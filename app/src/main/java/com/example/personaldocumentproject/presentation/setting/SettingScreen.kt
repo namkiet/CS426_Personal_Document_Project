@@ -29,6 +29,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.personaldocumentproject.ui.responsive.ScreenBreakpoint
+import com.example.personaldocumentproject.ui.responsive.screenSizeInfo
 import com.example.personaldocumentproject.ui.theme.*
 
 @Composable
@@ -58,98 +60,105 @@ fun SettingsScreen(
         }
     }
 
-    Scaffold(
-        containerColor = AppBackground,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Settings",
-                        color = TextPrimary,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Navigate back",
-                            tint = TextPrimary,
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val breakpoint = screenSizeInfo().breakpoint
+        val isWide = breakpoint != ScreenBreakpoint.COMPACT
+        val contentPadding = when (breakpoint) {
+            ScreenBreakpoint.COMPACT -> 20.dp
+            ScreenBreakpoint.MEDIUM -> 28.dp
+            ScreenBreakpoint.EXPANDED -> 36.dp
+        }
+
+        Scaffold(
+            containerColor = AppBackground,
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "Settings",
+                            color = TextPrimary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Navigate back",
+                                tint = TextPrimary,
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = AppBackground),
+                )
+            }
+        ) { padding ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = contentPadding, vertical = if (isWide) 20.dp else 12.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+            ) {
+                item {
+                    SectionTitle(title = "App Preferences")
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    CardContainer {
+                        SettingSwitchRow(
+                            icon = Icons.Default.DarkMode,
+                            iconTint = AppPrimary,
+                            title = "Dark Mode",
+                            subtitle = "Enable dark theme for the interface",
+                            checked = state.isDarkMode,
+                            onCheckedChange = viewModel::setDarkMode,
+                        )
+
+                        SettingDivider()
+
+                        SettingSwitchRow(
+                            icon = Icons.Default.CameraAlt,
+                            iconTint = StudyColor,
+                            title = "Start Camera Mode",
+                            subtitle = "Open document scanner directly on app launch",
+                            checked = state.startCameraMode,
+                            onCheckedChange = viewModel::setStartCameraMode,
+                        )
+
+                        SettingDivider()
+
+                        SettingSwitchRow(
+                            icon = Icons.Default.CloudOff,
+                            iconTint = ReceiptColor,
+                            title = "Disable Cloud API",
+                            subtitle = "Run 100% on-device (ML Kit OCR & heuristics)",
+                            checked = state.disableApiMode,
+                            onCheckedChange = viewModel::setDisableApiMode,
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppBackground),
-            )
-        }
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
-        ) {
-            // ── Section 1: Preferences ───────────────────────────────────────
-            item {
-                SectionTitle(title = "App Preferences")
-                Spacer(modifier = Modifier.height(10.dp))
-
-                CardContainer {
-                    SettingSwitchRow(
-                        icon = Icons.Default.DarkMode,
-                        iconTint = AppPrimary,
-                        title = "Dark Mode",
-                        subtitle = "Enable dark theme for the interface",
-                        checked = state.isDarkMode,
-                        onCheckedChange = viewModel::setDarkMode,
-                    )
-
-                    SettingDivider()
-
-                    SettingSwitchRow(
-                        icon = Icons.Default.CameraAlt,
-                        iconTint = StudyColor,
-                        title = "Start Camera Mode",
-                        subtitle = "Open document scanner directly on app launch",
-                        checked = state.startCameraMode,
-                        onCheckedChange = viewModel::setStartCameraMode,
-                    )
-
-                    SettingDivider()
-
-                    SettingSwitchRow(
-                        icon = Icons.Default.CloudOff,
-                        iconTint = ReceiptColor,
-                        title = "Disable Cloud API",
-                        subtitle = "Run 100% on-device (ML Kit OCR & heuristics)",
-                        checked = state.disableApiMode,
-                        onCheckedChange = viewModel::setDisableApiMode,
-                    )
                 }
-            }
 
-            // ── Section 2: Data & Storage ────────────────────────────────────
-            item {
-                SectionTitle(title = "Data & Storage")
-                Spacer(modifier = Modifier.height(10.dp))
+                item {
+                    SectionTitle(title = "Data & Storage")
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                CardContainer {
-                    SettingActionRow(
-                        icon = Icons.Default.DeleteForever,
-                        iconTint = DeleteColor,
-                        title = "Factory Reset",
-                        titleColor = DeleteColor,
-                        subtitle = "Delete all documents, images and reset settings",
-                        onClick = { viewModel.showResetDialog(true) },
-                    )
+                    CardContainer {
+                        SettingActionRow(
+                            icon = Icons.Default.DeleteForever,
+                            iconTint = DeleteColor,
+                            title = "Factory Reset",
+                            titleColor = DeleteColor,
+                            subtitle = "Delete all documents, images and reset settings",
+                            onClick = { viewModel.showResetDialog(true) },
+                        )
+                    }
                 }
-            }
 
-            // Bottom Spacing
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
             }
         }
     }

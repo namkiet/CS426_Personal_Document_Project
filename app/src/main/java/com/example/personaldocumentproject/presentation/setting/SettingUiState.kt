@@ -4,7 +4,6 @@ data class SettingUiState(
     val isDarkMode: Boolean = false,
     val disableApiMode: Boolean = false,
     val startCameraMode: Boolean = false,
-    val isAutoCapture: Boolean = true,
     val showResetDialog: Boolean = false,
     val isResetting: Boolean = false,
     val resetMessage: String? = null,

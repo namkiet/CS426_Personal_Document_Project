@@ -30,6 +30,8 @@ import com.example.personaldocumentproject.domain.model.MockDocuments
 import com.example.personaldocumentproject.presentation.common.FullScreenImageViewer
 import com.example.personaldocumentproject.presentation.library.components.CategoryBadge
 import com.example.personaldocumentproject.presentation.library.components.DocumentArtwork
+import com.example.personaldocumentproject.ui.responsive.ScreenBreakpoint
+import com.example.personaldocumentproject.ui.responsive.screenSizeInfo
 import com.example.personaldocumentproject.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -84,98 +86,113 @@ fun DetailScreen(state: DetailUiState, onBack: () -> Unit, onDelete: () -> Unit)
         )
     }
 
-    Surface(
-        Modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding(),
-        color = AppBackground,
-    ) {
-        when {
-            state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = AppPrimary)
-            }
-            state.document != null -> {
-                val document = state.document
-                if (showFullImage && document.imageUri.isNotBlank()) {
-                    FullScreenImageViewer(
-                        imageUri = document.imageUri,
-                        onDismiss = { showFullImage = false },
-                    )
-                }
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val breakpoint = screenSizeInfo().breakpoint
+        val isWide = breakpoint != ScreenBreakpoint.COMPACT
+        val horizontalPadding = when (breakpoint) {
+            ScreenBreakpoint.COMPACT -> 20.dp
+            ScreenBreakpoint.MEDIUM -> 28.dp
+            ScreenBreakpoint.EXPANDED -> 34.dp
+        }
+        val titleSize = when (breakpoint) {
+            ScreenBreakpoint.COMPACT -> 20.sp
+            ScreenBreakpoint.MEDIUM -> 28.sp
+            ScreenBreakpoint.EXPANDED -> 32.sp
+        }
 
-                Column(Modifier.fillMaxSize()) {
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                        TextButton(onClick = onBack, contentPadding = PaddingValues(horizontal = 4.dp)) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, null); Spacer(Modifier.width(6.dp))
-                            Text(document.title, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.SemiBold)
-                        }
+        Surface(
+            Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding(),
+            color = AppBackground,
+        ) {
+            when {
+                state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = AppPrimary)
+                }
+                state.document != null -> {
+                    val document = state.document
+                    if (showFullImage && document.imageUri.isNotBlank()) {
+                        FullScreenImageViewer(
+                            imageUri = document.imageUri,
+                            onDismiss = { showFullImage = false },
+                        )
                     }
-                    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                        Box(modifier = Modifier.fillMaxWidth().aspectRatio(4f / 3f).clickable {
-                            if (document.imageUri.isNotBlank()) showFullImage = true
-                        }) {
-                            DocumentArtwork(document, Modifier.fillMaxSize())
-                        }
-                        Column(Modifier.padding(20.dp)) {
-                            Text(document.title, color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                            Spacer(Modifier.height(10.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                CategoryBadge(document.category); Text("  •  ", color = TextDim)
-                                Text(SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(document.createdAt)),
-                                    color = TextDim, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
+
+                    Column(Modifier.fillMaxSize()) {
+                        Row(Modifier.fillMaxWidth().padding(horizontal = horizontalPadding, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                            TextButton(onClick = onBack, contentPadding = PaddingValues(horizontal = 4.dp)) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, null); Spacer(Modifier.width(6.dp))
+                                Text(document.title, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.SemiBold)
                             }
                         }
-                        HorizontalDivider(color = AppBorder)
-                        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                            Text(document.description, color = TextMuted, fontSize = 14.sp, lineHeight = 24.sp)
-                            if (document.tags.isNotEmpty()) Section("TAGS") {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                ) {
-                                    document.tags.forEach { Tag(it) }
+                        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                            Box(modifier = Modifier.fillMaxWidth().aspectRatio(4f / 3f).clickable {
+                                if (document.imageUri.isNotBlank()) showFullImage = true
+                            }) {
+                                DocumentArtwork(document, Modifier.fillMaxSize())
+                            }
+                            Column(Modifier.padding(horizontal = horizontalPadding, vertical = 20.dp)) {
+                                Text(document.title, color = TextPrimary, fontSize = titleSize, fontWeight = FontWeight.Bold)
+                                Spacer(Modifier.height(10.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    CategoryBadge(document.category); Text("  •  ", color = TextDim)
+                                    Text(SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(document.createdAt)),
+                                        color = TextDim, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
                                 }
                             }
-                            if (document.detectedObjects.isNotEmpty()) Section("DETECTED OBJECTS") {
-                                Text(document.detectedObjects.joinToString("  •  "), color = TextMuted, fontSize = 14.sp)
-                            }
-                            Column(Modifier.fillMaxWidth().background(SurfaceRaised, RoundedCornerShape(8.dp))
-                                .border(1.dp, AppBorder, RoundedCornerShape(8.dp))) {
-                                Row(Modifier.fillMaxWidth().clickable { ocrExpanded = !ocrExpanded }.padding(14.dp),
-                                    verticalAlignment = Alignment.CenterVertically) {
-                                    Text("OCR Text", color = TextMuted, fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
-                                        modifier = Modifier.weight(1f))
-                                    Icon(Icons.Default.KeyboardArrowDown, null, tint = TextDim, modifier = Modifier.rotate(if (ocrExpanded) 180f else 0f))
-                                }
-                                AnimatedVisibility(ocrExpanded) {
-                                    Text(document.ocrText.ifBlank { "No text detected." }, color = TextMuted, fontSize = 12.sp,
-                                        lineHeight = 20.sp, fontFamily = FontFamily.Monospace,
-                                        modifier = Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp, bottom = 14.dp))
-                                }
-                            }
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                                OutlinedButton(onClick = { showDeleteConfirmation = true }, enabled = !state.isDeleting, shape = RoundedCornerShape(8.dp),
-                                    border = androidx.compose.foundation.BorderStroke(1.dp, DeleteColor.copy(alpha = .3f)),
-                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = DeleteColor)) {
-                                    if (state.isDeleting) {
-                                        CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = DeleteColor)
-                                    } else {
-                                        Icon(Icons.Default.Delete, null, Modifier.size(16.dp))
+                            HorizontalDivider(color = AppBorder)
+                            Column(Modifier.padding(horizontal = horizontalPadding, vertical = 20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                                Text(document.description, color = TextMuted, fontSize = 14.sp, lineHeight = 24.sp)
+                                if (document.tags.isNotEmpty()) Section("TAGS") {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    ) {
+                                        document.tags.forEach { Tag(it) }
                                     }
-                                    Spacer(Modifier.width(7.dp))
-                                    Text(if (state.isDeleting) "Deleting..." else "Delete")
                                 }
+                                if (document.detectedObjects.isNotEmpty()) Section("DETECTED OBJECTS") {
+                                    Text(document.detectedObjects.joinToString("  •  "), color = TextMuted, fontSize = 14.sp)
+                                }
+                                Column(Modifier.fillMaxWidth().background(SurfaceRaised, RoundedCornerShape(8.dp))
+                                    .border(1.dp, AppBorder, RoundedCornerShape(8.dp))) {
+                                    Row(Modifier.fillMaxWidth().clickable { ocrExpanded = !ocrExpanded }.padding(14.dp),
+                                        verticalAlignment = Alignment.CenterVertically) {
+                                        Text("OCR Text", color = TextMuted, fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
+                                            modifier = Modifier.weight(1f))
+                                        Icon(Icons.Default.KeyboardArrowDown, null, tint = TextDim, modifier = Modifier.rotate(if (ocrExpanded) 180f else 0f))
+                                    }
+                                    AnimatedVisibility(ocrExpanded) {
+                                        Text(document.ocrText.ifBlank { "No text detected." }, color = TextMuted, fontSize = 12.sp,
+                                            lineHeight = 20.sp, fontFamily = FontFamily.Monospace,
+                                            modifier = Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp, bottom = 14.dp))
+                                    }
+                                }
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                    OutlinedButton(onClick = { showDeleteConfirmation = true }, enabled = !state.isDeleting, shape = RoundedCornerShape(8.dp),
+                                        border = androidx.compose.foundation.BorderStroke(1.dp, DeleteColor.copy(alpha = .3f)),
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = DeleteColor)) {
+                                        if (state.isDeleting) {
+                                            CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = DeleteColor)
+                                        } else {
+                                            Icon(Icons.Default.Delete, null, Modifier.size(16.dp))
+                                        }
+                                        Spacer(Modifier.width(7.dp))
+                                        Text(if (state.isDeleting) "Deleting..." else "Delete")
+                                    }
+                                }
+                                Spacer(Modifier.height(20.dp))
                             }
-                            Spacer(Modifier.height(20.dp))
                         }
                     }
                 }
-            }
-            else -> Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center) {
-                Text(state.errorMessage ?: "Document not found", color = TextMuted)
-                TextButton(onClick = onBack) { Text("Back to library") }
+                else -> Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center) {
+                    Text(state.errorMessage ?: "Document not found", color = TextMuted)
+                    TextButton(onClick = onBack) { Text("Back to library") }
+                }
             }
         }
     }

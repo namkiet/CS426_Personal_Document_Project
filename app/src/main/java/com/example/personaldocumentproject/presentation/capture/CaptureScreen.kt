@@ -36,6 +36,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.example.personaldocumentproject.ui.responsive.ScreenBreakpoint
+import com.example.personaldocumentproject.ui.responsive.screenSizeInfo
 import com.example.personaldocumentproject.ui.theme.*
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.RESULT_FORMAT_JPEG
@@ -164,129 +166,163 @@ fun CaptureScreen(
             }
     }
 
-    Scaffold(
-        containerColor = AppBackground,
-        topBar = {
-            TopAppBar(
-                title = { Text("Capture Document", color = TextPrimary, fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = TextPrimary,
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppBackground),
-            )
-        },
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            Column(
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val breakpoint = screenSizeInfo().breakpoint
+        val isWide = breakpoint != ScreenBreakpoint.COMPACT
+        val horizontalPadding = when (breakpoint) {
+            ScreenBreakpoint.COMPACT -> 20.dp
+            ScreenBreakpoint.MEDIUM -> 28.dp
+            ScreenBreakpoint.EXPANDED -> 32.dp
+        }
+
+        Scaffold(
+            containerColor = AppBackground,
+            topBar = {
+                TopAppBar(
+                    title = { Text("Capture Document", color = TextPrimary, fontWeight = FontWeight.Bold) },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = TextPrimary,
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = AppBackground),
+                )
+            },
+        ) { padding ->
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                    .padding(padding)
             ) {
-                Text(
-                    text = "Add a document to extract text with metadata and enable private semantic search.",
-                    color = TextMuted,
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp,
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = horizontalPadding, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    Text(
+                        text = "Add a document to extract text with metadata and enable private semantic search.",
+                        color = TextMuted,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
+                    )
 
-                state.errorMessage?.let { msg ->
+                    state.errorMessage?.let { msg ->
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = DeleteColor.copy(alpha = 0.15f)),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Text(
+                                    text = msg,
+                                    color = DeleteColor,
+                                    fontSize = 13.sp,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                TextButton(onClick = onClearError) {
+                                    Text("Dismiss", color = DeleteColor, fontSize = 12.sp)
+                                }
+                            }
+                        }
+                    }
+
+                    if (isWide) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
+                            CaptureActionCard(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Default.DocumentScanner,
+                                iconTint = AppPrimary,
+                                title = "Scan Document",
+                                subtitle = "Use camera with auto-edge detection, crop, and enhanced contrast for documents.",
+                                onClick = { launchScanner() },
+                            )
+                            CaptureActionCard(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Default.PhotoLibrary,
+                                iconTint = StudyColor,
+                                title = "Import from Gallery",
+                                subtitle = "Select an existing photo, scanned file, or screenshot from your device.",
+                                onClick = { openGallery() },
+                            )
+                        }
+                    } else {
+                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            CaptureActionCard(
+                                modifier = Modifier.fillMaxWidth(),
+                                icon = Icons.Default.DocumentScanner,
+                                iconTint = AppPrimary,
+                                title = "Scan Document",
+                                subtitle = "Use camera with auto-edge detection, crop, and enhanced contrast for documents.",
+                                onClick = { launchScanner() },
+                            )
+                            CaptureActionCard(
+                                modifier = Modifier.fillMaxWidth(),
+                                icon = Icons.Default.PhotoLibrary,
+                                iconTint = StudyColor,
+                                title = "Import from Gallery",
+                                subtitle = "Select an existing photo, scanned file, or screenshot from your device.",
+                                onClick = { openGallery() },
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = DeleteColor.copy(alpha = 0.15f)),
-                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = SurfaceRaised.copy(alpha = 0.6f)),
+                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Row(
-                            modifier = Modifier.padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
-                            Text(
-                                text = msg,
-                                color = DeleteColor,
-                                fontSize = 13.sp,
-                                modifier = Modifier.weight(1f),
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                tint = AppPrimary,
+                                modifier = Modifier.size(20.dp),
                             )
-                            TextButton(onClick = onClearError) {
-                                Text("Dismiss", color = DeleteColor, fontSize = 12.sp)
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(
+                                    text = "Tips for best OCR accuracy",
+                                    color = TextPrimary,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 13.sp,
+                                )
+                                Text(
+                                    text = "• Place document on a flat, contrasting background.\n• Ensure adequate lighting and avoid strong glare.",
+                                    color = TextMuted,
+                                    fontSize = 12.sp,
+                                    lineHeight = 18.sp,
+                                )
                             }
                         }
                     }
                 }
 
-                // ── Option 1: Scanner ─────────────────────────────────────────
-                CaptureActionCard(
-                    icon = Icons.Default.DocumentScanner,
-                    iconTint = AppPrimary,
-                    title = "Scan Document",
-                    subtitle = "Use camera with auto-edge detection, crop, and enhanced contrast for documents.",
-                    onClick = { launchScanner() },
-                )
-
-                // ── Option 2: Gallery ─────────────────────────────────────────
-                CaptureActionCard(
-                    icon = Icons.Default.PhotoLibrary,
-                    iconTint = StudyColor,
-                    title = "Import from Gallery",
-                    subtitle = "Select an existing photo, scanned file, or screenshot from your device.",
-                    onClick = { openGallery() },
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // ── Guidance Box ──────────────────────────────────────────────
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = SurfaceRaised.copy(alpha = 0.6f)),
-                    shape = RoundedCornerShape(14.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                if (state.isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.5f)),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = null,
-                            tint = AppPrimary,
-                            modifier = Modifier.size(20.dp),
-                        )
-                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(
-                                text = "Tips for best OCR accuracy",
-                                color = TextPrimary,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 13.sp,
-                            )
-                            Text(
-                                text = "• Place document on a flat, contrasting background.\n• Ensure adequate lighting and avoid strong glare.",
-                                color = TextMuted,
-                                fontSize = 12.sp,
-                                lineHeight = 18.sp,
-                            )
-                        }
+                        CircularProgressIndicator(color = AppPrimary)
                     }
-                }
-            }
-
-            if (state.isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.5f)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator(color = AppPrimary)
                 }
             }
         }
@@ -295,6 +331,7 @@ fun CaptureScreen(
 
 @Composable
 private fun CaptureActionCard(
+    modifier: Modifier = Modifier,
     icon: ImageVector,
     iconTint: Color,
     title: String,
@@ -304,7 +341,7 @@ private fun CaptureActionCard(
     Card(
         colors = CardDefaults.cardColors(containerColor = AppSurface),
         shape = RoundedCornerShape(16.dp),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .border(1.dp, AppBorder, RoundedCornerShape(16.dp))
             .clip(RoundedCornerShape(16.dp))

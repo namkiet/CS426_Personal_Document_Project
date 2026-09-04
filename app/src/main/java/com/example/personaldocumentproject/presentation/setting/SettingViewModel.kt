@@ -31,7 +31,6 @@ class SettingViewModel @Inject constructor(
                         isDarkMode = domainSettings.isDarkMode,
                         disableApiMode = domainSettings.disableApiMode,
                         startCameraMode = domainSettings.startCameraMode,
-                        isAutoCapture = domainSettings.isAutoCapture,
                     )
                 }
             }
@@ -53,11 +52,6 @@ class SettingViewModel @Inject constructor(
         saveCurrentSettings()
     }
 
-    fun setAutoCapture(enabled: Boolean) {
-        _uiState.update { it.copy(isAutoCapture = enabled) }
-        saveCurrentSettings()
-    }
-
     fun showResetDialog(show: Boolean) {
         _uiState.update { it.copy(showResetDialog = show) }
     }
@@ -76,7 +70,6 @@ class SettingViewModel @Inject constructor(
                         isDarkMode = false,
                         disableApiMode = false,
                         startCameraMode = false,
-                        isAutoCapture = true,
                     )
                 }
             } catch (e: Exception) {
@@ -101,7 +94,6 @@ class SettingViewModel @Inject constructor(
                 isDarkMode = state.isDarkMode,
                 disableApiMode = state.disableApiMode,
                 startCameraMode = state.startCameraMode,
-                isAutoCapture = state.isAutoCapture,
             )
             repository.saveSetting(userSetting)
         }

@@ -33,6 +33,8 @@ import com.example.personaldocumentproject.domain.model.MockDocuments
 import com.example.personaldocumentproject.presentation.library.components.DocumentCard
 import com.example.personaldocumentproject.presentation.library.components.categoryColor
 import com.example.personaldocumentproject.ui.components.AppTextField
+import com.example.personaldocumentproject.ui.responsive.ScreenBreakpoint
+import com.example.personaldocumentproject.ui.responsive.screenSizeInfo
 import com.example.personaldocumentproject.ui.theme.*
 
 enum class DateFilter(val label: String) {
@@ -112,257 +114,260 @@ fun LibraryScreen(
         onClearSelection()
     }
 
-    // Delete Confirmation Dialog
-    if (showDeleteConfirmDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteConfirmDialog = false },
-            title = {
-                Text(
-                    text = "Delete Documents?",
-                    color = TextPrimary,
-                    fontWeight = FontWeight.Bold,
-                )
-            },
-            text = {
-                Text(
-                    text = "Are you sure you want to delete ${state.selectedIds.size} selected document(s)? This action cannot be undone.",
-                    color = TextMuted,
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp,
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onDeleteSelected()
-                        showDeleteConfirmDialog = false
-                    },
-                ) {
-                    Text("Delete", color = DeleteColor, fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteConfirmDialog = false }) {
-                    Text("Cancel", color = TextMuted)
-                }
-            },
-            containerColor = SurfaceRaised,
-            shape = RoundedCornerShape(16.dp),
-        )
-    }
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val info = screenSizeInfo()
+        val isWide = info.breakpoint != ScreenBreakpoint.COMPACT
+        val horizontalPadding = when (info.breakpoint) {
+            ScreenBreakpoint.COMPACT -> 20.dp
+            ScreenBreakpoint.MEDIUM -> 28.dp
+            ScreenBreakpoint.EXPANDED -> 32.dp
+        }
+        val titleSize = when (info.breakpoint) {
+            ScreenBreakpoint.COMPACT -> 20.sp
+            ScreenBreakpoint.MEDIUM -> 28.sp
+            ScreenBreakpoint.EXPANDED -> 32.sp
+        }
+        val gridMinSize = when (info.breakpoint) {
+            ScreenBreakpoint.COMPACT -> 160.dp
+            ScreenBreakpoint.MEDIUM -> 200.dp
+            ScreenBreakpoint.EXPANDED -> 220.dp
+        }
 
-    Scaffold(
-        modifier = Modifier.pointerInput(Unit) {
-            detectTapGestures(onTap = { focusManager.clearFocus() })
-        },
-        containerColor = AppBackground,
-        floatingActionButton = {
-            if (!state.isSelectionMode) {
-                FloatingActionButton(
-                    onClick = onCapture,
-                    containerColor = AppPrimary,
-                    contentColor = Color.White,
-                    shape = RoundedCornerShape(18.dp),
-                    modifier = Modifier.size(56.dp)
-                ) { Icon(Icons.Default.Add, "Add document") }
-            }
-        },
-    ) { insets ->
-        Column(Modifier.fillMaxSize().padding(insets)) {
-            if (state.isSelectionMode) {
-                // Selection Mode Header
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .background(SurfaceRaised)
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    IconButton(onClick = onClearSelection) {
-                        Icon(Icons.Default.Close, "Clear selection", tint = TextPrimary)
-                    }
-                    Spacer(Modifier.width(6.dp))
+        // Delete Confirmation Dialog
+        if (showDeleteConfirmDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteConfirmDialog = false },
+                title = {
                     Text(
-                        text = "${state.selectedIds.size} selected",
+                        text = "Delete Documents?",
                         color = TextPrimary,
-                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f),
                     )
-                    IconButton(onClick = { onSelectAll(visible.map { it.id }) }) {
-                        val allSelected = visible.isNotEmpty() && state.selectedIds.containsAll(visible.map { it.id })
-                        Icon(
-                            if (allSelected) Icons.Default.Deselect else Icons.Default.SelectAll,
-                            contentDescription = "Select all",
-                            tint = if (allSelected) AppPrimary else TextMuted,
-                        )
+                },
+                text = {
+                    Text(
+                        text = "Are you sure you want to delete ${state.selectedIds.size} selected document(s)? This action cannot be undone.",
+                        color = TextMuted,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            onDeleteSelected()
+                            showDeleteConfirmDialog = false
+                        },
+                    ) { Text("Delete", color = DeleteColor, fontWeight = FontWeight.Bold) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                        Text("Cancel", color = TextPrimary)
                     }
-                    IconButton(onClick = { showDeleteConfirmDialog = true }) {
-                        Icon(Icons.Default.Delete, "Delete selected", tint = DeleteColor)
-                    }
+                },
+                containerColor = SurfaceRaised,
+                shape = RoundedCornerShape(16.dp),
+            )
+        }
+
+        Scaffold(
+            modifier = Modifier.pointerInput(Unit) {
+                detectTapGestures(onTap = { focusManager.clearFocus() })
+            },
+            containerColor = AppBackground,
+            floatingActionButton = {
+                if (!state.isSelectionMode) {
+                    FloatingActionButton(
+                        onClick = onCapture,
+                        containerColor = AppPrimary,
+                        contentColor = Color.White,
+                        shape = RoundedCornerShape(18.dp),
+                        modifier = Modifier.size(56.dp)
+                    ) { Icon(Icons.Default.Add, "Add document") }
                 }
-            } else {
-                // Normal Header
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Text("PERSONAL", color = TextDim, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, letterSpacing = .7.sp)
-                        Text("Documents", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    }
-                    Box(
+            },
+        ) { insets ->
+            Column(Modifier.fillMaxSize().padding(insets)) {
+                if (state.isSelectionMode) {
+                    Row(
                         Modifier
-                            .size(38.dp)
-                            .background(SurfaceRaised, RoundedCornerShape(12.dp))
-                            .border(1.dp, AppBorder, RoundedCornerShape(12.dp))
-                            .clickable(onClick = onSettingClick),
-                        contentAlignment = Alignment.Center
+                            .fillMaxWidth()
+                            .background(SurfaceRaised)
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(Icons.Default.Settings, "Settings", tint = TextMuted)
-                    }
-                }
-
-                // Search Bar
-                AppTextField(
-                    value = state.query,
-                    onValueChange = onQueryChanged,
-                    singleLine = true,
-                    placeholder = "Search your documents...",
-                    leadingIcon = { Icon(Icons.Default.Search, null, tint = TextDim) },
-                    trailingIcon = if (state.query.isNotEmpty()) {
-                        { IconButton({ onQueryChanged("") }) { Icon(Icons.Default.Close, "Clear", tint = TextMuted) } }
-                    } else null,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                )
-
-                // 2 Filter Dropdown Buttons
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    // Button 1: Filter Category
-                    FilterDropdownButton(
-                        icon = Icons.Default.Category,
-                        label = selectedCategory?.name?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "All Categories",
-                        isActive = selectedCategory != null,
-                        modifier = Modifier.weight(1f),
-                        onClick = { categoryMenuOpen = true }
-                    ) {
-                        DropdownMenu(
-                            expanded = categoryMenuOpen,
-                            onDismissRequest = { categoryMenuOpen = false },
-                            modifier = Modifier.background(SurfaceRaised)
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("All Categories", color = if (selectedCategory == null) AppPrimary else TextPrimary, fontWeight = if (selectedCategory == null) FontWeight.Bold else FontWeight.Normal) },
-                                onClick = {
-                                    selectedCategory = null
-                                    categoryMenuOpen = false
-                                }
+                        IconButton(onClick = onClearSelection) {
+                            Icon(Icons.Default.Close, "Clear selection", tint = TextPrimary)
+                        }
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            text = "${state.selectedIds.size} selected",
+                            color = TextPrimary,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f),
+                        )
+                        IconButton(onClick = { onSelectAll(visible.map { it.id }) }) {
+                            val allSelected = visible.isNotEmpty() && state.selectedIds.containsAll(visible.map { it.id })
+                            Icon(
+                                if (allSelected) Icons.Default.Deselect else Icons.Default.SelectAll,
+                                contentDescription = "Select all",
+                                tint = if (allSelected) AppPrimary else TextMuted,
                             )
-                            DocumentCategory.entries.forEach { cat ->
-                                val isSelected = selectedCategory == cat
+                        }
+                        IconButton(onClick = { showDeleteConfirmDialog = true }) {
+                            Icon(Icons.Default.Delete, "Delete selected", tint = DeleteColor)
+                        }
+                    }
+                } else {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = horizontalPadding, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("PERSONAL", color = TextDim, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, letterSpacing = .7.sp)
+                            Text("Documents", color = TextPrimary, fontSize = titleSize, fontWeight = FontWeight.Bold)
+                        }
+                        Box(
+                            Modifier
+                                .size(38.dp)
+                                .background(SurfaceRaised, RoundedCornerShape(12.dp))
+                                .border(1.dp, AppBorder, RoundedCornerShape(12.dp))
+                                .clickable(onClick = onSettingClick),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.Settings, "Settings", tint = TextMuted)
+                        }
+                    }
+
+                    AppTextField(
+                        value = state.query,
+                        onValueChange = onQueryChanged,
+                        singleLine = true,
+                        placeholder = "Search your documents...",
+                        leadingIcon = { Icon(Icons.Default.Search, null, tint = TextDim) },
+                        trailingIcon = if (state.query.isNotEmpty()) {
+                            { IconButton({ onQueryChanged("") }) { Icon(Icons.Default.Close, "Clear", tint = TextMuted) } }
+                        } else null,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = horizontalPadding)
+                    )
+
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = horizontalPadding, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        FilterDropdownButton(
+                            icon = Icons.Default.Category,
+                            label = selectedCategory?.name?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "All Categories",
+                            isActive = selectedCategory != null,
+                            modifier = Modifier.weight(1f),
+                            onClick = { categoryMenuOpen = true }
+                        ) {
+                            DropdownMenu(
+                                expanded = categoryMenuOpen,
+                                onDismissRequest = { categoryMenuOpen = false },
+                                modifier = Modifier.background(SurfaceRaised)
+                            ) {
                                 DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            cat.name.lowercase().replaceFirstChar { it.uppercase() },
-                                            color = if (isSelected) categoryColor(cat) else TextPrimary,
-                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                        )
-                                    },
+                                    text = { Text("All Categories", color = if (selectedCategory == null) AppPrimary else TextPrimary, fontWeight = if (selectedCategory == null) FontWeight.Bold else FontWeight.Normal) },
                                     onClick = {
-                                        selectedCategory = cat
+                                        selectedCategory = null
                                         categoryMenuOpen = false
                                     }
                                 )
-                            }
-                        }
-                    }
-
-                    // Button 2: Filter Date
-                    FilterDropdownButton(
-                        icon = Icons.Default.DateRange,
-                        label = selectedDateFilter.label,
-                        isActive = selectedDateFilter != DateFilter.ALL,
-                        modifier = Modifier.weight(1f),
-                        onClick = { dateMenuOpen = true }
-                    ) {
-                        DropdownMenu(
-                            expanded = dateMenuOpen,
-                            onDismissRequest = { dateMenuOpen = false },
-                            modifier = Modifier.background(SurfaceRaised)
-                        ) {
-                            DateFilter.entries.forEach { df ->
-                                val isSelected = selectedDateFilter == df
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            df.label,
-                                            color = if (isSelected) AppPrimary else TextPrimary,
-                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                        )
-                                    },
-                                    onClick = {
-                                        selectedDateFilter = df
-                                        dateMenuOpen = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Error message if any
-            state.errorMessage?.let { error ->
-                Text(error, color = DeleteColor, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp))
-            }
-
-            // Results Grid or Empty state
-            if (visible.isEmpty()) {
-                Column(
-                    Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(Icons.Default.Search, null, tint = TextDim.copy(alpha = .4f), modifier = Modifier.size(48.dp))
-                    Spacer(Modifier.height(12.dp))
-                    Text("No documents found", color = TextDim, fontSize = 14.sp)
-                    Text("Try changing search or filters", color = TextDim, fontSize = 12.sp)
-                }
-            } else {
-                LazyVerticalGrid(
-                    GridCells.Fixed(2),
-                    state = gridState,
-                    contentPadding = PaddingValues(20.dp, 6.dp, 20.dp, 100.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(visible, key = { it.id }) { doc ->
-                        DocumentCard(
-                            document = doc,
-                            searchResult = state.searchResults[doc.id],
-                            isSelected = doc.id in state.selectedIds,
-                            isSelectionMode = state.isSelectionMode,
-                            onClick = {
-                                if (state.isSelectionMode) {
-                                    onToggleSelect(doc.id)
-                                } else {
-                                    onDocumentClick(doc.id)
+                                DocumentCategory.entries.forEach { cat ->
+                                    val isSelected = selectedCategory == cat
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                cat.name.lowercase().replaceFirstChar { it.uppercase() },
+                                                color = if (isSelected) categoryColor(cat) else TextPrimary,
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                            )
+                                        },
+                                        onClick = {
+                                            selectedCategory = cat
+                                            categoryMenuOpen = false
+                                        }
+                                    )
                                 }
-                            },
-                            onLongClick = {
-                                onToggleSelect(doc.id)
-                            },
-                        )
+                            }
+                        }
+
+                        FilterDropdownButton(
+                            icon = Icons.Default.DateRange,
+                            label = selectedDateFilter.label,
+                            isActive = selectedDateFilter != DateFilter.ALL,
+                            modifier = Modifier.weight(1f),
+                            onClick = { dateMenuOpen = true }
+                        ) {
+                            DropdownMenu(
+                                expanded = dateMenuOpen,
+                                onDismissRequest = { dateMenuOpen = false },
+                                modifier = Modifier.background(SurfaceRaised)
+                            ) {
+                                DateFilter.entries.forEach { df ->
+                                    val isSelected = selectedDateFilter == df
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                df.label,
+                                                color = if (isSelected) AppPrimary else TextPrimary,
+                                            )
+                                        },
+                                        onClick = {
+                                            selectedDateFilter = df
+                                            dateMenuOpen = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (visible.isEmpty()) {
+                    Column(
+                        Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(Icons.Default.Search, null, tint = TextDim.copy(alpha = .4f), modifier = Modifier.size(48.dp))
+                        Spacer(Modifier.height(12.dp))
+                        Text("No documents found", color = TextDim, fontSize = 14.sp)
+                        Text("Try changing search or filters", color = TextDim, fontSize = 12.sp)
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(minSize = gridMinSize),
+                        state = gridState,
+                        contentPadding = PaddingValues(start = horizontalPadding, top = 6.dp, end = horizontalPadding, bottom = 100.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(visible, key = { it.id }) { doc ->
+                            DocumentCard(
+                                document = doc,
+                                searchResult = state.searchResults[doc.id],
+                                isSelected = doc.id in state.selectedIds,
+                                isSelectionMode = state.isSelectionMode,
+                                onClick = {
+                                    if (state.isSelectionMode) {
+                                        onToggleSelect(doc.id)
+                                    } else {
+                                        onDocumentClick(doc.id)
+                                    }
+                                },
+                                onLongClick = { onToggleSelect(doc.id) },
+                            )
+                        }
                     }
                 }
             }

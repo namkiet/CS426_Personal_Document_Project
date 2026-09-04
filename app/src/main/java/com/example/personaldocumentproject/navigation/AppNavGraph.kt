@@ -81,7 +81,7 @@ fun AppNavGraph(container: AppContainer, userSetting: UserSetting = UserSetting(
         }
         is Routes.Review -> {
             val viewModel: ReviewViewModel = viewModel(
-                key = "review:${current.imageUri}",
+                key = "review:${current.imageUri}:${userSetting.disableApiMode}",
                 factory = container.getReviewViewModelFactory(userSetting),
             )
             ReviewRoute(

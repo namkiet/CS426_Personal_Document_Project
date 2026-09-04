@@ -19,7 +19,6 @@ object SettingsKeys {
     val IS_DARK_MODE = booleanPreferencesKey("is_dark_mode")
     val DISABLE_API_MODE = booleanPreferencesKey("disable_api_mode")
     val START_CAMERA_MODE = booleanPreferencesKey("start_camera_mode")
-    val IS_AUTO_CAPTURE = booleanPreferencesKey("is_auto_capture")
 }
 
 class SettingsLocalDataSource(private val dataStore: DataStore<Preferences>) {
@@ -29,7 +28,6 @@ class SettingsLocalDataSource(private val dataStore: DataStore<Preferences>) {
             isDarkMode = preferences[SettingsKeys.IS_DARK_MODE] ?: false,
             disableApiMode = preferences[SettingsKeys.DISABLE_API_MODE] ?: false,
             startCameraMode = preferences[SettingsKeys.START_CAMERA_MODE] ?: false,
-            isAutoCapture = preferences[SettingsKeys.IS_AUTO_CAPTURE] ?: true,
         )
     }
 
@@ -38,7 +36,6 @@ class SettingsLocalDataSource(private val dataStore: DataStore<Preferences>) {
             preferences[SettingsKeys.IS_DARK_MODE] = settings.isDarkMode
             preferences[SettingsKeys.DISABLE_API_MODE] = settings.disableApiMode
             preferences[SettingsKeys.START_CAMERA_MODE] = settings.startCameraMode
-            preferences[SettingsKeys.IS_AUTO_CAPTURE] = settings.isAutoCapture
         }
     }
 
