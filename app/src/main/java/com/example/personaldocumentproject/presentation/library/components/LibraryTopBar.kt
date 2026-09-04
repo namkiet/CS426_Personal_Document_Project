@@ -14,6 +14,7 @@ import com.example.personaldocumentproject.ui.imageVector.FluentuiSystemIconsSet
 @Composable
 fun LibraryTopBar(
     onSettingClick: () -> Unit,
+    onManageModelsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     TopAppBar(
@@ -25,6 +26,12 @@ fun LibraryTopBar(
                 Icon(
                     imageVector = FluentuiSystemIconsSettings,
                     contentDescription = "setting"
+                )
+            }
+            IconButton(onClick = onManageModelsClick) {
+                Icon(
+                    imageVector = FluentuiSystemIconsPerson,
+                    contentDescription = "models"
                 )
             }
         },

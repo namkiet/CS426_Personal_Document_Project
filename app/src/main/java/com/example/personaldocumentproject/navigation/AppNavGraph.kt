@@ -42,7 +42,7 @@ fun AppNavGraph(
                 navigationActions = LibraryNavigationActions(
                     onDocumentClick = { navigator.navigateTo(Routes.Detail(it)) },
                     onSettingClick = { navigator.navigateTo(Routes.Setting) },
-                    onManageModels = { navigator.navigateTo(Routes.ModelManager) },
+                    onManageModelsClick = { navigator.navigateTo(Routes.ModelManager) },
                 ),
             )
             CaptureRoute(
@@ -101,7 +101,7 @@ fun AppNavGraph(
                 viewModel(factory = container.modelManagerViewModelFactory)
             ModelManagerRoute(
                 viewModel = viewModel,
-                onBack = { route = Routes.Library },
+                onBack = { navigator.popBackStack() },
             )
         }
 

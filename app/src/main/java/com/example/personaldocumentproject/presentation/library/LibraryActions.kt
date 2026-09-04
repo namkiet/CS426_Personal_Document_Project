@@ -26,6 +26,7 @@ data class LibraryTagActions(
 data class LibraryNavigationActions(
     val onDocumentClick: (String) -> Unit,
     val onSettingClick: () -> Unit,
+    val onManageModelsClick: () -> Unit,
 )
 
 /**

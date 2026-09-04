@@ -7,12 +7,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,9 +32,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -61,8 +59,6 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.personaldocumentproject.presentation.review.components.DraftTitleField
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.example.personaldocumentproject.domain.model.DocumentCategory
 import com.example.personaldocumentproject.domain.model.DocumentDraft
 
@@ -155,7 +151,11 @@ fun ReviewScreen(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("Review document", color = Color.White, style = MaterialTheme.typography.titleLarge)
+                    Text(
+                        "Review document",
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleLarge
+                    )
 
                     if (state.isAnalyzing) CircularProgressIndicator()
 
@@ -208,7 +208,11 @@ fun ReviewScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Text("Review document", color = Color.White, style = MaterialTheme.typography.titleLarge)
+                Text(
+                    "Review document",
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleLarge
+                )
 
                 if (state.isAnalyzing) CircularProgressIndicator()
 
@@ -260,71 +264,95 @@ fun ReviewScreen(
                 state.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 OutlinedButton(onClick = onBack) { Text("Back", color = Color.White) }
             }
-    Scaffold(
-        containerColor = BackgroundColor,
-        topBar = {
-            TopAppBar(
-                title = { Text("Review", color = ContentColor, fontWeight = FontWeight.SemiBold) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = ContentColor)
-                    }
+            Scaffold(
+                containerColor = BackgroundColor,
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            Text(
+                                "Review",
+                                color = ContentColor,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        },
+                        navigationIcon = {
+                            IconButton(onClick = onBack) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back",
+                                    tint = ContentColor
+                                )
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundColor),
+                    )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundColor),
-            )
-        },
-    ) { padding ->
-        Column(
-            Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(padding)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            // ── Loading ───────────────────────────────────────────────────────
-            if (state.isAnalyzing) {
-                Box(
-                    Modifier.fillMaxWidth().height(160.dp),
-                    contentAlignment = Alignment.Center,
+            ) { padding ->
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(padding)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        CircularProgressIndicator(color = AccentColor)
-                        Text("Analysing document…", color = LabelColor, style = MaterialTheme.typography.bodyMedium)
+                    // ── Loading ───────────────────────────────────────────────────────
+                    if (state.isAnalyzing) {
+                        Box(
+                            Modifier.fillMaxWidth().height(160.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                CircularProgressIndicator(color = AccentColor)
+                                Text(
+                                    "Analysing document…",
+                                    color = LabelColor,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
                     }
+
+                    state.errorMessage?.let {
+                        FieldBox(label = "Error") {
+                            Text(
+                                it,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+
+                    state.draft?.warning?.let { warningText ->
+                        FieldBox(label = "Warning") {
+                            Text(
+                                warningText,
+                                color = Color(0xFFFFB300),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+
+                    state.draft?.let { draft ->
+                        DraftContent(
+                            draft = draft,
+                            isSaving = state.isSaving,
+                            onTitleChanged = onTitleChanged,
+                            onDescriptionChanged = onDescriptionChanged,
+                            onOcrTextChanged = onOcrTextChanged,
+                            onCategoryChanged = onCategoryChanged,
+                            onTagsChanged = onTagsChanged,
+                            onObjectsChanged = onObjectsChanged,
+                            onSave = onSave,
+                        )
+                    }
+
+                    Spacer(Modifier.height(16.dp))
                 }
             }
-
-            state.errorMessage?.let {
-                FieldBox(label = "Error") {
-                    Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-
-            state.draft?.warning?.let { warningText ->
-                FieldBox(label = "Warning") {
-                    Text(warningText, color = Color(0xFFFFB300), style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-
-            state.draft?.let { draft ->
-                DraftContent(
-                    draft                = draft,
-                    isSaving             = state.isSaving,
-                    onTitleChanged       = onTitleChanged,
-                    onDescriptionChanged = onDescriptionChanged,
-                    onOcrTextChanged     = onOcrTextChanged,
-                    onCategoryChanged    = onCategoryChanged,
-                    onTagsChanged        = onTagsChanged,
-                    onObjectsChanged     = onObjectsChanged,
-                    onSave               = onSave,
-                )
-            }
-
-            Spacer(Modifier.height(16.dp))
         }
     }
 }
@@ -425,7 +453,7 @@ private fun DraftContent(
 // ── Reusable field components ─────────────────────────────────────────────────
 
 @Composable
-private fun EditableTextField(
+fun EditableTextField(
     value: String,
     onValueChange: (String) -> Unit,
     singleLine: Boolean = false,

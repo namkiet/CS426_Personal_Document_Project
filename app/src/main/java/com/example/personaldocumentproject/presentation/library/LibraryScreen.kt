@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,26 +39,11 @@ fun LibraryScreen(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-fun LibraryRoute(viewModelLibrary: LibraryViewModel, userSetting: UserSetting,
-                 onSearch: () -> Unit, onDocumentClick: (String) -> Unit,
-                 onAccountClick: () -> Unit, onSettingClick: () -> Unit,
-                 onManageModels: () -> Unit = {}) {
-    val stateLibrary by viewModelLibrary.uiState.collectAsState()
-    LibraryScreen(stateLibrary, userSetting = userSetting, onSearch = onSearch,
-        onDocumentClick = onDocumentClick, onAccountClick = onAccountClick,
-        onSettingClick = onSettingClick, onManageModels = onManageModels)
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun LibraryScreen(stateLibrary: LibraryUiState, userSetting: UserSetting,
-                  onSearch: () -> Unit, onDocumentClick: (String) -> Unit,
-                  onAccountClick: () -> Unit, onSettingClick: () -> Unit,
-                  onManageModels: () -> Unit = {}) {
     Scaffold(
         topBar = {
             LibraryTopBar(
-                onSettingClick = actions.navigation.onSettingClick
+                onSettingClick = actions.navigation.onSettingClick,
+                onManageModelsClick = actions.navigation.onManageModelsClick,
             )
         },
         modifier = modifier

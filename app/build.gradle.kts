@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.material3)
     implementation(libs.coil.compose)
     implementation(libs.mlkit.text.recognition)
     implementation(libs.mlkit.image.labeling)
