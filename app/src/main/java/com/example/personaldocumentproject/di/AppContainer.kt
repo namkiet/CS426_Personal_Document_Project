@@ -95,7 +95,7 @@ class AppContainer(private val context: Context) {
 
     // ── ViewModel factories ───────────────────────────────────────────────────
 
-    val libraryViewModelFactory = factory { LibraryViewModel(observeDocuments, searchDocuments) }
+    val libraryViewModelFactory = factory { LibraryViewModel(observeDocuments, searchDocuments, deleteDocument) }
     val captureViewModelFactory = factory { CaptureViewModel() }
     val reviewViewModelFactory get() = factory { ReviewViewModel(analyzeDocument, saveDocument) }
     val detailViewModelFactory = factory { DetailViewModel(getDocument, deleteDocument) }

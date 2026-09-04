@@ -1,13 +1,19 @@
 package com.example.personaldocumentproject.presentation.library.components
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -67,11 +73,55 @@ fun DocumentArtwork(document: Document, modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun DocumentCard(document: Document, searchResult: SearchResult? = null, onClick: () -> Unit = {}) {
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(AppSurface)
-        .border(1.dp, AppBorder, RoundedCornerShape(14.dp)).clickable(onClick = onClick)) {
-        DocumentArtwork(document, Modifier.fillMaxWidth().aspectRatio(4f / 3f))
+fun DocumentCard(
+    document: Document,
+    searchResult: SearchResult? = null,
+    isSelected: Boolean = false,
+    isSelectionMode: Boolean = false,
+    onClick: () -> Unit = {},
+    onLongClick: () -> Unit = {},
+) {
+    val borderColor = if (isSelected) AppPrimary else if (isSelectionMode) AppBorder.copy(alpha = 0.6f) else AppBorder
+    val borderWidth = if (isSelected) 2.dp else 1.dp
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(if (isSelected) AppPrimary.copy(alpha = 0.08f) else AppSurface)
+            .border(borderWidth, borderColor, RoundedCornerShape(14.dp))
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+            )
+    ) {
+        Box(Modifier.fillMaxWidth().aspectRatio(4f / 3f)) {
+            DocumentArtwork(document, Modifier.fillMaxSize())
+
+            if (isSelectionMode) {
+                Box(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .size(24.dp)
+                        .align(Alignment.TopEnd)
+                        .clip(CircleShape)
+                        .background(if (isSelected) AppPrimary else Color.Black.copy(alpha = 0.45f))
+                        .border(1.5.dp, if (isSelected) AppPrimary else Color.White.copy(alpha = 0.8f), CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (isSelected) {
+                        Icon(
+                            Icons.Default.Check,
+                            contentDescription = "Selected",
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
+                }
+            }
+        }
         Column(Modifier.padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 12.dp)) {
             CategoryBadge(document.category)
             Spacer(Modifier.height(8.dp))

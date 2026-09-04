@@ -2,6 +2,7 @@ package com.example.personaldocumentproject.presentation.library
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.personaldocumentproject.domain.usecase.DeleteDocument
 import com.example.personaldocumentproject.domain.usecase.ObserveDocuments
 import com.example.personaldocumentproject.domain.usecase.SearchDocuments
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,13 +17,17 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class LibraryViewModel(
     observeDocuments: ObserveDocuments,
     searchDocuments: SearchDocuments,
+    private val deleteDocument: DeleteDocument? = null,
 ) : ViewModel() {
     private val query = MutableStateFlow("")
+    private val selectedIds = MutableStateFlow<Set<String>>(emptySet())
 
     private val searchState = query.debounce(250).flatMapLatest { currentQuery ->
         if (currentQuery.isBlank()) {
@@ -38,12 +43,39 @@ class LibraryViewModel(
         }
     }
 
-    val uiState = combine(query, searchState) { currentQuery, result ->
-        result.copy(query = currentQuery)
+    val uiState = combine(query, searchState, selectedIds) { currentQuery, result, selected ->
+        result.copy(query = currentQuery, selectedIds = selected)
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LibraryUiState())
 
     fun updateQuery(value: String) {
         query.value = value
+    }
+
+    fun toggleSelect(id: String) {
+        selectedIds.update { current ->
+            if (id in current) current - id else current + id
+        }
+    }
+
+    fun selectAll(visibleIds: List<String>) {
+        selectedIds.update { current ->
+            if (current.containsAll(visibleIds)) emptySet() else visibleIds.toSet()
+        }
+    }
+
+    fun clearSelection() {
+        selectedIds.value = emptySet()
+    }
+
+    fun deleteSelected() {
+        val idsToDelete = selectedIds.value
+        if (idsToDelete.isEmpty()) return
+        viewModelScope.launch {
+            idsToDelete.forEach { id ->
+                deleteDocument?.invoke(id)
+            }
+            clearSelection()
+        }
     }
 }
