@@ -59,11 +59,6 @@ fun DetailScreen(state: DetailUiState, onBack: () -> Unit, onDelete: () -> Unit)
                             Icon(Icons.Default.ArrowBack, null); Spacer(Modifier.width(6.dp))
                             Text(document.title, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.SemiBold)
                         }
-                        Spacer(Modifier.weight(1f))
-                        Box(Modifier.size(38.dp).background(SurfaceRaised, RoundedCornerShape(12.dp))
-                            .border(1.dp, AppBorder, RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
-                            Icon(Icons.Default.MoreVert, "More options", tint = TextMuted)
-                        }
                     }
                     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                         DocumentArtwork(document, Modifier.fillMaxWidth().aspectRatio(4f / 3f))

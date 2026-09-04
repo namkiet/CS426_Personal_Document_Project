@@ -7,7 +7,13 @@ import java.util.Locale
 
 object SimpleTitleGenerationService : TitleGenerationService {
     override suspend fun generateTitle(ocrText: String, detectedObjects: List<String>): String =
-        "New document - ${SimpleDateFormat(TIMESTAMP_PATTERN, Locale.getDefault()).format(Date())}"
+        ocrText.lineSequence()
+            .map(String::trim)
+            .firstOrNull(String::isNotBlank)
+            ?.take(MAX_TITLE_LENGTH)
+            ?: detectedObjects.firstOrNull()?.trim()?.takeIf(String::isNotBlank)
+            ?: "New document - ${SimpleDateFormat(TIMESTAMP_PATTERN, Locale.getDefault()).format(Date())}"
 
     private const val TIMESTAMP_PATTERN = "yyyy-MM-dd HH:mm:ss"
+    private const val MAX_TITLE_LENGTH = 80
 }

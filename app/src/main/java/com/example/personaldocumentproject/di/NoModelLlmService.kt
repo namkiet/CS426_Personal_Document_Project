@@ -2,20 +2,16 @@ package com.example.personaldocumentproject.di
 
 import com.example.personaldocumentproject.domain.service.LlmService
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flow
 
-/**
- * Stub [LlmService] used when no model file is present on disk.
- * Returns a clear error message so the UI can surface it rather than crashing.
- */
+/** Fails clearly when AI enhancement is requested before a model is installed. */
 internal object NoModelLlmService : LlmService {
     override val modelName: String = "No model"
 
-    private val message = flowOf(
-        "⚠️ No AI model is downloaded yet.\n" +
-        "Go to Library → Manage AI Models to download one."
-    )
+    private fun unavailable(): Flow<String> = flow {
+        error("No AI model is downloaded. Open Model Manager and download a model first.")
+    }
 
-    override fun generate(prompt: String): Flow<String> = message
-    override fun chat(prompt: String): Flow<String> = message
+    override fun generate(prompt: String): Flow<String> = unavailable()
+    override fun chat(prompt: String): Flow<String> = unavailable()
 }

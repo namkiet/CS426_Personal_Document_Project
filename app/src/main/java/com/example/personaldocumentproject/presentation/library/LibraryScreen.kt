@@ -39,23 +39,22 @@ fun LibraryRoute(
     onManageModels: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
-    LibraryScreen(state, onCapture, onDocumentClick, onManageModels)
+    LibraryScreen(state, viewModel::updateQuery, onCapture, onDocumentClick, onManageModels)
 }
 
 @Composable
 fun LibraryScreen(
     state: LibraryUiState,
+    onQueryChanged: (String) -> Unit,
     onCapture: () -> Unit,
     onDocumentClick: (String) -> Unit,
     onManageModels: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
-    var query by remember { mutableStateOf("") }
     var category by remember { mutableStateOf<DocumentCategory?>(null) }
-    val visible = remember(state.documents, query, category) { state.documents.filter { doc ->
-        (category == null || doc.category == category) && (query.isBlank() ||
-            listOf(doc.title, doc.description, doc.ocrText, doc.tags.joinToString(" ")).any { it.contains(query, true) })
-    } }
+    val visible = remember(state.documents, category) {
+        state.documents.filter { category == null || it.category == category }
+    }
     Scaffold(
         modifier = Modifier.pointerInput(Unit) {
             detectTapGestures(onTap = { focusManager.clearFocus() })
@@ -78,10 +77,10 @@ fun LibraryScreen(
                     Icon(Icons.Default.MoreVert, "More options", tint = TextMuted)
                 }
             }
-            AppTextField(value = query, onValueChange = { query = it }, singleLine = true,
+            AppTextField(value = state.query, onValueChange = onQueryChanged, singleLine = true,
                 placeholder = "Search your documents...",
                 leadingIcon = { Icon(Icons.Default.Search, null, tint = TextDim) },
-                trailingIcon = if (query.isNotEmpty()) {{ IconButton({ query = "" }) { Icon(Icons.Default.Close, "Clear", tint = TextMuted) } }} else null,
+                trailingIcon = if (state.query.isNotEmpty()) {{ IconButton({ onQueryChanged("") }) { Icon(Icons.Default.Close, "Clear", tint = TextMuted) } }} else null,
                 shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp))
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 14.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -90,9 +89,12 @@ fun LibraryScreen(
                     FilterPill(item.name.lowercase().replaceFirstChar { it.uppercase() }, item, category) { category = item }
                 }
             }
-            Text(if (query.isBlank()) "RECENT" else "${visible.size} RESULTS FOR \"$query\"", color = TextDim,
+            Text(if (state.query.isBlank()) "RECENT" else "${visible.size} RESULTS FOR \"${state.query}\"", color = TextDim,
                 fontSize = 12.sp, fontWeight = FontWeight.SemiBold, letterSpacing = .5.sp,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp))
+            state.errorMessage?.let { error ->
+                Text(error, color = DeleteColor, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 20.dp))
+            }
             if (visible.isEmpty()) Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center) {
                 Icon(Icons.Default.Search, null, tint = TextDim.copy(alpha = .4f), modifier = Modifier.size(48.dp))
@@ -121,6 +123,7 @@ private fun LibraryScreenPreview() {
     PersonalDocumentProjectTheme {
         LibraryScreen(
             state = LibraryUiState(MockDocuments.items),
+            onQueryChanged = {},
             onCapture = {},
             onDocumentClick = {},
             onManageModels = {},
@@ -134,6 +137,7 @@ private fun EmptyLibraryScreenPreview() {
     PersonalDocumentProjectTheme {
         LibraryScreen(
             state = LibraryUiState(),
+            onQueryChanged = {},
             onCapture = {},
             onDocumentClick = {},
             onManageModels = {},

@@ -6,7 +6,7 @@ import com.example.personaldocumentproject.domain.service.LlmService
 import com.example.personaldocumentproject.domain.usecase.AnalyzeDocument
 import com.example.personaldocumentproject.domain.usecase.SaveDocument
 import com.example.personaldocumentproject.domain.model.DocumentDraft
-import com.example.personaldocumentproject.domain.model.MockDocuments
+import com.example.personaldocumentproject.domain.model.DocumentCategory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -22,21 +22,6 @@ class ReviewViewModel(
 
     fun analyze(imageUri: String) {
         if (mutableState.value.draft?.imageUri == imageUri || mutableState.value.isAnalyzing) return
-        if (imageUri.startsWith("mock://")) {
-            val document = MockDocuments.items.first()
-            mutableState.value = ReviewUiState(
-                draft = DocumentDraft(
-                    imageUri = imageUri,
-                    title = document.title,
-                    description = document.description,
-                    ocrText = document.ocrText,
-                    category = document.category,
-                    tags = document.tags,
-                    detectedObjects = document.detectedObjects,
-                )
-            )
-            return
-        }
         viewModelScope.launch {
             mutableState.value = ReviewUiState(isAnalyzing = true)
             mutableState.value = runCatching { analyzeDocument(imageUri) }
@@ -47,10 +32,11 @@ class ReviewViewModel(
         }
     }
 
-    fun updateTitle(title: String) {
-        val draft = mutableState.value.draft ?: return
-        mutableState.value = mutableState.value.copy(draft = draft.copy(title = title))
-    }
+    fun updateTitle(title: String) = updateDraft { it.copy(title = title) }
+    fun updateDescription(description: String) = updateDraft { it.copy(description = description) }
+    fun updateCategory(category: DocumentCategory) = updateDraft { it.copy(category = category) }
+    fun updateTags(tags: List<String>) = updateDraft { it.copy(tags = tags) }
+    fun updateDetectedObjects(objects: List<String>) = updateDraft { it.copy(detectedObjects = objects) }
 
     fun save() {
         val draft = mutableState.value.draft ?: return
@@ -84,6 +70,7 @@ class ReviewViewModel(
         val prompt = buildEnhancePrompt(rawText)
 
         viewModelScope.launch {
+            var completedSuccessfully = false
             // Reset previous result and mark as loading
             mutableState.value = mutableState.value.copy(
                 isEnhancing = true,
@@ -96,14 +83,28 @@ class ReviewViewModel(
                         enhancedOcrText = (mutableState.value.enhancedOcrText ?: "") + tokenChunk,
                     )
                 }
+                completedSuccessfully = true
             } catch (e: Exception) {
                 mutableState.value = mutableState.value.copy(
                     errorMessage = "AI enhancement failed: ${e.message}",
                 )
             } finally {
-                mutableState.value = mutableState.value.copy(isEnhancing = false)
+                val state = mutableState.value
+                val enhancedText = state.enhancedOcrText?.trim().orEmpty()
+                mutableState.value = state.copy(
+                    draft = state.draft?.let { draft ->
+                        if (completedSuccessfully && enhancedText.isNotBlank()) draft.copy(ocrText = enhancedText) else draft
+                    },
+                    isEnhancing = false,
+                )
             }
         }
+    }
+
+    private fun updateDraft(transform: (DocumentDraft) -> DocumentDraft) {
+        val state = mutableState.value
+        val draft = state.draft ?: return
+        mutableState.value = state.copy(draft = transform(draft))
     }
 
     private fun buildEnhancePrompt(rawOcrText: String): String = """

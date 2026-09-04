@@ -2,4 +2,8 @@ package com.example.personaldocumentproject.presentation.library
 
 import com.example.personaldocumentproject.domain.model.Document
 
-data class LibraryUiState(val documents: List<Document> = emptyList())
+data class LibraryUiState(
+    val documents: List<Document> = emptyList(),
+    val query: String = "",
+    val errorMessage: String? = null,
+)

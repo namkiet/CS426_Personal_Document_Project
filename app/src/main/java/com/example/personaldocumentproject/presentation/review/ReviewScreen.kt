@@ -41,10 +41,12 @@ fun ReviewRoute(imageUri: String, viewModel: ReviewViewModel, onSaved: () -> Uni
     ReviewScreen(
         state = state,
         onTitleChanged = viewModel::updateTitle,
+        onDescriptionChanged = viewModel::updateDescription,
+        onCategoryChanged = viewModel::updateCategory,
+        onTagsChanged = viewModel::updateTags,
+        onDetectedObjectsChanged = viewModel::updateDetectedObjects,
         onEnhanceWithAi = viewModel::enhanceWithAi,
-        onSave = {
-            if (imageUri.startsWith("mock://")) onSaved() else viewModel.save()
-        },
+        onSave = viewModel::save,
         onBack = onBack,
     )
 }
@@ -53,22 +55,22 @@ fun ReviewRoute(imageUri: String, viewModel: ReviewViewModel, onSaved: () -> Uni
 fun ReviewScreen(
     state: ReviewUiState,
     onTitleChanged: (String) -> Unit,
+    onDescriptionChanged: (String) -> Unit,
+    onCategoryChanged: (DocumentCategory) -> Unit,
+    onTagsChanged: (List<String>) -> Unit,
+    onDetectedObjectsChanged: (List<String>) -> Unit,
     onEnhanceWithAi: () -> Unit,
     onSave: () -> Unit,
     onBack: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
     val draft = state.draft
-    var description by remember(draft?.imageUri) { mutableStateOf(draft?.description.orEmpty()) }
-    var category by remember(draft?.imageUri) { mutableStateOf(draft?.category ?: DocumentCategory.NOTE) }
-    var tags by remember(draft?.imageUri) { mutableStateOf(draft?.tags.orEmpty()) }
-    var objects by remember(draft?.imageUri) { mutableStateOf(draft?.detectedObjects.orEmpty()) }
     var newTag by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     var categoryMenu by remember { mutableStateOf(false) }
     val addTag = {
         if (newTag.isNotBlank()) {
-            tags = tags + newTag.trim()
+            onTagsChanged(draft?.tags.orEmpty() + newTag.trim())
             newTag = ""
         }
     }
@@ -99,7 +101,7 @@ fun ReviewScreen(
                 DocumentArtwork(draft.asDocument(), Modifier.fillMaxWidth().aspectRatio(4f / 3f))
                 Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
                     ReviewField("TITLE") { AppTextField(draft.title, onTitleChanged, singleLine = true) }
-                    ReviewField("DESCRIPTION") { AppTextField(description, { description = it }, minLines = 3) }
+                    ReviewField("DESCRIPTION") { AppTextField(draft.description, onDescriptionChanged, minLines = 3) }
                     ReviewField("CATEGORY") {
                         Box {
                             Row(
@@ -108,14 +110,14 @@ fun ReviewScreen(
                                     .clickable { categoryMenu = true }.padding(14.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Text(category.name.lowercase().replaceFirstChar { it.uppercase() }, color = TextPrimary, modifier = Modifier.weight(1f))
+                                Text(draft.category.name.lowercase().replaceFirstChar { it.uppercase() }, color = TextPrimary, modifier = Modifier.weight(1f))
                                 Icon(Icons.Default.KeyboardArrowDown, null, tint = TextDim)
                             }
                             DropdownMenu(categoryMenu, { categoryMenu = false }, containerColor = SurfaceRaised) {
-                                listOf(DocumentCategory.STUDY, DocumentCategory.RECEIPT, DocumentCategory.NOTE).forEach { item ->
+                                DocumentCategory.entries.forEach { item ->
                                     DropdownMenuItem(
                                         text = { Text(item.name.lowercase().replaceFirstChar { it.uppercase() }) },
-                                        onClick = { category = item; categoryMenu = false },
+                                        onClick = { onCategoryChanged(item); categoryMenu = false },
                                     )
                                 }
                             }
@@ -126,23 +128,25 @@ fun ReviewScreen(
                             Modifier.fillMaxWidth().background(SurfaceRaised, RoundedCornerShape(8.dp))
                                 .border(1.dp, AppBorder, RoundedCornerShape(8.dp)).padding(horizontal = 14.dp)
                         ) {
-                            objects.forEachIndexed { index, item ->
+                            draft.detectedObjects.forEachIndexed { index, item ->
                                 Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                                     Text(item, color = TextPrimary, fontSize = 14.sp, modifier = Modifier.weight(1f))
                                     Icon(
                                         Icons.Default.Close,
                                         "Remove",
                                         tint = TextDim,
-                                        modifier = Modifier.size(19.dp).clickable { objects = objects - item },
+                                        modifier = Modifier.size(19.dp).clickable {
+                                            onDetectedObjectsChanged(draft.detectedObjects - item)
+                                        },
                                     )
                                 }
-                                if (index < objects.lastIndex) HorizontalDivider(color = AppBorder)
+                                if (index < draft.detectedObjects.lastIndex) HorizontalDivider(color = AppBorder)
                             }
                         }
                     }
                     ReviewField("TAGS") {
                         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            tags.forEach { tag ->
+                            draft.tags.forEach { tag ->
                                 Row(
                                     Modifier.background(SurfaceRaised, RoundedCornerShape(100.dp))
                                         .border(1.dp, AppBorder, RoundedCornerShape(100.dp)).padding(9.dp, 6.dp),
@@ -150,7 +154,9 @@ fun ReviewScreen(
                                 ) {
                                     Text(tag, color = TextMuted, fontSize = 12.sp)
                                     Spacer(Modifier.width(5.dp))
-                                    Text("×", color = TextDim, modifier = Modifier.clickable { tags = tags - tag })
+                                    Text("×", color = TextDim, modifier = Modifier.clickable {
+                                        onTagsChanged(draft.tags - tag)
+                                    })
                                 }
                             }
                         }
@@ -216,23 +222,10 @@ fun ReviewScreen(
                         }
                         Text(if (state.isEnhancing) "Enhancing..." else "Enhance with AI")
                     }
-                    state.enhancedOcrText?.let { enhancedText ->
-                        ReviewField("AI ENHANCED TEXT") {
-                            Text(
-                                enhancedText.ifBlank { if (state.isEnhancing) "…" else "No output produced." },
-                                color = TextMuted,
-                                fontSize = 13.sp,
-                                lineHeight = 21.sp,
-                                fontFamily = FontFamily.Monospace,
-                                modifier = Modifier.fillMaxWidth().background(SurfaceRaised, RoundedCornerShape(8.dp))
-                                    .border(1.dp, AppBorder, RoundedCornerShape(8.dp)).padding(14.dp),
-                            )
-                        }
-                    }
                     state.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                     Button(
                         onClick = onSave,
-                        enabled = !state.isSaving,
+                        enabled = !state.isSaving && !state.isEnhancing,
                         modifier = Modifier.fillMaxWidth().height(54.dp),
                         shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = AppPrimary),
@@ -271,13 +264,13 @@ private fun mockState(saving: Boolean = false) = ReviewUiState(
 
 @Preview(name = "Review - Filled", showBackground = true, widthDp = 390, heightDp = 844)
 @Composable
-private fun ReviewPreview() = PersonalDocumentProjectTheme { ReviewScreen(mockState(), {}, {}, {}, {}) }
+private fun ReviewPreview() = PersonalDocumentProjectTheme { ReviewScreen(mockState(), {}, {}, {}, {}, {}, {}, {}, {}) }
 
 @Preview(name = "Review - Analyzing", showBackground = true, widthDp = 390, heightDp = 844)
 @Composable
 private fun AnalyzingPreview() =
-    PersonalDocumentProjectTheme { ReviewScreen(ReviewUiState(isAnalyzing = true), {}, {}, {}, {}) }
+    PersonalDocumentProjectTheme { ReviewScreen(ReviewUiState(isAnalyzing = true), {}, {}, {}, {}, {}, {}, {}, {}) }
 
 @Preview(name = "Review - Saving", showBackground = true, widthDp = 390, heightDp = 844)
 @Composable
-private fun SavingPreview() = PersonalDocumentProjectTheme { ReviewScreen(mockState(true), {}, {}, {}, {}) }
+private fun SavingPreview() = PersonalDocumentProjectTheme { ReviewScreen(mockState(true), {}, {}, {}, {}, {}, {}, {}, {}) }
