@@ -42,16 +42,20 @@ import com.example.personaldocumentproject.ui.imageVector.*
 @Composable
 fun LibraryRoute(viewModelLibrary: LibraryViewModel, userSetting: UserSetting,
                  onSearch: () -> Unit, onDocumentClick: (String) -> Unit,
-                 onAccountClick: () -> Unit, onSettingClick: () -> Unit) {
+                 onAccountClick: () -> Unit, onSettingClick: () -> Unit,
+                 onManageModels: () -> Unit = {}) {
     val stateLibrary by viewModelLibrary.uiState.collectAsState()
-    LibraryScreen(stateLibrary, userSetting = userSetting, onSearch = onSearch,onDocumentClick, onAccountClick, onSettingClick )
+    LibraryScreen(stateLibrary, userSetting = userSetting, onSearch = onSearch,
+        onDocumentClick = onDocumentClick, onAccountClick = onAccountClick,
+        onSettingClick = onSettingClick, onManageModels = onManageModels)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(stateLibrary: LibraryUiState, userSetting: UserSetting,
                   onSearch: () -> Unit, onDocumentClick: (String) -> Unit,
-                  onAccountClick: () -> Unit, onSettingClick: () -> Unit) {
+                  onAccountClick: () -> Unit, onSettingClick: () -> Unit,
+                  onManageModels: () -> Unit = {}) {
     Scaffold(
         topBar = { TopAppBar(
             title =  {Text(
@@ -59,6 +63,12 @@ fun LibraryScreen(stateLibrary: LibraryUiState, userSetting: UserSetting,
                 //style = MaterialTheme.typography.bodyLarge,
             )},
             actions = {
+                IconButton(onClick = onManageModels) {
+                    Icon(
+                        imageVector = Icons.Filled.Psychology,
+                        contentDescription = "AI models"
+                    )
+                }
                 IconButton(onClick = onAccountClick) {
                     Icon(
                         imageVector = FluentuiSystemIconsPerson,
