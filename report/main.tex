@@ -1,0 +1,201 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- Language & Encoding Packages ---
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[utf8]{inputenc}
+  \usepackage[english]{babel}
+  \usepackage[T1]{fontenc}
+\else
+  \usepackage{fontspec}
+  \usepackage[english]{babel}
+\fi
+
+% --- Page Layout & Geometry ---
+\usepackage[top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+
+% --- Graphics, Figures & Colors ---
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, positioning, fit, backgrounds, calc}
+
+% --- Math & Formulas ---
+\usepackage{amsmath,amssymb}
+
+% --- Code Listings & Highlighting ---
+\usepackage{listings}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.96,0.97,0.98}
+\definecolor{deepblue}{rgb}{0.0,0.2,0.6}
+
+\lstdefinestyle{codeStyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{deepblue}\bfseries,
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=6pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    frame=single,
+    rulecolor=\color{black!20}
+}
+\lstset{style=codeStyle}
+
+\lstdefinelanguage{json}{
+    basicstyle=\ttfamily\footnotesize,
+    numbers=left,
+    numberstyle=\tiny\color{codegray},
+    stepnumber=1,
+    numbersep=6pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{backcolour}
+}
+
+% --- Tables & Enums ---
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{enumitem}
+
+% --- Table of Contents & Numbering Depth ---
+\setcounter{tocdepth}{3}
+\setcounter{secnumdepth}{3}
+
+% --- Header & Footer ---
+\usepackage{fancyhdr}
+\setlength{\headheight}{15pt}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\small\textit{CS426 -- Mobile Application Development}}
+\lhead{\small\textit{Personal Document -- Project Report}}
+\cfoot{\thepage}
+
+% --- Hyperlinks ---
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=deepblue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={Final Project Report - Personal Document},
+    pdfpagemode=FullScreen,
+}
+
+% --- Title Information ---
+\title{
+    \vspace{-1.5cm}
+    \textbf{\Large VIETNAM NATIONAL UNIVERSITY HO CHI MINH CITY}\\
+    \textbf{\large UNIVERSITY OF SCIENCE -- FACULTY OF INFORMATION TECHNOLOGY}\\
+    \vspace{1cm}
+    \textbf{\LARGE FINAL PROJECT REPORT}\\[0.3cm]
+    \textbf{\Large COURSE: MOBILE APPLICATION DEVELOPMENT (CS426)}\\[0.6cm]
+    \textbf{\huge \color{deepblue} PERSONAL DOCUMENT}\\[0.3cm]
+    \textit{\large An Intelligent On-Device Personal Document Management and Search Application}\\
+    \textit{\normalsize Cloud-First Architecture with Resilient On-Device Local Fallback}
+    \vspace{0.8cm}
+}
+
+\author{
+    \textbf{Project Members:} \\
+    Trinh Nam Kiet -- \texttt{Student ID: CS426} \\
+    Doan Tuan Anh -- \texttt{Student ID: CS426} \\
+    \vspace{0.5cm} \\
+    \textbf{Instructors:} \\
+    Department of Software Engineering
+}
+
+\date{September 2026}
+
+\begin{document}
+
+\begin{titlepage}
+    \newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+    \centering
+
+    \textsc{\LARGE Vietnam National University Ho Chi Minh City}\\[0.4cm]
+    \textsc{\Large University of Science}\\[0.4cm]
+    \textsc{\large Faculty of Information Technology}\\[0.6cm]
+    \textsc{Department of Software Engineering}\\[0.6cm]
+
+    \HRule{}\\[0.5cm]
+    {\huge\bfseries PERSONAL DOCUMENT}\\[0.3cm]
+    {\large\bfseries Final Project Report}\\[0.4cm]
+    \HRule{}\\[0.8cm]
+
+    \textbf{\large Course: Mobile Application Development (CS426)}\\[1.0cm]
+
+    \begin{center}
+        \large
+        \textit{Project members:}\\[0.4cm]
+        Trinh Vo Nam Kiet -- 24125013\\
+        Doan Tuan Anh -- 24125002\\
+        Tran Khanh Nhan -- 24125037
+    \end{center}
+    \vspace{1.2cm}
+
+    \includegraphics[scale=0.18]{/home/namkiet/Desktop/hcmus/mobile/midterm/report/images/hcmus-logo.png}\vspace{1.2cm}
+
+    {\large September 2026}\\[1cm]
+    \vfill
+\end{titlepage}
+
+\newpage
+\setcounter{tocdepth}{3}
+\tableofcontents
+\newpage
+
+\subsection*{Work Division}
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l p{3.2cm} X}
+\toprule
+\textbf{Student ID} & \textbf{Full Name} & \textbf{Main Responsibilities} \\
+\midrule
+24125013 & Trinh Vo Nam Kiet & Implemented the offline document-processing workflow, including OCR-based metadata generation, object detection, and local embedding-based search. \\
+24125002 & Doan Tuan Anh & Implemented the online Gemini-based processing pipeline, OCR and detection integration, and AI-assisted document analysis. \\
+24125037 & Tran Khanh Nhan & Designed and implemented the application UI, including the main screens, navigation flow, and data models used across the app. \\
+\bottomrule
+\end{tabularx}
+\caption{Work division among project members}
+\end{table}
+
+\newpage
+
+% --- Section Content Inputs ---
+\input{content/section1_overview.tex}
+\input{content/section2_scope.tex}
+\input{content/section3_architecture.tex}
+\input{content/section4_technical.tex}
+\input{content/section5_further_work.tex}
+\input{content/section6_self_assessment.tex}
+
+\section{References}
+\begin{itemize}
+    \item Martin, Robert C. \textit{Clean Architecture: A Craftsman's Guide to Software Structure and Design}. Prentice Hall.
+    \item Google Developers. \textit{Guide to app architecture}. Android Developers Documentation. Available at: \url{https://developer.android.com/topic/architecture}
+    \item Google Developers. \textit{Jetpack Compose documentation}. Android Developers Documentation. Available at: \url{https://developer.android.com/jetpack/compose}
+    \item Android Developers. \textit{Android documentation}. Available at: \url{https://developer.android.com/}
+    \item Google ML Kit. \textit{ML Kit documentation}. Available at: \url{https://developers.google.com/ml-kit}
+    \item Google MediaPipe. \textit{MediaPipe documentation}. Available at: \url{https://developers.google.com/mediapipe}
+    \item Google AI for Developers. \textit{Gemini API documentation}. Available at: \url{https://ai.google.dev/gemini-api/docs}
+\end{itemize}
+
+\end{document}

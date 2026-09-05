@@ -1,0 +1,197 @@
+\section{Technical Implementation}
+
+\subsection{Functional Pipeline}
+The core operational lifecycle of the system operates in a continuous, end-to-end loop:
+\begin{center}
+\small
+\textbf{Input Image} $\longrightarrow$ \textbf{Extract Metadata} $\longrightarrow$ \textbf{Vector Embedding} $\longrightarrow$ \textbf{Retrieval and Ranking}
+\end{center}
+
+To balance high-accuracy reasoning with offline resilience, the application follows a \textbf{Cloud-First with On-Device Fallback} paradigm comprising two interchangeable execution branches:
+
+\subsubsection{Online Processing Pipeline}
+When the device possesses active internet connectivity and an authorized API key is configured (\texttt{BuildConfig.GEMINI\_API\_KEY}), the application prioritizes Google's \textbf{Gemini 3.1 Flash Lite} (or \textbf{Gemini 3.1 Flash}) multimodal model managed by \texttt{GeminiApiLlmService}.
+
+\paragraph{Execution Process:}
+The raw image is read from local storage into a byte array (\texttt{ByteArray}) and dispatched alongside a structured prompt instructing the model to act as an advanced document analysis assistant. 
+
+The LLM is constrained to respond with \textbf{ONLY a valid JSON object} (excluding code fences or narrative commentary) adhering strictly to the typed schema:
+
+\begin{lstlisting}[language=json, caption={Structured JSON response schema returned by Gemini Vision API}]
+{
+  "title": "Short human-readable title (max 60 characters)",
+  "description": "One concise sentence summarising what the document contains",
+  "ocrText": "Full plain text read or extracted from the document image",
+  "category": "NOTE | RECEIPT | IDENTITY | STUDY | WORK | OTHER",
+  "tags": [
+    "keyword1", 
+    "keyword2", 
+    "keyword3", 
+    "keyword4", 
+    "keyword5"
+  ],
+  "detectedObjects": [
+    "paper", 
+    "document", 
+    "receipt"
+  ]
+}
+\end{lstlisting}
+
+\paragraph{Core Advantages:}
+Leveraging large multimodal parameters, Gemini effortlessly deciphers skewed text orientations, low-contrast scans, handwritten notes, and irregular receipt layouts, yielding top-tier semantic categorization and contextual summaries.
+
+\subsubsection{Offline Processing Pipeline}
+Whenever network calls time out, encounter HTTP quota limits, or when the user explicitly toggles the \textbf{"Disable API"} setting in \texttt{SettingScreen}, the system seamlessly activates the local on-device ML suite:
+
+\begin{enumerate}[label=\textbf{4.1.\arabic*.}]
+    \item \textbf{OCR Service (Google ML Kit Text Recognition):}
+    \begin{itemize}
+        \item Implemented in \texttt{MlKitOcrService}.
+        \item Uses Google ML Kit's Latin script text recognizer operating entirely on-device (leveraging NNAPI/GPU hardware acceleration when available).
+        \item Extracts bounding text blocks, lines, and tokens from the bitmap without transmitting any data over the network.
+    \end{itemize}
+
+    \item \textbf{Image Labeling / Object Detection (Google ML Kit):}
+    \begin{itemize}
+        \item Implemented in \texttt{MlKitImageLabelingService}.
+        \item Utilizes \texttt{ImageLabeling.getClient} configured with a confidence threshold $\ge 0.70$.
+        \item Detects prominent physical items (e.g., \textit{Paper, Document, Receipt, Book, Invoice, Signature}) to support semantic classification.
+    \end{itemize}
+
+    \item \textbf{Description Generation Service (Google MediaPipe Tasks):}
+    \begin{itemize}
+        \item Implemented in \texttt{MediaPipeDescriptionGenerationService}.
+        \item Employs the \textbf{MediaPipe Text Summarizer} model executing locally in \texttt{TLDR} mode (\texttt{MAX\_NUM\_TOKENS = 64}).
+        \item The model binary is pre-bundled within \texttt{assets/} and copied to the internal application cache for instantaneous inference.
+        \item Formulates a coherent single-sentence overview summarizing the OCR text and detected objects.
+    \end{itemize}
+
+    \item \textbf{Tag Generation Service:}
+    \begin{itemize}
+        \item Implemented in \texttt{SimpleTagGenerationService}.
+        \item Fuses object labels with salient tokens filtered from the OCR transcription.
+        \item \textbf{Bilingual Stop-Word Filtering:} Strips irrelevant tokens across English (\textit{the, and, for, with...}) and Vietnamese (\textit{cua, va, la, cac, trong, cho, ngay, thang, nam...}).
+        \item \textbf{Domain Keyword Prioritization:} Elevates high-value domain tokens (\textit{receipt, invoice, passport, identity, license, certificate, contract, lecture, homework, report, project}).
+        \item Computes word occurrence frequencies to select the top 5 most representative tags.
+    \end{itemize}
+
+    \item \textbf{Category Classification Service (Semantic Category Matching):}
+    \begin{itemize}
+        \item Implemented in \texttt{EmbeddingCategoryClassificationService}.
+        \item Defines dense semantic anchor descriptions for standard target categories:
+        \begin{itemize}
+            \item \texttt{NOTE}: \textit{"personal note, memo or reminder"}
+            \item \texttt{RECEIPT}: \textit{"receipt, invoice, purchase, payment, subtotal, or total"}
+            \item \texttt{IDENTITY}: \textit{"passport, id card, driving license, official identification, certificate"}
+            \item \texttt{STUDY}: \textit{"lecture notes, textbook, exam, homework, course, syllabus, student"}
+            \item \texttt{WORK}: \textit{"meeting notes, project plan, contract, business report, presentation, employment"}
+        \end{itemize}
+        \item Embeds these category definitions into 512-dimensional vector space using \texttt{MediaPipeEmbeddingService}.
+        \item During document classification, the aggregated document text is vectorized and matched against category embeddings using \textbf{Cosine Similarity}. The category yielding the highest score above $0.30$ is assigned; otherwise, the document defaults to \texttt{OTHER}.
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Metadata Review}
+A crucial architectural decision is that \textbf{no raw AI output is saved directly into the database}:
+\begin{itemize}
+    \item Output fields from Gemini or the local ML pipeline are bundled into an immutable \textbf{\texttt{DocumentDraft}}.
+    \item The user is automatically transitioned to \textbf{\texttt{ReviewScreen}}, where they are presented with the captured image alongside the pre-filled metadata.
+    \item Users maintain complete authority to edit titles, adjust summaries, correct misclassified categories, or add/delete tags via interactive Material 3 chips.
+    \item \textbf{Final Persistence:} Only when the user taps \textbf{"Confirm/Save"} is the finalized metadata synthesized into a searchable document string:
+    $$\text{searchableText} = \text{title} + \text{description} + \text{ocrText} + \text{tags} + \text{detectedObjects}$$
+    This consolidated string is vectorized by \texttt{MediaPipeEmbeddingService} and stored alongside the document record in Room Database.
+\end{itemize}
+
+\subsubsection{Hybrid Search Engine}
+Search queries initiated on \texttt{LibraryScreen} utilize a hybrid ranking formulation balancing conceptual understanding with textual precision:
+\begin{equation}
+\text{TotalScore} = 0.8 \times \text{SemanticScore} + 0.2 \times \text{LexicalScore}
+\end{equation}
+
+\paragraph{1. Semantic Vector Score:}
+Determined by cosine similarity between the query embedding vector and the stored document vector, which measures the degree of alignment between their vector directions.
+
+\paragraph{2. Fuzzy Lexical Score:}
+To accommodate spelling typos (e.g., searching \textit{"databse"} instead of \textit{"database"}), the system computes a normalized similarity based on the Levenshtein edit distance:
+\begin{equation}
+\text{fuzzySimilarity}(a, b) = 
+\begin{cases}
+1.0 & \text{if } \max(|a|, |b|) = 0 \\
+1.0 - \dfrac{\text{levenshteinDistance}(a, b)}{\max(|a|, |b|)} & \text{otherwise}
+\end{cases}
+\end{equation}
+
+Given query terms $Q$ and document terms $D$, the aggregate lexical score represents the mean of each query term's maximum similarity:
+\begin{equation}
+\text{LexicalScore} = \frac{1}{|Q|} \sum_{q \in Q} \left( \max_{d \in D} \text{fuzzySimilarity}(q, d) \right)
+\end{equation}
+
+\paragraph{3. Dual-Threshold Result Filtering:}
+Documents are retained in the search results if and only if they satisfy the dual-threshold condition:
+\begin{equation}
+\text{Retain} \iff \left( \text{TotalScore} \ge 0.25 \right) \;\lor\; \left( \text{LexicalScore} \ge 0.50 \right)
+\end{equation}
+This rule ensures that strong semantic matches are surfaced even when exact wording differs, while near-identical lexical matches (e.g., misspelled keywords with LexicalScore $\ge 0.50$) are preserved even if semantic embeddings yield a modest score.
+
+\subsection{User Interface and Navigation}
+
+The application comprises five cohesive screens orchestrated through \texttt{AppNavGraph}:
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=2.2cm, auto]
+    % Screen nodes
+    \node[draw=deepblue, fill=blue!10, rounded corners, thick, minimum width=3.2cm, minimum height=1cm] (lib) {Library Screen};
+    \node[draw=deepblue, fill=green!10, rounded corners, thick, right of=lib, xshift=2.5cm, minimum width=3.2cm, minimum height=1cm] (cap) {Capture Screen};
+    \node[draw=deepblue, fill=orange!10, rounded corners, thick, below of=cap, yshift=-0.5cm, minimum width=3.2cm, minimum height=1cm] (rev) {Review Screen};
+    \node[draw=deepblue, fill=purple!10, rounded corners, thick, below of=lib, yshift=-0.5cm, minimum width=3.2cm, minimum height=1cm] (det) {Detail Screen};
+    \node[draw=deepblue, fill=gray!10, rounded corners, thick, left of=lib, xshift=-2.5cm, minimum width=3.2cm, minimum height=1cm] (set) {Setting Screen};
+
+    % Transitions
+    \draw[<->, thick, deepblue] (lib) -- node[above]{\footnotesize Search / View} (det);
+    \draw[->, thick, deepblue] (lib) -- node[above]{\footnotesize New Capture} (cap);
+    \draw[->, thick, deepblue] (cap) -- node[right]{\footnotesize Analysis Ready} (rev);
+    \draw[->, thick, deepblue] (rev) -- node[above]{\footnotesize Confirm \& Save} (lib);
+    \draw[<->, thick, deepblue] (lib) -- node[above]{\footnotesize Settings} (set);
+    \draw[->, thick, dashed] (det) -- node[below]{\footnotesize Delete Document} (lib);
+\end{tikzpicture}
+\caption{Screen navigation state graph (App Navigation Flow)}
+\label{fig:app_nav}
+\end{figure}
+
+\begin{enumerate}
+    \item \textbf{LibraryScreen (Primary Repository \& Live Search):}
+    \begin{itemize}
+        \item Entry point displaying stored items in a responsive grid/list view (\texttt{DocumentCard}).
+        \item Top search bar featuring a 100ms debounce delay for fluent, stutter-free real-time queries.
+        \item Displays category badges, topical tags, creation dates, and debug score badges (\texttt{sem: xxx}, \texttt{lex: xxx}).
+    \end{itemize}
+
+    \item \textbf{CaptureScreen (Document Capture \& Media Import):}
+    \begin{itemize}
+        \item Integrates CameraX for fast auto-focus and tap-to-focus document imaging.
+        \item Supports importing pre-existing document images from device storage via the Android Photo Picker.
+    \end{itemize}
+
+    \item \textbf{ReviewScreen (Human-in-the-Loop Inspection \& Editing):}
+    \begin{itemize}
+        \item Renders captured imagery alongside AI-inferred suggestions.
+        \item Displays a prominent fallback warning banner if the cloud API failed and on-device fallback was used.
+        \item Provides editable text fields and category selector chips for user adjustments before final database commit.
+    \end{itemize}
+
+    \item \textbf{DetailScreen (Full Document Inspection \& Zoom Viewer):}
+    \begin{itemize}
+        \item Presents complete metadata, transcribed OCR text blocks, and timestamps.
+        \item Integrates \texttt{FullScreenImageViewer} with two-finger pinch-to-zoom and pan gestures.
+        \item Facilitates document editing or deletion with atomic storage cleanup.
+    \end{itemize}
+
+    \item \textbf{SettingScreen (System Configuration \& Diagnostics):}
+    \begin{itemize}
+        \item \textbf{API Toggle:} Allows users to disable external API calls to enforce complete offline privacy.
+        \item \textbf{Camera Start Mode:} Option to launch directly into the capture view upon app startup.
+        \item \textbf{Factory Reset:} Wipes Room Database records, DataStore preferences, and internal image caches to restore initial state.
+    \end{itemize}
+\end{enumerate}

@@ -14,3 +14,17 @@
 .cxx
 local.properties
 CLAUDE.md
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+
+# Submission folder
+24125002_24125013_24125037/*

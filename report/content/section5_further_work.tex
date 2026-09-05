@@ -1,0 +1,48 @@
+\section{Future Work and Technical Roadmap}
+
+\subsection{On-Device Language Models}
+The current \textbf{Cloud-First with Local Fallback} architecture delivers a dependable balance between multimodal precision and continuous offline utility. Nevertheless, empirical usage highlights distinct limitations when operating strictly offline:
+\begin{itemize}
+    \item \textbf{Heuristic OCR Limitations on Unstructured Media:} Traditional mobile OCR engines (such as ML Kit Text Recognition) perform exceptionally well on high-contrast printed typography, but experience noticeable degradation when parsing freehand handwriting, skewed receipt margins, faint inks, or intricate tabular matrices.
+    \item \textbf{Cascading Metadata Degradation:} Because downstream tasks (title generation, text summarization, category classification, and keyword tagging) rely upon OCR tokens, noisy optical transcription directly degrades downstream accuracy, requiring heavier user manual corrections on the Review screen.
+\end{itemize}
+
+\paragraph{Prospective Architectural Evolution:}
+Directly embedding quantized \textbf{Small Language Models (SLMs)} within the local mobile runtime via Google MediaPipe GenAI SDK, ONNX Runtime Mobile, or ExecuTorch. Candidate models include:
+\begin{itemize}
+    \item \textbf{Google Gemma 2B / Gemma-4N:} Tailored for mobile acceleration on modern NPU and GPU architectures.
+    \item \textbf{Qwen 2.5 (0.5B / 1.5B):} Exceptionally compact footprint, rapid token generation, and robust multilingual comprehension (particularly English and Vietnamese).
+    \item \textbf{LLaMA-3.2 1B/3B Mobile:} 4-bit integer quantization (\textit{INT4}) enabling execution within mobile thermal envelopes.
+\end{itemize}
+
+\paragraph{Hardware Constraints and Pragmatic Trade-offs:}
+While on-device SLMs are technically compelling, mobile devices in entry-level segments with limited RAM ($\le 4\text{GB}$) risk severe Out-Of-Memory (OOM) exceptions and thermal throttling when allocating 1.5GB to 3GB model weights into working memory. Consequently, the optimal architectural roadmap involves a \textbf{Dynamic Hardware Capability Detector}: devices equipped with ample RAM ($\ge 8\text{GB}$) and dedicated NPUs will execute local SLMs, while standard devices will continue leveraging the lightweight ML Kit and MediaPipe Embedder pipeline.
+
+\subsection{Feature Extensions}
+
+\subsubsection{Repository Question Answering}
+A natural extension of semantic search is upgrading from ranked retrieval to full \textbf{Retrieval-Augmented Generation (RAG)} across the user's personal document collection (analogous to an on-device personal NotebookLM):
+\begin{itemize}
+    \item Enabling conversational queries over multi-document contexts:
+    \begin{itemize}
+        \item \textit{"What was my total expenditure on client lunches last month?"}
+        \item \textit{"When does my air conditioner warranty expire?"}
+        \item \textit{"Summarize all key formulas from the database indexing lecture."}
+    \end{itemize}
+    \item \textbf{Feasibility Assessment:} While technically promising, multi-document synthesis requires significant vector ranking pipelines and context management. In alignment with the project's primary objective---providing instantaneous retrieval for forgetful users with zero lag---this capability is prioritized for subsequent major revisions.
+\end{itemize}
+
+\subsubsection{Deadline and Follow-Up Notifications}
+Physical documents frequently involve critical temporal triggers:
+\begin{itemize}
+    \item Utility bills and credit card statements requiring settlement by a specific calendar date.
+    \item Saved articles, technical tutorials, or reading materials captured for weekend review.
+    \item Medical follow-up appointments, passport renewal milestones, or flight departures.
+\end{itemize}
+
+\paragraph{Proposed Implementation:}
+Integrating an on-device \textbf{Temporal Entity Extractor} within the metadata pipeline. Upon detecting payment deadlines or appointment dates:
+\begin{itemize}
+    \item The system automatically prompts the user to schedule a local reminder.
+    \item Leverages Android's \texttt{AlarmManager} and \texttt{WorkManager} to dispatch reliable local notifications (\textit{Local Push Notifications}) without needing external push notification servers.
+\end{itemize}

@@ -1,0 +1,29 @@
+\section{Self-Assessment}
+
+This project was completed as a collaborative Android application development effort aimed at solving a realistic personal-document management problem. Overall, we believe the system successfully meets the core requirements of the course: it is implemented as a native Android application with multiple connected screens, persistent local storage, and integrated AI/ML-based document-processing features. The app supports image capture or import, automatic OCR and metadata extraction, classification, search, and review before persistence.
+
+\paragraph{What we completed successfully:}
+\begin{itemize}
+    \item The app provides a dedicated personal document library separated from the system gallery, allowing safe and organized storage of scanned or captured documents.
+    \item The pipeline for document analysis works in both online and offline modes. The online mode leverages Gemini for richer multimodal analysis, while the offline mode relies on local ML Kit and MediaPipe components to ensure functional availability without internet access.
+    \item The application includes a hybrid search system that combines semantic embedding similarity with fuzzy lexical matching, improving recall when the user remembers only approximate phrases or misspelled keywords.
+    \item The UI was designed to support a clear user flow from capture, to review, to storage, and then to search or detail inspection.
+    \item The project follows a clean separation between presentation, domain logic, and data infrastructure, which makes the codebase more maintainable and easier to extend.
+\end{itemize}
+
+\paragraph{What we improved and learned:}
+\begin{itemize}
+    \item We strengthened our understanding of Android architecture patterns, especially MVVM, Flow-based state handling, Room persistence, and dependency injection through a custom container.
+    \item We learned how to integrate AI/ML capabilities into mobile workflows while balancing accuracy, efficiency, and privacy requirements.
+    \item We improved our ability to design an app around real user pain points, focusing not only on visual interface quality but also on practical retrieval and organization workflows.
+\end{itemize}
+
+\paragraph{Current limitations:}
+\begin{itemize}
+    \item The system is designed as a single-user personal repository rather than a collaborative or multi-device platform.
+    \item In fully offline conditions, document accuracy can still depend on OCR quality and local model limitations, especially for handwritten or highly distorted content.
+    \item The system currently focuses on local document management and retrieval rather than full multi-document reasoning or advanced RAG-style question answering.
+\end{itemize}
+
+\paragraph{Overall assessment:}
+We consider the project to be a successful capstone implementation for the course. It demonstrates both technical depth and practical value, combining Android development, local persistence, AI/ML processing, and user-centered design in a working application. The project not only meets the course's functional expectations but also provides a solid foundation for future extensions such as richer document understanding, reminders, and expanded personal knowledge retrieval.

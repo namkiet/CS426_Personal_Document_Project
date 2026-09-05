@@ -1,0 +1,77 @@
+\section{Project Scope}
+
+\subsection{Target Users}
+The application is specifically engineered for several distinct user demographics:
+\begin{enumerate}
+    \item \textbf{Students, Researchers, and Educators:}
+    \begin{itemize}
+        \item Frequently capture lecture slides, whiteboard solutions, textbook diagrams, academic papers, and homework sheets.
+        \item Require systematic categorization under the \textit{STUDY} domain and rapid retrieval of formulas, definitions, or exam topics during revision.
+    \end{itemize}
+    \item \textbf{Office Workers, Freelancers, and Small Business Owners:}
+    \begin{itemize}
+        \item Need to capture, track, and aggregate commercial receipts, meal vouchers, travel tickets, and invoices for monthly financial accounting and expense claims (\textit{RECEIPT}).
+        \item Organize project plans, meeting agendas, physical business cards, and signed contracts under the \textit{WORK} category.
+    \end{itemize}
+    \item \textbf{Everyday Individuals and Household Organizers:}
+    \begin{itemize}
+        \item Maintain crucial personal identification credentials such as National IDs, Passports, Driver's Licenses, and Medical Insurance Cards (\textit{IDENTITY}).
+        \item Individuals prone to forgetfulness who benefit from an intelligent search engine that understands conceptual context rather than requiring exact keyword memory.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Target Platform}
+\begin{itemize}
+    \item \textbf{Operating System:} Native Android OS, with full backward compatibility spanning from \textbf{Android 7.0 (API Level 24 -- Nougat)} up to the latest releases (\textbf{Android 14 and 15}).
+    \item \textbf{Hardware Requirements:} Designed to execute efficiently on mid-range and budget Android smartphones (requiring a minimum of 3GB to 4GB of RAM and a standard autofocus rear camera module for clear optical capture).
+    \item \textbf{Operating Environment:} Built to perform seamlessly in dual operating conditions: high-speed network connectivity (leveraging cloud APIs) and complete offline autonomy (zero cellular signal or Wi-Fi).
+\end{itemize}
+
+\subsection{Project Goals}
+The core engineering objectives are as follows:
+\begin{itemize}
+    \item \textbf{Strict On-Device Privacy and Centralized Storage:} Images and metadata are securely quarantined within the application's private sandbox storage and local Room Database, guaranteeing zero unwanted leakage into the public Android media gallery.
+    \item \textbf{Automated Metadata Extraction:} Eradicate manual data entry friction by automatically transcribing textual contents (OCR), generating titles, composing descriptive summaries, inferring categories, and recommending topical tags using Machine Learning.
+    \item \textbf{Intelligent Hybrid Search Engine:} Construct a resilient search pipeline integrating dense semantic vector embeddings (MediaPipe) with typo-tolerant fuzzy lexical matching (Levenshtein distance).
+    \item \textbf{Cloud-First Architecture with Graceful Local Fallback:} Capitalize on state-of-the-art Multimodal LLMs (Google Gemini Vision API) when online, while ensuring continuous 100\% operational readiness through local on-device ML models (ML Kit, MediaPipe) whenever network connectivity degrades or fails.
+    \item \textbf{Human-in-the-Loop User Experience:} Empower users to inspect, refine, or override AI suggestions on an interactive Review screen prior to permanent storage.
+\end{itemize}
+
+\subsection{Non-goals (Out of Scope)}
+To maintain a sharply defined scope, safeguard user privacy, and deliver optimal on-device performance within the academic timeline, the following features are intentionally classified as non-goals:
+\begin{itemize}
+    \item \textbf{No Multi-Device Cloud Synchronization:} The system does not maintain an external remote server backend for syncing images across different user devices. All data remains exclusively on the client device.
+    \item \textbf{No Account Creation or User Authentication:} Adhering to a friction-free philosophy, the app requires no sign-up, login credentials, or email verification; users open and utilize the application immediately.
+    \item \textbf{No Collaborative or Shared Access:} The app is purpose-built for single-user personal document management, excluding multi-tenant sharing, document permissions, or live collaborative annotations.
+\end{itemize}
+
+\subsection{Setup and Installation}
+The application is designed for straightforward setup on a standard Android development machine. The following steps are required for successful local building and execution:
+
+\begin{enumerate}
+    \item \textbf{Install prerequisites:} Download and install Android Studio, the latest Android SDK, and the Android Build Tools recommended by the project. Ensure that the Java Development Kit (JDK) is configured correctly and that the Android Gradle Plugin can sync successfully.
+    \item \textbf{Clone the project:} Obtain the source code from the repository and open the root folder in Android Studio.
+    \item \textbf{Create \texttt{local.properties}:} In the project root, create a file named \texttt{local.properties} containing the path to the Android SDK. If the application is configured to use the Gemini Vision API, the file may also include the API key as follows:
+
+    \begin{lstlisting}
+    sdk.dir=C\:/Users/<YourUser>/AppData/Local/Android/Sdk
+    GEMINI_API_KEY=your_gemini_api_key_here
+    \end{lstlisting}
+
+    \item \textbf{Synchronize Gradle:} Let Android Studio finish dependency resolution and Gradle sync. If a dependency or SDK package is missing, allow the IDE to install the required components.
+    \item \textbf{Run the app:} Connect an Android device via USB or start an emulator, then click \texttt{Run > Run 'app'} in Android Studio. The application will build the debug variant and launch it on the selected device.
+    \item \textbf{Command-line build:} The project can also be built from a terminal using the Gradle wrapper:
+
+    \begin{lstlisting}
+    ./gradlew assembleDebug
+    \end{lstlisting}
+
+    On Windows, use:
+
+    \begin{lstlisting}
+    .\gradlew.bat assembleDebug
+    \end{lstlisting}
+
+    \item \textbf{Offline fallback behavior:} If the \texttt{GEMINI\_API\_KEY} variable is absent or the network call fails, the application automatically falls back to the on-device ML pipeline using ML Kit and MediaPipe. This ensures the app remains functional even when external connectivity is unavailable.
+\end{enumerate}
+

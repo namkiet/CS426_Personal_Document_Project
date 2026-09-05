@@ -1,0 +1,42 @@
+\section{Project Overview}
+
+\subsection{Course Context and Application}
+The \textbf{Personal Document} project is developed as the capstone final project for the course \textbf{Mobile Application Development (CS426)} at the University of Science, Vietnam National University Ho Chi Minh City (HCMUS).
+
+\textbf{Personal Document} is a native Android application (supporting Android 7.0, API Level 24 and higher, built entirely with Kotlin, Jetpack Compose, Material Design 3, Room, MediaPipe, ML Kit, and Coroutines/Flow). The application functions as an intelligent personal digital repository, empowering users to digitize, automatically analyze, structure, and search through photo-captured documents, receipts, study notes, and personal credentials.
+
+\subsection{Problem Statement and User Pain Points}
+In our fast-paced daily study and professional lives, the smartphone camera has naturally evolved into our primary instantaneous memory capture tool:
+\begin{itemize}
+    \item \textbf{Students} snap photos of lecture slides, whiteboard derivations, textbook excerpts, and handwritten peer study notes.
+    \item \textbf{Working professionals and freelancers} photograph dining receipts, fuel bills, travel invoices for expense reimbursement, client contracts, and business cards.
+    \item \textbf{Everyday individuals} capture citizen IDs, health insurance cards, medical prescriptions, home appliance warranties, and utility meter readings.
+\end{itemize}
+
+\paragraph{The Everyday User Dilemma:}
+Imagine standing at a government administrative office or facing the monthly company expense audit deadline. You distinctly recall photographing a business lunch receipt or an insurance policy card three weeks ago. You open your default system Gallery app. Immediately, you are confronted with a disorganized labyrinth of thousands of photos: holiday snapshots, food photos, selfies, downloaded memes, social media screenshots, and family videos.
+
+The filenames offer no assistance, represented merely by arbitrary computer-generated timestamps such as \texttt{IMG\_20260905\_143022.jpg}. You find yourself scrolling endlessly, squinting through hundreds of tiny thumbnails, desperate to locate that single piece of paper. This process easily squanders 10 to 15 minutes of frustration, and in many instances, users give up entirely, forfeiting financial reimbursement or missing critical deadlines.
+
+\paragraph{Core Limitations of Existing Solutions:}
+\begin{enumerate}
+    \item \textbf{Visual Pollution and Document Fragmentation:} Critical documents are dumped alongside casual photos in the device gallery, lacking any dedicated workspace.
+    \item \textbf{Primitive Search Capabilities:} Traditional mobile galleries index media solely by timestamp or rough GPS location. When a user remembers the conceptual contents (e.g., \textit{"Phuc Long coffee invoice"} or \textit{"B-Tree database index slide"}), system galleries remain entirely helpless.
+    \item \textbf{Heavy Manual Data Entry Friction:} Conventional scanning and note-taking apps require users to manually type titles, select categories, and compose tags. This tedious overhead causes cognitive friction, discouraging consistent organizational habits.
+    \item \textbf{Privacy Concerns and Network Dependence:} Cloud-exclusive document scanners upload sensitive personal and financial credentials to third-party servers, posing serious data privacy risks and rendering the application useless during cellular dead zones or offline travel.
+\end{enumerate}
+
+\subsection{Proposed Solution}
+\textbf{Personal Document} directly addresses these challenges by merging an adaptive \textbf{Cloud-First} architecture with a dependable \textbf{Offline On-Device Machine Learning} pipeline:
+\begin{itemize}
+    \item \textbf{Isolated, Private Repository:} Scanned and imported documents are organized in an app-private library, completely segregated from everyday media in the Android system gallery.
+    \item \textbf{Automated Metadata Generation Pipeline:} The moment an image is captured or selected, the system autonomously:
+    \begin{itemize}
+        \item Transcribes all text via optical character recognition (OCR).
+        \item Identifies visible real-world objects through image labeling.
+        \item Generates a concise title, a single-sentence descriptive summary, predicts the appropriate category (\textit{NOTE, RECEIPT, IDENTITY, STUDY, WORK, OTHER}), and suggests up to 5 topical tags.
+    \end{itemize}
+    \item \textbf{Human-in-the-Loop Verification:} All AI-generated fields are treated strictly as suggestions encapsulated within a \texttt{DocumentDraft}. Users inspect and can freely modify any field on an interactive Review screen before confirming persistence.
+    \item \textbf{Fuzzy Hybrid Search Engine:} The application combines semantic vector similarity (cosine similarity over 512-dimensional embeddings) with typo-tolerant lexical matching (Levenshtein distance). Users can locate documents via conceptual queries or misspelled keywords effortlessly.
+    \item \textbf{Cloud-First with Resilient Local Fallback:} The application defaults to Google's Gemini Vision API when online for maximum multimodal reasoning, but gracefully falls back to local Google ML Kit and MediaPipe on-device models when offline or if disabled by user settings.
+\end{itemize}
