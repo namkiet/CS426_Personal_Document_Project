@@ -140,21 +140,22 @@ The application comprises five cohesive screens orchestrated through \texttt{App
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[node distance=2.2cm, auto]
+\begin{tikzpicture}[node distance=2.5cm, auto]
     % Screen nodes
     \node[draw=deepblue, fill=blue!10, rounded corners, thick, minimum width=3.2cm, minimum height=1cm] (lib) {Library Screen};
-    \node[draw=deepblue, fill=green!10, rounded corners, thick, right of=lib, xshift=2.5cm, minimum width=3.2cm, minimum height=1cm] (cap) {Capture Screen};
-    \node[draw=deepblue, fill=orange!10, rounded corners, thick, below of=cap, yshift=-0.5cm, minimum width=3.2cm, minimum height=1cm] (rev) {Review Screen};
-    \node[draw=deepblue, fill=purple!10, rounded corners, thick, below of=lib, yshift=-0.5cm, minimum width=3.2cm, minimum height=1cm] (det) {Detail Screen};
-    \node[draw=deepblue, fill=gray!10, rounded corners, thick, left of=lib, xshift=-2.5cm, minimum width=3.2cm, minimum height=1cm] (set) {Setting Screen};
+    \node[draw=deepblue, fill=green!10, rounded corners, thick, right of=lib, xshift=3.5cm, minimum width=3.2cm, minimum height=1cm] (cap) {Capture Screen};
+    \node[draw=deepblue, fill=orange!10, rounded corners, thick, below of=cap, yshift=-1.5cm, minimum width=3.2cm, minimum height=1cm] (rev) {Review Screen};
+    \node[draw=deepblue, fill=purple!10, rounded corners, thick, below of=lib, yshift=-1.5cm, minimum width=3.2cm, minimum height=1cm] (det) {Detail Screen};
+    \node[draw=deepblue, fill=gray!10, rounded corners, thick, left of=lib, xshift=-3.5cm, minimum width=3.2cm, minimum height=1cm] (set) {Setting Screen};
 
     % Transitions
-    \draw[<->, thick, deepblue] (lib) -- node[above]{\footnotesize Search / View} (det);
-    \draw[->, thick, deepblue] (lib) -- node[above]{\footnotesize New Capture} (cap);
+    \draw[<->, thick, deepblue] (lib) -- node[right]{\footnotesize Search / View} (det);
+    \draw[->, thick, deepblue] (lib) to[bend left=10] node[above]{\footnotesize New Capture} (cap);
+    \draw[->, thick, deepblue] (cap) to[bend left=10] node[below]{\footnotesize Back} (lib);
     \draw[->, thick, deepblue] (cap) -- node[right]{\footnotesize Analysis Ready} (rev);
-    \draw[->, thick, deepblue] (rev) -- node[above]{\footnotesize Confirm \& Save} (lib);
+    \draw[->, thick, deepblue] (rev) -- node[sloped, above, pos=0.25]{\footnotesize Confirm \& Save} (lib);
     \draw[<->, thick, deepblue] (lib) -- node[above]{\footnotesize Settings} (set);
-    \draw[->, thick, dashed] (det) -- node[below]{\footnotesize Delete Document} (lib);
+    \draw[->, thick, dashed] (det) to[bend left=40] node[left]{\footnotesize Delete Document} (lib);
 \end{tikzpicture}
 \caption{Screen navigation state graph (App Navigation Flow)}
 \label{fig:app_nav}
