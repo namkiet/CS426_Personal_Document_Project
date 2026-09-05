@@ -32,6 +32,7 @@ import com.example.personaldocumentproject.domain.usecase.ObserveDocuments
 import com.example.personaldocumentproject.domain.usecase.SaveDocument
 import com.example.personaldocumentproject.domain.usecase.ResetApplicationData
 import com.example.personaldocumentproject.domain.usecase.SearchDocuments
+import com.example.personaldocumentproject.domain.usecase.UpdateDocument
 import com.example.personaldocumentproject.presentation.capture.CaptureViewModel
 import com.example.personaldocumentproject.presentation.detail.DetailViewModel
 import com.example.personaldocumentproject.presentation.library.LibraryViewModel
@@ -96,6 +97,7 @@ class AppContainer(private val context: Context) {
     val analyzeDocument get() = getAnalyzeDocument()
 
     val saveDocument = SaveDocument(repository, imageStorageService, embeddingService)
+    val updateDocument = UpdateDocument(repository, embeddingService)
     val searchDocuments = SearchDocuments(repository, embeddingService)
     val resetApplicationData = ResetApplicationData(repository, imageStorageService, settingsRepository)
 
@@ -107,7 +109,7 @@ class AppContainer(private val context: Context) {
         ReviewViewModel(getAnalyzeDocument(userSetting.disableApiMode), saveDocument)
     }
     val reviewViewModelFactory get() = getReviewViewModelFactory()
-    val detailViewModelFactory = factory { DetailViewModel(getDocument, deleteDocument) }
+    val detailViewModelFactory = factory { DetailViewModel(getDocument, deleteDocument, updateDocument) }
     val mainViewModelFactory = factory { MainViewModel(settingsRepository) }
     val settingViewModelFactory = factory {
         SettingViewModel(

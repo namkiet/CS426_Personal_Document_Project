@@ -7,5 +7,10 @@ data class DetailUiState(
     val isLoading: Boolean = true,
     val isDeleting: Boolean = false,
     val isDeleted: Boolean = false,
+    val isEditing: Boolean = false,
+    val isSaving: Boolean = false,
+    val editTitle: String = "",
+    val editDescription: String = "",
+    val editTags: String = "",
     val errorMessage: String? = null
 )

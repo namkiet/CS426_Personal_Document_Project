@@ -30,6 +30,7 @@ import com.example.personaldocumentproject.domain.model.MockDocuments
 import com.example.personaldocumentproject.presentation.common.FullScreenImageViewer
 import com.example.personaldocumentproject.presentation.library.components.CategoryBadge
 import com.example.personaldocumentproject.presentation.library.components.DocumentArtwork
+import com.example.personaldocumentproject.ui.components.AppTextField
 import com.example.personaldocumentproject.ui.responsive.ScreenBreakpoint
 import com.example.personaldocumentproject.ui.responsive.screenSizeInfo
 import com.example.personaldocumentproject.ui.theme.*
@@ -42,12 +43,32 @@ fun DetailRoute(documentId: String, viewModel: DetailViewModel, onBack: () -> Un
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(documentId) { viewModel.loadDocument(documentId) }
     LaunchedEffect(state.isDeleted) { if (state.isDeleted) onBack() }
-    DetailScreen(state, onBack, viewModel::delete)
+    DetailScreen(
+        state = state,
+        onBack = onBack,
+        onDelete = viewModel::delete,
+        onStartEdit = viewModel::startEditing,
+        onCancelEdit = viewModel::cancelEditing,
+        onSaveEdit = viewModel::saveEdit,
+        onTitleChange = viewModel::onTitleChange,
+        onDescriptionChange = viewModel::onDescriptionChange,
+        onTagsChange = viewModel::onTagsChange,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailScreen(state: DetailUiState, onBack: () -> Unit, onDelete: () -> Unit) {
+fun DetailScreen(
+    state: DetailUiState,
+    onBack: () -> Unit,
+    onDelete: () -> Unit,
+    onStartEdit: () -> Unit = {},
+    onCancelEdit: () -> Unit = {},
+    onSaveEdit: () -> Unit = {},
+    onTitleChange: (String) -> Unit = {},
+    onDescriptionChange: (String) -> Unit = {},
+    onTagsChange: (String) -> Unit = {},
+) {
     var ocrExpanded by rememberSaveable { mutableStateOf(false) }
     var detectedExpanded by rememberSaveable { mutableStateOf(false) }
     var showDeleteConfirmation by rememberSaveable { mutableStateOf(false) }
@@ -73,14 +94,10 @@ fun DetailScreen(state: DetailUiState, onBack: () -> Unit, onDelete: () -> Unit)
                         onDelete()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = DeleteColor),
-                ) {
-                    Text("Delete", color = Color.White)
-                }
+                ) { Text("Delete") }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteConfirmation = false }) {
-                    Text("Cancel", color = TextDim)
-                }
+                TextButton(onClick = { showDeleteConfirmation = false }) { Text("Cancel") }
             },
             containerColor = SurfaceRaised,
             shape = RoundedCornerShape(14.dp),
@@ -135,7 +152,17 @@ fun DetailScreen(state: DetailUiState, onBack: () -> Unit, onDelete: () -> Unit)
                                 DocumentArtwork(document, Modifier.fillMaxSize())
                             }
                             Column(Modifier.padding(horizontal = horizontalPadding, vertical = 20.dp)) {
-                                Text(document.title, color = TextPrimary, fontSize = titleSize, fontWeight = FontWeight.Bold)
+                                if (state.isEditing) {
+                                    AppTextField(
+                                        value = state.editTitle,
+                                        onValueChange = onTitleChange,
+                                        placeholder = "Title",
+                                        singleLine = true,
+                                        enabled = !state.isSaving,
+                                    )
+                                } else {
+                                    Text(document.title, color = TextPrimary, fontSize = titleSize, fontWeight = FontWeight.Bold)
+                                }
                                 Spacer(Modifier.height(10.dp))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     CategoryBadge(document.category); Text("  •  ", color = TextDim)
@@ -145,13 +172,34 @@ fun DetailScreen(state: DetailUiState, onBack: () -> Unit, onDelete: () -> Unit)
                             }
                             HorizontalDivider(color = AppBorder)
                             Column(Modifier.padding(horizontal = horizontalPadding, vertical = 20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                                Text(document.description, color = TextMuted, fontSize = 14.sp, lineHeight = 24.sp)
-                                if (document.tags.isNotEmpty()) Section("TAGS") {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    ) {
-                                        document.tags.forEach { Tag(it) }
+                                if (state.isEditing) {
+                                    Section("DESCRIPTION") {
+                                        AppTextField(
+                                            value = state.editDescription,
+                                            onValueChange = onDescriptionChange,
+                                            placeholder = "Description",
+                                            minLines = 3,
+                                            enabled = !state.isSaving,
+                                        )
+                                    }
+                                    Section("TAGS") {
+                                        AppTextField(
+                                            value = state.editTags,
+                                            onValueChange = onTagsChange,
+                                            placeholder = "Comma-separated tags",
+                                            singleLine = true,
+                                            enabled = !state.isSaving,
+                                        )
+                                    }
+                                } else {
+                                    Text(document.description, color = TextMuted, fontSize = 14.sp, lineHeight = 24.sp)
+                                    if (document.tags.isNotEmpty()) Section("TAGS") {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        ) {
+                                            document.tags.forEach { Tag(it) }
+                                        }
                                     }
                                 }
                                 Column(Modifier.fillMaxWidth().background(SurfaceRaised, RoundedCornerShape(8.dp))
@@ -192,17 +240,53 @@ fun DetailScreen(state: DetailUiState, onBack: () -> Unit, onDelete: () -> Unit)
                                         }
                                     }
                                 }
-                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                                    OutlinedButton(onClick = { showDeleteConfirmation = true }, enabled = !state.isDeleting, shape = RoundedCornerShape(8.dp),
-                                        border = androidx.compose.foundation.BorderStroke(1.dp, DeleteColor.copy(alpha = .3f)),
-                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = DeleteColor)) {
-                                        if (state.isDeleting) {
-                                            CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = DeleteColor)
-                                        } else {
-                                            Icon(Icons.Default.Delete, null, Modifier.size(16.dp))
+
+                                if (state.errorMessage != null && state.isEditing) {
+                                    Text(state.errorMessage, color = DeleteColor, fontSize = 13.sp)
+                                }
+
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)) {
+                                    if (state.isEditing) {
+                                        OutlinedButton(
+                                            onClick = onCancelEdit,
+                                            enabled = !state.isSaving,
+                                            shape = RoundedCornerShape(8.dp),
+                                            border = androidx.compose.foundation.BorderStroke(1.dp, AppBorder),
+                                        ) { Text("Cancel") }
+                                        Button(
+                                            onClick = onSaveEdit,
+                                            enabled = !state.isSaving,
+                                            shape = RoundedCornerShape(8.dp),
+                                            colors = ButtonDefaults.buttonColors(containerColor = AppPrimary),
+                                        ) {
+                                            if (state.isSaving) {
+                                                CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = Color.White)
+                                                Spacer(Modifier.width(7.dp))
+                                            }
+                                            Text(if (state.isSaving) "Saving..." else "Save")
                                         }
-                                        Spacer(Modifier.width(7.dp))
-                                        Text(if (state.isDeleting) "Deleting..." else "Delete")
+                                    } else {
+                                        OutlinedButton(
+                                            onClick = onStartEdit,
+                                            shape = RoundedCornerShape(8.dp),
+                                            border = androidx.compose.foundation.BorderStroke(1.dp, AppPrimary.copy(alpha = .3f)),
+                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = AppPrimary),
+                                        ) {
+                                            Icon(Icons.Default.Edit, null, Modifier.size(16.dp))
+                                            Spacer(Modifier.width(7.dp))
+                                            Text("Edit")
+                                        }
+                                        OutlinedButton(onClick = { showDeleteConfirmation = true }, enabled = !state.isDeleting, shape = RoundedCornerShape(8.dp),
+                                            border = androidx.compose.foundation.BorderStroke(1.dp, DeleteColor.copy(alpha = .3f)),
+                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = DeleteColor)) {
+                                            if (state.isDeleting) {
+                                                CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = DeleteColor)
+                                            } else {
+                                                Icon(Icons.Default.Delete, null, Modifier.size(16.dp))
+                                            }
+                                            Spacer(Modifier.width(7.dp))
+                                            Text(if (state.isDeleting) "Deleting..." else "Delete")
+                                        }
                                     }
                                 }
                                 Spacer(Modifier.height(20.dp))

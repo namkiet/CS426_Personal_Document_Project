@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.personaldocumentproject.domain.usecase.GetDocument
 import com.example.personaldocumentproject.domain.usecase.DeleteDocument
+import com.example.personaldocumentproject.domain.usecase.UpdateDocument
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -11,6 +12,7 @@ import kotlinx.coroutines.launch
 class DetailViewModel(
     private val getDocument: GetDocument,
     private val deleteDocument: DeleteDocument,
+    private val updateDocument: UpdateDocument,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(DetailUiState())
     val uiState = mutableState.asStateFlow()
@@ -34,6 +36,70 @@ class DetailViewModel(
                 mutableState.value = DetailUiState(
                     isLoading = false,
                     errorMessage = e.message ?: "An error occurred"
+                )
+            }
+        }
+    }
+
+    fun startEditing() {
+        val doc = mutableState.value.document ?: return
+        mutableState.value = mutableState.value.copy(
+            isEditing = true,
+            editTitle = doc.title,
+            editDescription = doc.description,
+            editTags = doc.tags.joinToString(", "),
+        )
+    }
+
+    fun cancelEditing() {
+        mutableState.value = mutableState.value.copy(
+            isEditing = false,
+            errorMessage = null,
+        )
+    }
+
+    fun onTitleChange(value: String) {
+        mutableState.value = mutableState.value.copy(editTitle = value)
+    }
+
+    fun onDescriptionChange(value: String) {
+        mutableState.value = mutableState.value.copy(editDescription = value)
+    }
+
+    fun onTagsChange(value: String) {
+        mutableState.value = mutableState.value.copy(editTags = value)
+    }
+
+    fun saveEdit() {
+        val doc = mutableState.value.document ?: return
+        val state = mutableState.value
+        if (state.isSaving) return
+
+        viewModelScope.launch {
+            mutableState.value = state.copy(isSaving = true, errorMessage = null)
+            runCatching {
+                val tags = state.editTags
+                    .split(",")
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
+
+                updateDocument(
+                    doc.copy(
+                        title = state.editTitle.ifBlank { "Untitled document" },
+                        description = state.editDescription,
+                        tags = tags,
+                    )
+                )
+            }.onSuccess { updated ->
+                mutableState.value = mutableState.value.copy(
+                    document = updated,
+                    isEditing = false,
+                    isSaving = false,
+                )
+            }.onFailure { error ->
+                mutableState.value = mutableState.value.copy(
+                    isSaving = false,
+                    errorMessage = error.message ?: "Could not save changes",
                 )
             }
         }
