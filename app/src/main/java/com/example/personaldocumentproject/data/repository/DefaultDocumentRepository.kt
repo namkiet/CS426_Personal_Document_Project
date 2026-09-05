@@ -48,7 +48,7 @@ class DefaultDocumentRepository(
                 val score = semanticScore * 0.8f + lexicalScore * 0.2f
 
                 SearchResult(document, semanticScore, lexicalScore, score)
-            }.filter { it.score >= SEARCH_THRESHOLD || it.lexicalScore > 0f }
+            }.filter { it.score >= SEARCH_THRESHOLD || it.lexicalScore >= LEXICAL_THRESHOLD }
              .sortedByDescending(SearchResult::score)
         }
     }
@@ -61,6 +61,7 @@ class DefaultDocumentRepository(
 
     companion object {
         const val SEARCH_THRESHOLD = 0.25f
+        const val LEXICAL_THRESHOLD = 0.5f
     }
 }
 

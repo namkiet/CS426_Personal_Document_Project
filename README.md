@@ -1,6 +1,6 @@
 # Personal Document
 
-A local Android app for managing scanned documents and photos in one personal library.
+An Android app for managing scanned documents and photos in one personal library.
 
 ## Problem
 
@@ -10,7 +10,6 @@ People collect many documents, receipts, notes, and photos over time, but they a
 
 - Keep personal documents in one place
 - Search them with keywords or natural-language queries
-- Process everything locally on-device
 
 ## Non-goals
 
