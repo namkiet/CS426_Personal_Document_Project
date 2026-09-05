@@ -34,8 +34,15 @@ class DefaultDocumentRepository(
                 }.lowercase()
 
                 val documentTerms = searchableText.split(termSeparator).filter(String::isNotBlank).toSet()
-                val lexicalScore = if (queryTerms.isEmpty()) 0f else
-                    queryTerms.count { it in documentTerms }.toFloat() / queryTerms.size
+                val lexicalScore = if (queryTerms.isEmpty()) {
+                    0f
+                } else {
+                    queryTerms.map { queryTerm ->
+                        documentTerms.maxOfOrNull { documentTerm ->
+                            fuzzySimilarity(queryTerm, documentTerm)
+                        } ?: 0f
+                    }.average().toFloat()
+                }
 
                 val semanticScore = cosineSimilarity(queryEmbedding, document.embedding)
                 val score = semanticScore * 0.8f + lexicalScore * 0.2f
@@ -55,4 +62,36 @@ class DefaultDocumentRepository(
     companion object {
         const val SEARCH_THRESHOLD = 0.25f
     }
+}
+
+fun fuzzySimilarity(a: String, b: String): Float {
+    val distance = levenshteinDistance(a, b)
+    val maxLength = maxOf(a.length, b.length)
+
+    if (maxLength == 0) return 1f
+
+    return 1f - distance.toFloat() / maxLength
+}
+
+fun levenshteinDistance(a: String, b: String): Int {
+    if (a == b) return 0
+    if (a.isEmpty()) return b.length
+    if (b.isEmpty()) return a.length
+
+    val dp = IntArray(b.length + 1) { it }
+    for (i in 1..a.length) {
+        var prev = dp[0]
+        dp[0] = i
+        for (j in 1..b.length) {
+            val temp = dp[j]
+            val cost = if (a[i - 1] == b[j - 1]) 0 else 1
+            dp[j] = minOf(
+                dp[j] + 1,
+                dp[j - 1] + 1,
+                prev + cost
+            )
+            prev = temp
+        }
+    }
+    return dp[b.length]
 }
